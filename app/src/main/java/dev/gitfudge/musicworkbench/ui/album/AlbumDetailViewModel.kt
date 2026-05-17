@@ -18,6 +18,8 @@ import dev.gitfudge.musicworkbench.domain.AlbumArtStatus
 import dev.gitfudge.musicworkbench.domain.AlbumLyricsStatus
 import dev.gitfudge.musicworkbench.domain.AlbumTagStatus
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -74,6 +76,11 @@ data class LyricsReviewItem(
 
 sealed interface LyricsBatchPhase {
     data object Idle : LyricsBatchPhase
+    data class Options(
+        val total: Int,
+        val withExisting: Int,
+        val replaceExisting: Boolean,
+    ) : LyricsBatchPhase
     data class Fetching(val done: Int, val total: Int) : LyricsBatchPhase
     data class Review(
         val items: List<LyricsReviewItem>,
@@ -262,45 +269,73 @@ class AlbumDetailViewModel @Inject constructor(
     fun startLyricsBatch() {
         val tracks = ui.value?.tracks ?: return
         if (_lyricsBatch.value !is LyricsBatchPhase.Idle) return
+        val withExisting = tracks.count { it.hasSidecarLrc }
+        _lyricsBatch.value = LyricsBatchPhase.Options(
+            total = tracks.size,
+            withExisting = withExisting,
+            replaceExisting = false,
+        )
+    }
+
+    fun setReplaceExisting(value: Boolean) {
+        _lyricsBatch.update { current ->
+            (current as? LyricsBatchPhase.Options)?.copy(replaceExisting = value) ?: current
+        }
+    }
+
+    fun confirmLyricsOptions() {
+        val opts = _lyricsBatch.value as? LyricsBatchPhase.Options ?: return
+        val allTracks = ui.value?.tracks ?: return
+        val targets = if (opts.replaceExisting) allTracks else allTracks.filter { !it.hasSidecarLrc }
+        if (targets.isEmpty()) {
+            _lyricsBatch.value = LyricsBatchPhase.Done(saved = 0, skipped = allTracks.size, noMatch = 0, failed = 0)
+            return
+        }
         viewModelScope.launch {
-            val total = tracks.size
-            var done = 0
-            var noMatch = 0
-            var failed = 0
-            val reviewItems = mutableListOf<LyricsReviewItem>()
+            val total = targets.size
+            val done = java.util.concurrent.atomic.AtomicInteger(0)
+            val noMatch = java.util.concurrent.atomic.AtomicInteger(0)
+            val failed = java.util.concurrent.atomic.AtomicInteger(0)
+            val reviewItems = java.util.concurrent.ConcurrentLinkedQueue<LyricsReviewItem>()
             _lyricsBatch.value = LyricsBatchPhase.Fetching(0, total)
-            tracks.forEach { track ->
-                runCatching {
-                    val result = lrclibRepo.fetch(
-                        title = track.title ?: track.displayName.substringBeforeLast('.'),
-                        artist = track.artist ?: "",
-                        album = track.album,
-                        durationMs = track.durationMs,
-                    )
-                    val text = result?.syncedLyrics?.takeIf { it.isNotBlank() }
-                        ?: result?.plainLyrics?.takeIf { it.isNotBlank() }
-                    if (result == null || result.instrumental || text == null) {
-                        noMatch++
-                    } else {
-                        val isSynced = !result.syncedLyrics.isNullOrBlank()
-                        reviewItems += LyricsReviewItem(
-                            documentUri = track.documentUri,
-                            title = track.title ?: track.displayName,
-                            artist = track.artist ?: "",
-                            previewText = text.lineSequence().take(3).joinToString("\n"),
-                            fullText = text,
-                            isSynced = isSynced,
-                            accept = true,
-                        )
+
+            kotlinx.coroutines.coroutineScope {
+                targets.map { track ->
+                    async(kotlinx.coroutines.Dispatchers.IO) {
+                        runCatching {
+                            val result = lrclibRepo.fetch(
+                                title = track.title ?: track.displayName.substringBeforeLast('.'),
+                                artist = track.artist ?: "",
+                                album = track.album,
+                                durationMs = track.durationMs,
+                            )
+                            val text = result?.syncedLyrics?.takeIf { it.isNotBlank() }
+                                ?: result?.plainLyrics?.takeIf { it.isNotBlank() }
+                            if (result == null || result.instrumental || text == null) {
+                                noMatch.incrementAndGet()
+                            } else {
+                                reviewItems += LyricsReviewItem(
+                                    documentUri = track.documentUri,
+                                    title = track.title ?: track.displayName,
+                                    artist = track.artist ?: "",
+                                    previewText = text.lineSequence().take(3).joinToString("\n"),
+                                    fullText = text,
+                                    isSynced = !result.syncedLyrics.isNullOrBlank(),
+                                    accept = true,
+                                )
+                            }
+                        }.onFailure { failed.incrementAndGet() }
+                        val d = done.incrementAndGet()
+                        _lyricsBatch.value = LyricsBatchPhase.Fetching(d, total)
                     }
-                }.onFailure { failed++ }
-                done++
-                _lyricsBatch.value = LyricsBatchPhase.Fetching(done, total)
+                }.awaitAll()
             }
-            _lyricsBatch.value = if (reviewItems.isEmpty()) {
-                LyricsBatchPhase.Done(saved = 0, skipped = 0, noMatch = noMatch, failed = failed)
+
+            val items = reviewItems.toList()
+            _lyricsBatch.value = if (items.isEmpty()) {
+                LyricsBatchPhase.Done(saved = 0, skipped = 0, noMatch = noMatch.get(), failed = failed.get())
             } else {
-                LyricsBatchPhase.Review(reviewItems, noMatchCount = noMatch, failedCount = failed)
+                LyricsBatchPhase.Review(items, noMatchCount = noMatch.get(), failedCount = failed.get())
             }
         }
     }

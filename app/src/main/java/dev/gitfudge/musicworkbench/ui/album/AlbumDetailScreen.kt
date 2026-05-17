@@ -214,6 +214,12 @@ fun AlbumDetailScreen(
 
         when (val lb = lyricsBatch) {
             LyricsBatchPhase.Idle -> Unit
+            is LyricsBatchPhase.Options -> LyricsOptionsDialog(
+                options = lb,
+                onToggleReplace = { viewModel.setReplaceExisting(it) },
+                onConfirm = { viewModel.confirmLyricsOptions() },
+                onDismiss = { viewModel.dismissLyricsBatch() },
+            )
             is LyricsBatchPhase.Fetching -> ProgressDialog("Fetching lyrics… ${lb.done}/${lb.total}")
             is LyricsBatchPhase.Writing -> ProgressDialog("Saving lyrics… ${lb.done}/${lb.total}")
             is LyricsBatchPhase.Review -> LyricsBatchReviewSheet(
@@ -323,21 +329,34 @@ private fun AlbumActionRow(
             .padding(horizontal = spacing.lg, vertical = spacing.sm),
         horizontalArrangement = Arrangement.spacedBy(spacing.sm),
     ) {
-        FilledTonalButton(onClick = onGetArt, modifier = Modifier.weight(1f)) {
-            Icon(Icons.Rounded.Image, contentDescription = null, modifier = Modifier.size(18.dp))
-            Spacer(Modifier.size(spacing.xs))
-            Text("Art")
-        }
-        FilledTonalButton(onClick = onGetLyrics, modifier = Modifier.weight(1f)) {
-            Icon(Icons.Rounded.Lyrics, contentDescription = null, modifier = Modifier.size(18.dp))
-            Spacer(Modifier.size(spacing.xs))
-            Text("Lyrics")
-        }
-        FilledTonalButton(onClick = onEditTags, modifier = Modifier.weight(1f)) {
-            Icon(Icons.Rounded.Edit, contentDescription = null, modifier = Modifier.size(18.dp))
-            Spacer(Modifier.size(spacing.xs))
-            Text("Tags")
-        }
+        ActionPill(Icons.Rounded.Image, "Art", onGetArt, Modifier.weight(1f))
+        ActionPill(Icons.Rounded.Lyrics, "Lyrics", onGetLyrics, Modifier.weight(1f))
+        ActionPill(Icons.Rounded.Edit, "Tags", onEditTags, Modifier.weight(1f))
+    }
+}
+
+@Composable
+private fun ActionPill(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    label: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val spacing = LocalSpacing.current
+    FilledTonalButton(
+        onClick = onClick,
+        modifier = modifier,
+        contentPadding = PaddingValues(horizontal = spacing.sm, vertical = spacing.xs),
+    ) {
+        Icon(icon, contentDescription = null, modifier = Modifier.size(16.dp))
+        Spacer(Modifier.size(spacing.xs))
+        Text(
+            text = label,
+            maxLines = 1,
+            softWrap = false,
+            overflow = TextOverflow.Ellipsis,
+            style = MaterialTheme.typography.labelLarge,
+        )
     }
 }
 
@@ -409,6 +428,78 @@ private fun InfoDialog(message: String, onDismiss: () -> Unit) {
         onDismissRequest = onDismiss,
         confirmButton = { TextButton(onClick = onDismiss) { Text("OK") } },
         text = { Text(message) },
+    )
+}
+
+@Composable
+private fun LyricsOptionsDialog(
+    options: LyricsBatchPhase.Options,
+    onToggleReplace: (Boolean) -> Unit,
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit,
+) {
+    val spacing = LocalSpacing.current
+    val colors = MaterialTheme.colorScheme
+    val pending = if (options.replaceExisting) options.total else options.total - options.withExisting
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Fetch lyrics") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(spacing.sm)) {
+                Text(
+                    text = buildString {
+                        append("${options.total} ${if (options.total == 1) "track" else "tracks"} in this album.")
+                        if (options.withExisting > 0) {
+                            append(" ${options.withExisting} already ${if (options.withExisting == 1) "has" else "have"} lyrics.")
+                        }
+                    },
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = colors.onSurface,
+                )
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable(enabled = options.withExisting > 0) {
+                            onToggleReplace(!options.replaceExisting)
+                        }
+                        .padding(vertical = spacing.xs),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(spacing.sm),
+                ) {
+                    Checkbox(
+                        checked = options.replaceExisting,
+                        onCheckedChange = onToggleReplace,
+                        enabled = options.withExisting > 0,
+                    )
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = "Replace existing lyrics",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = if (options.withExisting > 0) colors.onSurface else colors.onSurfaceVariant,
+                        )
+                        Text(
+                            text = if (options.withExisting > 0) {
+                                "Re-download and overwrite for the ${options.withExisting} ${if (options.withExisting == 1) "track" else "tracks"} that already have lyrics."
+                            } else {
+                                "No tracks already have lyrics."
+                            },
+                            style = MaterialTheme.typography.bodySmall,
+                            color = colors.onSurfaceVariant,
+                        )
+                    }
+                }
+                Text(
+                    text = "Will fetch for $pending ${if (pending == 1) "track" else "tracks"}.",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = colors.primary,
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onConfirm, enabled = pending > 0) { Text("Fetch") }
+        },
+        dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel") } },
     )
 }
 

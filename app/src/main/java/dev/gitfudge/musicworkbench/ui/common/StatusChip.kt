@@ -47,6 +47,7 @@ fun StatusChip(
     color: Color,
     modifier: Modifier = Modifier,
     accessibilityLabel: String = label,
+    compact: Boolean = false,
 ) {
     Surface(
         shape = RoundedCornerShape(50),
@@ -54,21 +55,30 @@ fun StatusChip(
         contentColor = color,
         modifier = modifier.semantics { contentDescription = accessibilityLabel },
     ) {
-        Row(
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(4.dp),
-        ) {
+        if (compact) {
+            // Icon-only: minimal footprint so per-track headline/supporting text can breathe.
             Icon(
                 imageVector = icon,
                 contentDescription = null,
-                modifier = Modifier.size(12.dp),
+                modifier = Modifier.padding(4.dp).size(12.dp),
             )
-            Text(
-                text = label,
-                style = MaterialTheme.typography.labelSmall,
-                color = color,
-            )
+        } else {
+            Row(
+                modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+            ) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    modifier = Modifier.size(12.dp),
+                )
+                Text(
+                    text = label,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = color,
+                )
+            }
         }
     }
 }
@@ -79,9 +89,9 @@ fun StatusChip(
 fun ArtStatusChip(status: ArtStatus, modifier: Modifier = Modifier) {
     val sc = LocalStatusColors.current
     when (status) {
-        ArtStatus.OK -> StatusChip(Icons.Rounded.Check, "Art", sc.ok, modifier)
-        ArtStatus.LOW_RES -> StatusChip(Icons.Rounded.LowPriority, "Low-res", sc.warn, modifier)
-        ArtStatus.NONE -> StatusChip(Icons.Rounded.ImageNotSupported, "No art", sc.missing, modifier)
+        ArtStatus.OK -> StatusChip(Icons.Rounded.Check, "Art", sc.ok, modifier, compact = true)
+        ArtStatus.LOW_RES -> StatusChip(Icons.Rounded.LowPriority, "Low-res art", sc.warn, modifier, compact = true)
+        ArtStatus.NONE -> StatusChip(Icons.Rounded.ImageNotSupported, "No art", sc.missing, modifier, compact = true)
     }
 }
 
@@ -90,9 +100,9 @@ fun LyricsStatusChip(status: LyricsStatus, modifier: Modifier = Modifier) {
     val sc = LocalStatusColors.current
     val faint = MaterialTheme.colorScheme.onSurfaceVariant
     when (status) {
-        LyricsStatus.SIDECAR_SYNCED -> StatusChip(Icons.Rounded.Lyrics, "Synced", sc.ok, modifier)
-        LyricsStatus.SIDECAR_PLAIN -> StatusChip(Icons.Rounded.Lyrics, "Plain", sc.warn, modifier)
-        LyricsStatus.NONE -> StatusChip(Icons.Rounded.Lyrics, "No lyrics", faint, modifier)
+        LyricsStatus.SIDECAR_SYNCED -> StatusChip(Icons.Rounded.Lyrics, "Synced lyrics", sc.ok, modifier, compact = true)
+        LyricsStatus.SIDECAR_PLAIN -> StatusChip(Icons.Rounded.Lyrics, "Plain lyrics", sc.warn, modifier, compact = true)
+        LyricsStatus.NONE -> StatusChip(Icons.Rounded.Lyrics, "No lyrics", faint, modifier, compact = true)
     }
 }
 
@@ -100,9 +110,9 @@ fun LyricsStatusChip(status: LyricsStatus, modifier: Modifier = Modifier) {
 fun TagStatusChip(status: TagStatus, modifier: Modifier = Modifier) {
     val sc = LocalStatusColors.current
     when (status) {
-        TagStatus.OK -> StatusChip(Icons.Rounded.Tag, "Tags", sc.ok, modifier)
-        TagStatus.INCOMPLETE -> StatusChip(Icons.Rounded.ErrorOutline, "Tags incomplete", sc.warn, modifier)
-        TagStatus.UNKNOWN_ARTIST -> StatusChip(Icons.Rounded.PersonOff, "Unknown artist", sc.missing, modifier)
+        TagStatus.OK -> StatusChip(Icons.Rounded.Tag, "Tags OK", sc.ok, modifier, compact = true)
+        TagStatus.INCOMPLETE -> StatusChip(Icons.Rounded.ErrorOutline, "Tags incomplete", sc.warn, modifier, compact = true)
+        TagStatus.UNKNOWN_ARTIST -> StatusChip(Icons.Rounded.PersonOff, "Unknown artist", sc.missing, modifier, compact = true)
     }
 }
 
