@@ -41,6 +41,8 @@ import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Button
+import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRow
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -86,6 +88,8 @@ fun LibraryScaffoldScreen(
     folderLabel: String,
     onChangeFolder: () -> Unit,
     onTrackClick: (documentUri: String) -> Unit,
+    onAlbumClick: (albumKey: String) -> Unit = {},
+    onUnfiledClick: () -> Unit = {},
     viewModel: LibraryViewModel = hiltViewModel(),
 ) {
     val scanState by viewModel.scanState.collectAsStateWithLifecycle()
@@ -93,8 +97,9 @@ fun LibraryScaffoldScreen(
     val sort by viewModel.sort.collectAsStateWithLifecycle()
     val tracks by viewModel.tracks.collectAsStateWithLifecycle()
     val lowResPx by viewModel.lowResThresholdPx.collectAsStateWithLifecycle()
-    val viewMode by viewModel.viewMode.collectAsStateWithLifecycle()
-    val groupedTracks by viewModel.groupedTracks.collectAsStateWithLifecycle()
+    val tab by viewModel.tab.collectAsStateWithLifecycle()
+    val albums by viewModel.albums.collectAsStateWithLifecycle()
+    val unfiledCount by viewModel.unfiledCount.collectAsStateWithLifecycle()
     val selectedUris by viewModel.selectedUris.collectAsStateWithLifecycle()
     val isSelecting by viewModel.isSelecting.collectAsStateWithLifecycle()
     val batchFetchState by viewModel.batchFetchState.collectAsStateWithLifecycle()
@@ -141,8 +146,12 @@ fun LibraryScaffoldScreen(
         onFilterChange = { viewModel.setFilter(it) },
         onSortChange = { viewModel.setSort(it) },
         onRescan = { viewModel.rescan() },
-        viewMode = viewMode,
-        groupedTracks = groupedTracks,
+        tab = tab,
+        albums = albums,
+        unfiledCount = unfiledCount,
+        onTabChange = { viewModel.setTab(it) },
+        onAlbumClick = onAlbumClick,
+        onUnfiledClick = onUnfiledClick,
         selectedUris = selectedUris,
         isSelecting = isSelecting,
         batchFetchState = batchFetchState,
@@ -151,7 +160,6 @@ fun LibraryScaffoldScreen(
         batchArtFetchState = batchArtFetchState,
         downloadingArtUris = downloadingArtUris,
         artDownloadEntries = artDownloadEntries,
-        onToggleViewMode = { viewModel.toggleViewMode() },
         onEnterSelection = { viewModel.enterSelectionWith(it) },
         onToggleSelection = { viewModel.toggleSelection(it) },
         onClearSelection = { viewModel.clearSelection() },
@@ -198,8 +206,12 @@ private fun LibraryScaffoldContent(
     onFilterChange: (LibraryFilter) -> Unit,
     onSortChange: (LibrarySort) -> Unit,
     onRescan: () -> Unit,
-    viewMode: LibraryViewMode,
-    groupedTracks: List<Pair<String, List<TrackEntity>>>,
+    tab: dev.gitfudge.musicworkbench.domain.LibraryTab,
+    albums: List<dev.gitfudge.musicworkbench.domain.AlbumSummary>,
+    unfiledCount: Int,
+    onTabChange: (dev.gitfudge.musicworkbench.domain.LibraryTab) -> Unit,
+    onAlbumClick: (albumKey: String) -> Unit,
+    onUnfiledClick: () -> Unit,
     selectedUris: Set<String>,
     isSelecting: Boolean,
     batchFetchState: BatchFetchState,
@@ -208,7 +220,6 @@ private fun LibraryScaffoldContent(
     batchArtFetchState: BatchFetchState,
     downloadingArtUris: Set<String>,
     artDownloadEntries: List<DownloadEntry>,
-    onToggleViewMode: () -> Unit,
     onEnterSelection: (String) -> Unit,
     onToggleSelection: (String) -> Unit,
     onClearSelection: () -> Unit,
@@ -299,15 +310,6 @@ private fun LibraryScaffoldContent(
                             }
                         }
                     }
-                    IconButton(onClick = onToggleViewMode) {
-                        Icon(
-                            imageVector = if (viewMode == LibraryViewMode.FLAT) Icons.Rounded.FolderOpen else Icons.AutoMirrored.Rounded.ViewList,
-                            contentDescription = stringResource(
-                                if (viewMode == LibraryViewMode.FLAT) R.string.library_view_tree else R.string.library_view_flat,
-                            ),
-                            tint = colors.onSurfaceVariant,
-                        )
-                    }
                     if (scanState !is ScanState.Running) {
                         IconButton(onClick = onRescan) {
                             Icon(
@@ -372,6 +374,23 @@ private fun LibraryScaffoldContent(
 
             HorizontalDivider(color = colors.outlineVariant)
 
+            TabRow(
+                selectedTabIndex = if (tab == dev.gitfudge.musicworkbench.domain.LibraryTab.ALBUMS) 0 else 1,
+                containerColor = colors.background,
+                contentColor = colors.onBackground,
+            ) {
+                Tab(
+                    selected = tab == dev.gitfudge.musicworkbench.domain.LibraryTab.ALBUMS,
+                    onClick = { onTabChange(dev.gitfudge.musicworkbench.domain.LibraryTab.ALBUMS) },
+                    text = { Text("Albums") },
+                )
+                Tab(
+                    selected = tab == dev.gitfudge.musicworkbench.domain.LibraryTab.TRACKS,
+                    onClick = { onTabChange(dev.gitfudge.musicworkbench.domain.LibraryTab.TRACKS) },
+                    text = { Text("Tracks") },
+                )
+            }
+
             when {
                 tracks.isEmpty() && scanState is ScanState.Running -> {
                     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -382,34 +401,19 @@ private fun LibraryScaffoldContent(
                     }
                 }
 
+                tab == dev.gitfudge.musicworkbench.domain.LibraryTab.ALBUMS -> AlbumsPane(
+                    albums = albums,
+                    unfiledCount = unfiledCount,
+                    onAlbumClick = onAlbumClick,
+                    onUnfiledClick = onUnfiledClick,
+                    onChangeFolder = onChangeFolder,
+                    modifier = Modifier.fillMaxSize(),
+                )
+
                 tracks.isEmpty() -> EmptyState(
                     isFiltered = filter != LibraryFilter.ALL,
                     modifier = Modifier.fillMaxSize(),
                 )
-
-                viewMode == LibraryViewMode.TREE -> LazyColumn(Modifier.fillMaxSize()) {
-                    groupedTracks.forEach { (path, groupTracks) ->
-                        stickyHeader(key = "header_$path") {
-                            FolderHeader(path)
-                        }
-                        items(groupTracks, key = { it.documentUri }) { track ->
-                            TrackListItem(
-                                track = track,
-                                lowResThresholdPx = lowResThresholdPx,
-                                onClick = clickFor(track),
-                                onLongClick = longClickFor(track),
-                                selected = track.documentUri in selectedUris,
-                                selectionMode = isSelecting,
-                                isDownloadingLyrics = track.documentUri in downloadingUris,
-                                isDownloadingArt = track.documentUri in downloadingArtUris,
-                            )
-                            HorizontalDivider(
-                                color = colors.outlineVariant,
-                                modifier = Modifier.padding(start = spacing.lg + 48.dp + spacing.md),
-                            )
-                        }
-                    }
-                }
 
                 else -> LazyColumn(Modifier.fillMaxSize()) {
                     items(tracks, key = { it.documentUri }) { track ->
@@ -435,30 +439,7 @@ private fun LibraryScaffoldContent(
 }
 
 @Composable
-private fun FolderHeader(path: String) {
-    val colors = MaterialTheme.colorScheme
-    val spacing = LocalSpacing.current
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(colors.surfaceContainer)
-            .padding(horizontal = spacing.lg, vertical = spacing.sm),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(spacing.sm),
-    ) {
-        Icon(
-            imageVector = Icons.Rounded.Folder,
-            contentDescription = null,
-            tint = colors.primary,
-            modifier = Modifier.size(16.dp),
-        )
-        Text(
-            text = path.substringAfterLast('/').ifEmpty { path },
-            style = MaterialTheme.typography.labelMedium,
-            color = colors.onSurface,
-        )
-    }
-}
+private fun FolderHeaderRemoved() {}
 
 @Composable
 private fun SelectionBar(
@@ -756,8 +737,13 @@ private fun LibraryScanPendingPreview() {
             onFilterChange = {},
             onSortChange = {},
             onRescan = {},
-            viewMode = LibraryViewMode.FLAT,
-            groupedTracks = emptyList(),
+            tab = dev.gitfudge.musicworkbench.domain.LibraryTab.TRACKS,
+            albums = emptyList(),
+            unfiledCount = 0,
+            onTabChange = {},
+            onAlbumClick = {},
+            onUnfiledClick = {},
+
             selectedUris = emptySet(),
             isSelecting = false,
             batchFetchState = BatchFetchState.Idle,
@@ -766,7 +752,7 @@ private fun LibraryScanPendingPreview() {
             batchArtFetchState = BatchFetchState.Idle,
             downloadingArtUris = emptySet(),
             artDownloadEntries = emptyList(),
-            onToggleViewMode = {},
+
             onEnterSelection = {},
             onToggleSelection = {},
             onClearSelection = {},
@@ -800,8 +786,13 @@ private fun LibraryTrackListPreview() {
             onFilterChange = {},
             onSortChange = {},
             onRescan = {},
-            viewMode = LibraryViewMode.FLAT,
-            groupedTracks = emptyList(),
+            tab = dev.gitfudge.musicworkbench.domain.LibraryTab.TRACKS,
+            albums = emptyList(),
+            unfiledCount = 0,
+            onTabChange = {},
+            onAlbumClick = {},
+            onUnfiledClick = {},
+
             selectedUris = emptySet(),
             isSelecting = false,
             batchFetchState = BatchFetchState.Idle,
@@ -810,7 +801,7 @@ private fun LibraryTrackListPreview() {
             batchArtFetchState = BatchFetchState.Idle,
             downloadingArtUris = emptySet(),
             artDownloadEntries = emptyList(),
-            onToggleViewMode = {},
+
             onEnterSelection = {},
             onToggleSelection = {},
             onClearSelection = {},
@@ -843,8 +834,13 @@ private fun LibrarySelectionPreview() {
             onFilterChange = {},
             onSortChange = {},
             onRescan = {},
-            viewMode = LibraryViewMode.FLAT,
-            groupedTracks = emptyList(),
+            tab = dev.gitfudge.musicworkbench.domain.LibraryTab.TRACKS,
+            albums = emptyList(),
+            unfiledCount = 0,
+            onTabChange = {},
+            onAlbumClick = {},
+            onUnfiledClick = {},
+
             selectedUris = setOf(tracks[0].documentUri),
             isSelecting = true,
             batchFetchState = BatchFetchState.Idle,
@@ -853,7 +849,7 @@ private fun LibrarySelectionPreview() {
             batchArtFetchState = BatchFetchState.Idle,
             downloadingArtUris = emptySet(),
             artDownloadEntries = emptyList(),
-            onToggleViewMode = {},
+
             onEnterSelection = {},
             onToggleSelection = {},
             onClearSelection = {},
@@ -882,8 +878,13 @@ private fun LibraryFilteredEmptyPreview() {
             onFilterChange = {},
             onSortChange = {},
             onRescan = {},
-            viewMode = LibraryViewMode.FLAT,
-            groupedTracks = emptyList(),
+            tab = dev.gitfudge.musicworkbench.domain.LibraryTab.TRACKS,
+            albums = emptyList(),
+            unfiledCount = 0,
+            onTabChange = {},
+            onAlbumClick = {},
+            onUnfiledClick = {},
+
             selectedUris = emptySet(),
             isSelecting = false,
             batchFetchState = BatchFetchState.Idle,
@@ -892,7 +893,7 @@ private fun LibraryFilteredEmptyPreview() {
             batchArtFetchState = BatchFetchState.Idle,
             downloadingArtUris = emptySet(),
             artDownloadEntries = emptyList(),
-            onToggleViewMode = {},
+
             onEnterSelection = {},
             onToggleSelection = {},
             onClearSelection = {},
