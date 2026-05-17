@@ -20,6 +20,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import dev.gitfudge.musicworkbench.ui.album.AlbumDetailScreen
 import dev.gitfudge.musicworkbench.ui.detail.TrackDetailScreen
 import dev.gitfudge.musicworkbench.ui.library.LibraryScaffoldScreen
 import dev.gitfudge.musicworkbench.ui.library.LibraryViewModel
@@ -68,6 +69,9 @@ fun AppRoot(viewModel: MainViewModel) {
                                 onTrackClick = { docUri ->
                                     navController.navigate("detail/${Uri.encode(docUri)}")
                                 },
+                                onAlbumClick = { albumKey ->
+                                    navController.navigate("album/${Uri.encode(albumKey)}")
+                                },
                                 viewModel = libraryViewModel,
                             )
                         }
@@ -76,6 +80,17 @@ fun AppRoot(viewModel: MainViewModel) {
                             arguments = listOf(navArgument("uri") { type = NavType.StringType }),
                         ) {
                             TrackDetailScreen(onBack = { navController.popBackStack() })
+                        }
+                        composable(
+                            route = "album/{albumKey}",
+                            arguments = listOf(navArgument("albumKey") { type = NavType.StringType }),
+                        ) {
+                            AlbumDetailScreen(
+                                onBack = { navController.popBackStack() },
+                                onTrackClick = { docUri ->
+                                    navController.navigate("detail/${Uri.encode(docUri)}")
+                                },
+                            )
                         }
                     }
                 }
