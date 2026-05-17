@@ -1,0 +1,18 @@
+<lint-module
+    format="1"
+    dir="/home/gitfudge/dev/gitfudge0/audio-metadata/app"
+    name=":app"
+    type="APP"
+    maven="MusicWorkbench:app:unspecified"
+    agpVersion="8.13.1"
+    buildFolder="build"
+    bootClassPath="/home/gitfudge/Android/Sdk/platforms/android-36/android.jar:/home/gitfudge/Android/Sdk/build-tools/35.0.0/core-lambda-stubs.jar"
+    javaSourceLevel="17"
+    compileTarget="android-36">
+  <lintOptions
+      abortOnError="true"
+      absolutePaths="true"
+      checkReleaseBuilds="true"
+      explainIssues="true"/>
+  <variant name="debug"/>
+</lint-module>

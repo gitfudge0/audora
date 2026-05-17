@@ -1,0 +1,370 @@
+[
+    {
+        "merged": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-release-73:/layout-v21_notification_template_icon_group.xml.flat",
+        "source": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-core-1.13.1-47:/layout-v21/notification_template_icon_group.xml"
+    },
+    {
+        "merged": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-release-73:/xml_backup_rules.xml.flat",
+        "source": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-main-74:/xml/backup_rules.xml"
+    },
+    {
+        "merged": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-release-73:/drawable_ic_launcher_background.xml.flat",
+        "source": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-main-74:/drawable/ic_launcher_background.xml"
+    },
+    {
+        "merged": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-release-73:/layout-v21_notification_template_custom_big.xml.flat",
+        "source": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-core-1.13.1-47:/layout-v21/notification_template_custom_big.xml"
+    },
+    {
+        "merged": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-release-73:/layout_custom_dialog.xml.flat",
+        "source": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-core-1.13.1-47:/layout/custom_dialog.xml"
+    },
+    {
+        "merged": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-release-73:/drawable-xhdpi-v4_notification_bg_low_pressed.9.png.flat",
+        "source": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-core-1.13.1-47:/drawable-xhdpi-v4/notification_bg_low_pressed.9.png"
+    },
+    {
+        "merged": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-release-73:/animator_fragment_fade_enter.xml.flat",
+        "source": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-fragment-1.5.1-41:/animator/fragment_fade_enter.xml"
+    },
+    {
+        "merged": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-release-73:/anim-v21_fragment_fast_out_extra_slow_in.xml.flat",
+        "source": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-fragment-1.5.1-41:/anim-v21/fragment_fast_out_extra_slow_in.xml"
+    },
+    {
+        "merged": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-release-73:/drawable-xhdpi-v4_ic_call_answer_video.png.flat",
+        "source": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-core-1.13.1-47:/drawable-xhdpi-v4/ic_call_answer_video.png"
+    },
+    {
+        "merged": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-release-73:/drawable-ldpi-v4_ic_call_decline_low.png.flat",
+        "source": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-core-1.13.1-47:/drawable-ldpi-v4/ic_call_decline_low.png"
+    },
+    {
+        "merged": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-release-73:/layout_notification_template_part_time.xml.flat",
+        "source": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-core-1.13.1-47:/layout/notification_template_part_time.xml"
+    },
+    {
+        "merged": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-release-73:/drawable_ic_launcher_foreground.xml.flat",
+        "source": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-main-74:/drawable/ic_launcher_foreground.xml"
+    },
+    {
+        "merged": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-release-73:/xml_data_extraction_rules.xml.flat",
+        "source": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-main-74:/xml/data_extraction_rules.xml"
+    },
+    {
+        "merged": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-release-73:/drawable-xxxhdpi-v4_ic_call_answer.png.flat",
+        "source": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-core-1.13.1-47:/drawable-xxxhdpi-v4/ic_call_answer.png"
+    },
+    {
+        "merged": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-release-73:/drawable-mdpi-v4_notification_bg_low_normal.9.png.flat",
+        "source": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-core-1.13.1-47:/drawable-mdpi-v4/notification_bg_low_normal.9.png"
+    },
+    {
+        "merged": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-release-73:/drawable-anydpi-v21_ic_call_decline.xml.flat",
+        "source": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-core-1.13.1-47:/drawable-anydpi-v21/ic_call_decline.xml"
+    },
+    {
+        "merged": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-release-73:/drawable-xxxhdpi-v4_ic_call_decline.png.flat",
+        "source": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-core-1.13.1-47:/drawable-xxxhdpi-v4/ic_call_decline.png"
+    },
+    {
+        "merged": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-release-73:/mipmap-anydpi-v26_ic_launcher.xml.flat",
+        "source": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-main-74:/mipmap-anydpi-v26/ic_launcher.xml"
+    },
+    {
+        "merged": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-release-73:/layout_ime_secondary_split_test_activity.xml.flat",
+        "source": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-core-1.13.1-47:/layout/ime_secondary_split_test_activity.xml"
+    },
+    {
+        "merged": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-release-73:/drawable-xxhdpi-v4_ic_call_answer_video_low.png.flat",
+        "source": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-core-1.13.1-47:/drawable-xxhdpi-v4/ic_call_answer_video_low.png"
+    },
+    {
+        "merged": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-release-73:/drawable-ldpi-v4_ic_call_decline.png.flat",
+        "source": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-core-1.13.1-47:/drawable-ldpi-v4/ic_call_decline.png"
+    },
+    {
+        "merged": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-release-73:/drawable-xxhdpi-v4_ic_call_decline.png.flat",
+        "source": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-core-1.13.1-47:/drawable-xxhdpi-v4/ic_call_decline.png"
+    },
+    {
+        "merged": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-release-73:/drawable-ldpi-v4_ic_call_answer.png.flat",
+        "source": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-core-1.13.1-47:/drawable-ldpi-v4/ic_call_answer.png"
+    },
+    {
+        "merged": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-release-73:/drawable-xhdpi-v4_ic_call_answer_video_low.png.flat",
+        "source": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-core-1.13.1-47:/drawable-xhdpi-v4/ic_call_answer_video_low.png"
+    },
+    {
+        "merged": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-release-73:/layout_notification_template_part_chronometer.xml.flat",
+        "source": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-core-1.13.1-47:/layout/notification_template_part_chronometer.xml"
+    },
+    {
+        "merged": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-release-73:/drawable-hdpi-v4_ic_call_answer_video.png.flat",
+        "source": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-core-1.13.1-47:/drawable-hdpi-v4/ic_call_answer_video.png"
+    },
+    {
+        "merged": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-release-73:/animator_fragment_open_enter.xml.flat",
+        "source": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-fragment-1.5.1-41:/animator/fragment_open_enter.xml"
+    },
+    {
+        "merged": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-release-73:/layout-v21_notification_action.xml.flat",
+        "source": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-core-1.13.1-47:/layout-v21/notification_action.xml"
+    },
+    {
+        "merged": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-release-73:/drawable-v23_compat_splash_screen_no_icon_background.xml.flat",
+        "source": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-core-splashscreen-1.0.1-15:/drawable-v23/compat_splash_screen_no_icon_background.xml"
+    },
+    {
+        "merged": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-release-73:/drawable-xxxhdpi-v4_ic_call_decline_low.png.flat",
+        "source": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-core-1.13.1-47:/drawable-xxxhdpi-v4/ic_call_decline_low.png"
+    },
+    {
+        "merged": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-release-73:/drawable-mdpi-v4_ic_call_decline.png.flat",
+        "source": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-core-1.13.1-47:/drawable-mdpi-v4/ic_call_decline.png"
+    },
+    {
+        "merged": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-release-73:/drawable-anydpi-v21_ic_call_answer_low.xml.flat",
+        "source": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-core-1.13.1-47:/drawable-anydpi-v21/ic_call_answer_low.xml"
+    },
+    {
+        "merged": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-release-73:/drawable_abc_vector_test.xml.flat",
+        "source": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-appcompat-resources-1.6.1-28:/drawable/abc_vector_test.xml"
+    },
+    {
+        "merged": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-release-73:/drawable-xxhdpi-v4_ic_call_answer_low.png.flat",
+        "source": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-core-1.13.1-47:/drawable-xxhdpi-v4/ic_call_answer_low.png"
+    },
+    {
+        "merged": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-release-73:/drawable-mdpi-v4_ic_call_answer.png.flat",
+        "source": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-core-1.13.1-47:/drawable-mdpi-v4/ic_call_answer.png"
+    },
+    {
+        "merged": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-release-73:/drawable-anydpi-v21_ic_call_decline_low.xml.flat",
+        "source": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-core-1.13.1-47:/drawable-anydpi-v21/ic_call_decline_low.xml"
+    },
+    {
+        "merged": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-release-73:/drawable-xhdpi-v4_ic_call_answer_low.png.flat",
+        "source": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-core-1.13.1-47:/drawable-xhdpi-v4/ic_call_answer_low.png"
+    },
+    {
+        "merged": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-release-73:/animator_fragment_fade_exit.xml.flat",
+        "source": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-fragment-1.5.1-41:/animator/fragment_fade_exit.xml"
+    },
+    {
+        "merged": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-release-73:/drawable-xhdpi-v4_ic_call_decline.png.flat",
+        "source": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-core-1.13.1-47:/drawable-xhdpi-v4/ic_call_decline.png"
+    },
+    {
+        "merged": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-release-73:/drawable-hdpi-v4_ic_call_answer_video_low.png.flat",
+        "source": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-core-1.13.1-47:/drawable-hdpi-v4/ic_call_answer_video_low.png"
+    },
+    {
+        "merged": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-release-73:/drawable-anydpi-v21_ic_call_answer.xml.flat",
+        "source": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-core-1.13.1-47:/drawable-anydpi-v21/ic_call_answer.xml"
+    },
+    {
+        "merged": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-release-73:/drawable-hdpi-v4_notification_bg_normal.9.png.flat",
+        "source": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-core-1.13.1-47:/drawable-hdpi-v4/notification_bg_normal.9.png"
+    },
+    {
+        "merged": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-release-73:/drawable-xxxhdpi-v4_ic_call_answer_video_low.png.flat",
+        "source": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-core-1.13.1-47:/drawable-xxxhdpi-v4/ic_call_answer_video_low.png"
+    },
+    {
+        "merged": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-release-73:/drawable-hdpi-v4_notification_bg_low_normal.9.png.flat",
+        "source": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-core-1.13.1-47:/drawable-hdpi-v4/notification_bg_low_normal.9.png"
+    },
+    {
+        "merged": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-release-73:/layout-v21_notification_action_tombstone.xml.flat",
+        "source": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-core-1.13.1-47:/layout-v21/notification_action_tombstone.xml"
+    },
+    {
+        "merged": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-release-73:/color_vector_tint_theme_color.xml.flat",
+        "source": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-ui-release-7:/color/vector_tint_theme_color.xml"
+    },
+    {
+        "merged": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-release-73:/drawable-mdpi-v4_ic_call_decline_low.png.flat",
+        "source": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-core-1.13.1-47:/drawable-mdpi-v4/ic_call_decline_low.png"
+    },
+    {
+        "merged": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-release-73:/layout_ime_base_split_test_activity.xml.flat",
+        "source": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-core-1.13.1-47:/layout/ime_base_split_test_activity.xml"
+    },
+    {
+        "merged": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-release-73:/drawable-xxxhdpi-v4_ic_call_answer_video.png.flat",
+        "source": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-core-1.13.1-47:/drawable-xxxhdpi-v4/ic_call_answer_video.png"
+    },
+    {
+        "merged": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-release-73:/color_vector_tint_color.xml.flat",
+        "source": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-ui-release-7:/color/vector_tint_color.xml"
+    },
+    {
+        "merged": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-release-73:/drawable-mdpi-v4_notification_bg_low_pressed.9.png.flat",
+        "source": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-core-1.13.1-47:/drawable-mdpi-v4/notification_bg_low_pressed.9.png"
+    },
+    {
+        "merged": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-release-73:/drawable-ldpi-v4_ic_call_answer_low.png.flat",
+        "source": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-core-1.13.1-47:/drawable-ldpi-v4/ic_call_answer_low.png"
+    },
+    {
+        "merged": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-release-73:/drawable_notification_tile_bg.xml.flat",
+        "source": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-core-1.13.1-47:/drawable/notification_tile_bg.xml"
+    },
+    {
+        "merged": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-release-73:/layout_splash_screen_view.xml.flat",
+        "source": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-core-splashscreen-1.0.1-15:/layout/splash_screen_view.xml"
+    },
+    {
+        "merged": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-release-73:/drawable-hdpi-v4_notify_panel_notification_icon_bg.png.flat",
+        "source": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-core-1.13.1-47:/drawable-hdpi-v4/notify_panel_notification_icon_bg.png"
+    },
+    {
+        "merged": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-release-73:/drawable-xxxhdpi-v4_ic_call_answer_low.png.flat",
+        "source": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-core-1.13.1-47:/drawable-xxxhdpi-v4/ic_call_answer_low.png"
+    },
+    {
+        "merged": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-release-73:/animator_fragment_close_enter.xml.flat",
+        "source": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-fragment-1.5.1-41:/animator/fragment_close_enter.xml"
+    },
+    {
+        "merged": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-release-73:/drawable-v21_notification_action_background.xml.flat",
+        "source": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-core-1.13.1-47:/drawable-v21/notification_action_background.xml"
+    },
+    {
+        "merged": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-release-73:/drawable_notification_icon_background.xml.flat",
+        "source": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-core-1.13.1-47:/drawable/notification_icon_background.xml"
+    },
+    {
+        "merged": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-release-73:/drawable-xhdpi-v4_ic_call_answer.png.flat",
+        "source": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-core-1.13.1-47:/drawable-xhdpi-v4/ic_call_answer.png"
+    },
+    {
+        "merged": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-release-73:/drawable-xhdpi-v4_notify_panel_notification_icon_bg.png.flat",
+        "source": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-core-1.13.1-47:/drawable-xhdpi-v4/notify_panel_notification_icon_bg.png"
+    },
+    {
+        "merged": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-release-73:/drawable-anydpi-v21_ic_call_answer_video_low.xml.flat",
+        "source": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-core-1.13.1-47:/drawable-anydpi-v21/ic_call_answer_video_low.xml"
+    },
+    {
+        "merged": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-release-73:/drawable-hdpi-v4_notification_oversize_large_icon_bg.png.flat",
+        "source": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-core-1.13.1-47:/drawable-hdpi-v4/notification_oversize_large_icon_bg.png"
+    },
+    {
+        "merged": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-release-73:/drawable_icon_background.xml.flat",
+        "source": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-core-splashscreen-1.0.1-15:/drawable/icon_background.xml"
+    },
+    {
+        "merged": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-release-73:/drawable_notification_bg_low.xml.flat",
+        "source": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-core-1.13.1-47:/drawable/notification_bg_low.xml"
+    },
+    {
+        "merged": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-release-73:/drawable-mdpi-v4_ic_call_answer_video.png.flat",
+        "source": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-core-1.13.1-47:/drawable-mdpi-v4/ic_call_answer_video.png"
+    },
+    {
+        "merged": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-release-73:/drawable-hdpi-v4_notification_bg_low_pressed.9.png.flat",
+        "source": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-core-1.13.1-47:/drawable-hdpi-v4/notification_bg_low_pressed.9.png"
+    },
+    {
+        "merged": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-release-73:/drawable-mdpi-v4_notification_bg_normal.9.png.flat",
+        "source": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-core-1.13.1-47:/drawable-mdpi-v4/notification_bg_normal.9.png"
+    },
+    {
+        "merged": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-release-73:/drawable-anydpi-v21_ic_call_answer_video.xml.flat",
+        "source": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-core-1.13.1-47:/drawable-anydpi-v21/ic_call_answer_video.xml"
+    },
+    {
+        "merged": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-release-73:/drawable-xxhdpi-v4_ic_call_decline_low.png.flat",
+        "source": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-core-1.13.1-47:/drawable-xxhdpi-v4/ic_call_decline_low.png"
+    },
+    {
+        "merged": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-release-73:/drawable-mdpi-v4_notify_panel_notification_icon_bg.png.flat",
+        "source": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-core-1.13.1-47:/drawable-mdpi-v4/notify_panel_notification_icon_bg.png"
+    },
+    {
+        "merged": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-release-73:/drawable-ldpi-v4_ic_call_answer_video.png.flat",
+        "source": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-core-1.13.1-47:/drawable-ldpi-v4/ic_call_answer_video.png"
+    },
+    {
+        "merged": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-release-73:/mipmap-anydpi-v26_ic_launcher_round.xml.flat",
+        "source": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-main-74:/mipmap-anydpi-v26/ic_launcher_round.xml"
+    },
+    {
+        "merged": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-release-73:/drawable-ldpi-v4_ic_call_answer_video_low.png.flat",
+        "source": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-core-1.13.1-47:/drawable-ldpi-v4/ic_call_answer_video_low.png"
+    },
+    {
+        "merged": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-release-73:/drawable-xhdpi-v4_notification_bg_normal.9.png.flat",
+        "source": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-core-1.13.1-47:/drawable-xhdpi-v4/notification_bg_normal.9.png"
+    },
+    {
+        "merged": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-release-73:/drawable-mdpi-v4_notification_bg_normal_pressed.9.png.flat",
+        "source": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-core-1.13.1-47:/drawable-mdpi-v4/notification_bg_normal_pressed.9.png"
+    },
+    {
+        "merged": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-release-73:/drawable_notification_bg.xml.flat",
+        "source": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-core-1.13.1-47:/drawable/notification_bg.xml"
+    },
+    {
+        "merged": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-release-73:/animator_fragment_close_exit.xml.flat",
+        "source": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-fragment-1.5.1-41:/animator/fragment_close_exit.xml"
+    },
+    {
+        "merged": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-release-73:/drawable-hdpi-v4_ic_call_answer.png.flat",
+        "source": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-core-1.13.1-47:/drawable-hdpi-v4/ic_call_answer.png"
+    },
+    {
+        "merged": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-release-73:/drawable-mdpi-v4_ic_call_answer_video_low.png.flat",
+        "source": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-core-1.13.1-47:/drawable-mdpi-v4/ic_call_answer_video_low.png"
+    },
+    {
+        "merged": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-release-73:/drawable-xxhdpi-v4_ic_call_answer.png.flat",
+        "source": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-core-1.13.1-47:/drawable-xxhdpi-v4/ic_call_answer.png"
+    },
+    {
+        "merged": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-release-73:/animator_fragment_open_exit.xml.flat",
+        "source": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-fragment-1.5.1-41:/animator/fragment_open_exit.xml"
+    },
+    {
+        "merged": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-release-73:/drawable-mdpi-v4_ic_call_answer_low.png.flat",
+        "source": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-core-1.13.1-47:/drawable-mdpi-v4/ic_call_answer_low.png"
+    },
+    {
+        "merged": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-release-73:/drawable-xhdpi-v4_notification_bg_low_normal.9.png.flat",
+        "source": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-core-1.13.1-47:/drawable-xhdpi-v4/notification_bg_low_normal.9.png"
+    },
+    {
+        "merged": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-release-73:/drawable-hdpi-v4_ic_call_answer_low.png.flat",
+        "source": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-core-1.13.1-47:/drawable-hdpi-v4/ic_call_answer_low.png"
+    },
+    {
+        "merged": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-release-73:/drawable-xhdpi-v4_ic_call_decline_low.png.flat",
+        "source": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-core-1.13.1-47:/drawable-xhdpi-v4/ic_call_decline_low.png"
+    },
+    {
+        "merged": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-release-73:/drawable-xxhdpi-v4_ic_call_answer_video.png.flat",
+        "source": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-core-1.13.1-47:/drawable-xxhdpi-v4/ic_call_answer_video.png"
+    },
+    {
+        "merged": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-release-73:/drawable-xhdpi-v4_notification_bg_normal_pressed.9.png.flat",
+        "source": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-core-1.13.1-47:/drawable-xhdpi-v4/notification_bg_normal_pressed.9.png"
+    },
+    {
+        "merged": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-release-73:/drawable-hdpi-v4_ic_call_decline_low.png.flat",
+        "source": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-core-1.13.1-47:/drawable-hdpi-v4/ic_call_decline_low.png"
+    },
+    {
+        "merged": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-release-73:/drawable-hdpi-v4_ic_call_decline.png.flat",
+        "source": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-core-1.13.1-47:/drawable-hdpi-v4/ic_call_decline.png"
+    },
+    {
+        "merged": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-release-73:/drawable-v23_compat_splash_screen.xml.flat",
+        "source": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-core-splashscreen-1.0.1-15:/drawable-v23/compat_splash_screen.xml"
+    },
+    {
+        "merged": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-release-73:/drawable-hdpi-v4_notification_bg_normal_pressed.9.png.flat",
+        "source": "/home/gitfudge/.gradle/daemon/9.0.0/dev.gitfudge.musicworkbench.app-core-1.13.1-47:/drawable-hdpi-v4/notification_bg_normal_pressed.9.png"
+    }
+]

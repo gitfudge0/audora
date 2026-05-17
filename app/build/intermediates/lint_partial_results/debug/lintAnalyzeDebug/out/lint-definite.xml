@@ -1,0 +1,774 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<incidents format="6" by="lint 8.13.1" type="incidents">
+
+    <incident
+        id="AndroidGradlePluginVersion"
+        severity="warning"
+        message="A newer version of com.android.application than 8.13.1 is available: 9.2.1. (There is also a newer version of 8.13.𝑥 available, if upgrading to 9.2.1 is difficult: 8.13.2)">
+        <fix-alternatives>
+            <fix-replace
+                description="Replace with 8.13.2"
+                family="Update versions"
+                robot="true"
+                independent="true"
+                oldString="8.13.1"
+                replacement="8.13.2"
+                priority="0"/>
+            <fix-replace
+                description="Replace with 9.2.1"
+                family="Update versions"
+                oldString="8.13.1"
+                replacement="9.2.1"
+                priority="0"/>
+        </fix-alternatives>
+        <location
+            file="$HOME/dev/gitfudge0/audio-metadata/gradle/libs.versions.toml"
+            line="2"
+            column="7"
+            startOffset="17"
+            endLine="2"
+            endColumn="15"
+            endOffset="25"/>
+        <map>
+            <entry
+                name="coordinate"
+                string="com.android.application"/>
+            <entry
+                name="revision"
+                string="9.2.1"/>
+        </map>
+    </incident>
+
+    <incident
+        id="GradleDependency"
+        severity="warning"
+        message="A newer version of androidx.core:core-ktx than 1.13.1 is available: 1.18.0">
+        <fix-replace
+            description="Change to 1.18.0"
+            family="Update versions"
+            oldString="1.13.1"
+            replacement="1.18.0"
+            priority="0"/>
+        <location
+            file="$HOME/dev/gitfudge0/audio-metadata/gradle/libs.versions.toml"
+            line="5"
+            column="11"
+            startOffset="76"
+            endLine="5"
+            endColumn="19"
+            endOffset="84"/>
+    </incident>
+
+    <incident
+        id="GradleDependency"
+        severity="warning"
+        message="A newer version of androidx.lifecycle:lifecycle-runtime-compose than 2.8.7 is available: 2.10.0">
+        <fix-replace
+            description="Change to 2.10.0"
+            family="Update versions"
+            oldString="2.8.7"
+            replacement="2.10.0"
+            priority="0"/>
+        <location
+            file="$HOME/dev/gitfudge0/audio-metadata/gradle/libs.versions.toml"
+            line="6"
+            column="13"
+            startOffset="97"
+            endLine="6"
+            endColumn="20"
+            endOffset="104"/>
+    </incident>
+
+    <incident
+        id="GradleDependency"
+        severity="warning"
+        message="A newer version of androidx.lifecycle:lifecycle-runtime-ktx than 2.8.7 is available: 2.10.0">
+        <fix-replace
+            description="Change to 2.10.0"
+            family="Update versions"
+            oldString="2.8.7"
+            replacement="2.10.0"
+            priority="0"/>
+        <location
+            file="$HOME/dev/gitfudge0/audio-metadata/gradle/libs.versions.toml"
+            line="6"
+            column="13"
+            startOffset="97"
+            endLine="6"
+            endColumn="20"
+            endOffset="104"/>
+    </incident>
+
+    <incident
+        id="GradleDependency"
+        severity="warning"
+        message="A newer version of androidx.lifecycle:lifecycle-viewmodel-compose than 2.8.7 is available: 2.10.0">
+        <fix-replace
+            description="Change to 2.10.0"
+            family="Update versions"
+            oldString="2.8.7"
+            replacement="2.10.0"
+            priority="0"/>
+        <location
+            file="$HOME/dev/gitfudge0/audio-metadata/gradle/libs.versions.toml"
+            line="6"
+            column="13"
+            startOffset="97"
+            endLine="6"
+            endColumn="20"
+            endOffset="104"/>
+    </incident>
+
+    <incident
+        id="GradleDependency"
+        severity="warning"
+        message="A newer version of androidx.activity:activity-compose than 1.9.3 is available: 1.13.0">
+        <fix-replace
+            description="Change to 1.13.0"
+            family="Update versions"
+            oldString="1.9.3"
+            replacement="1.13.0"
+            priority="0"/>
+        <location
+            file="$HOME/dev/gitfudge0/audio-metadata/gradle/libs.versions.toml"
+            line="7"
+            column="19"
+            startOffset="123"
+            endLine="7"
+            endColumn="26"
+            endOffset="130"/>
+    </incident>
+
+    <incident
+        id="GradleDependency"
+        severity="warning"
+        message="A newer version of androidx.compose:compose-bom than 2024.12.01 is available: 2026.05.00">
+        <fix-replace
+            description="Change to 2026.05.00"
+            family="Update versions"
+            oldString="2024.12.01"
+            replacement="2026.05.00"
+            priority="0"/>
+        <location
+            file="$HOME/dev/gitfudge0/audio-metadata/gradle/libs.versions.toml"
+            line="8"
+            column="14"
+            startOffset="144"
+            endLine="8"
+            endColumn="26"
+            endOffset="156"/>
+    </incident>
+
+    <incident
+        id="GradleDependency"
+        severity="warning"
+        message="A newer version of androidx.navigation:navigation-compose than 2.8.5 is available: 2.9.8">
+        <fix-replace
+            description="Change to 2.9.8"
+            family="Update versions"
+            oldString="2.8.5"
+            replacement="2.9.8"
+            priority="0"/>
+        <location
+            file="$HOME/dev/gitfudge0/audio-metadata/gradle/libs.versions.toml"
+            line="9"
+            column="21"
+            startOffset="177"
+            endLine="9"
+            endColumn="28"
+            endOffset="184"/>
+    </incident>
+
+    <incident
+        id="GradleDependency"
+        severity="warning"
+        message="A newer version of androidx.hilt:hilt-compiler than 1.2.0 is available: 1.3.0">
+        <fix-replace
+            description="Change to 1.3.0"
+            family="Update versions"
+            oldString="1.2.0"
+            replacement="1.3.0"
+            priority="0"/>
+        <location
+            file="$HOME/dev/gitfudge0/audio-metadata/gradle/libs.versions.toml"
+            line="11"
+            column="11"
+            startOffset="211"
+            endLine="11"
+            endColumn="18"
+            endOffset="218"/>
+    </incident>
+
+    <incident
+        id="GradleDependency"
+        severity="warning"
+        message="A newer version of androidx.hilt:hilt-navigation-compose than 1.2.0 is available: 1.3.0">
+        <fix-replace
+            description="Change to 1.3.0"
+            family="Update versions"
+            oldString="1.2.0"
+            replacement="1.3.0"
+            priority="0"/>
+        <location
+            file="$HOME/dev/gitfudge0/audio-metadata/gradle/libs.versions.toml"
+            line="11"
+            column="11"
+            startOffset="211"
+            endLine="11"
+            endColumn="18"
+            endOffset="218"/>
+    </incident>
+
+    <incident
+        id="GradleDependency"
+        severity="warning"
+        message="A newer version of androidx.hilt:hilt-work than 1.2.0 is available: 1.3.0">
+        <fix-replace
+            description="Change to 1.3.0"
+            family="Update versions"
+            oldString="1.2.0"
+            replacement="1.3.0"
+            priority="0"/>
+        <location
+            file="$HOME/dev/gitfudge0/audio-metadata/gradle/libs.versions.toml"
+            line="11"
+            column="11"
+            startOffset="211"
+            endLine="11"
+            endColumn="18"
+            endOffset="218"/>
+    </incident>
+
+    <incident
+        id="GradleDependency"
+        severity="warning"
+        message="A newer version of androidx.room:room-compiler than 2.6.1 is available: 2.8.4">
+        <fix-replace
+            description="Change to 2.8.4"
+            family="Update versions"
+            oldString="2.6.1"
+            replacement="2.8.4"
+            priority="0"/>
+        <location
+            file="$HOME/dev/gitfudge0/audio-metadata/gradle/libs.versions.toml"
+            line="12"
+            column="8"
+            startOffset="226"
+            endLine="12"
+            endColumn="15"
+            endOffset="233"/>
+    </incident>
+
+    <incident
+        id="GradleDependency"
+        severity="warning"
+        message="A newer version of androidx.room:room-ktx than 2.6.1 is available: 2.8.4">
+        <fix-replace
+            description="Change to 2.8.4"
+            family="Update versions"
+            oldString="2.6.1"
+            replacement="2.8.4"
+            priority="0"/>
+        <location
+            file="$HOME/dev/gitfudge0/audio-metadata/gradle/libs.versions.toml"
+            line="12"
+            column="8"
+            startOffset="226"
+            endLine="12"
+            endColumn="15"
+            endOffset="233"/>
+    </incident>
+
+    <incident
+        id="GradleDependency"
+        severity="warning"
+        message="A newer version of androidx.room:room-runtime than 2.6.1 is available: 2.8.4">
+        <fix-replace
+            description="Change to 2.8.4"
+            family="Update versions"
+            oldString="2.6.1"
+            replacement="2.8.4"
+            priority="0"/>
+        <location
+            file="$HOME/dev/gitfudge0/audio-metadata/gradle/libs.versions.toml"
+            line="12"
+            column="8"
+            startOffset="226"
+            endLine="12"
+            endColumn="15"
+            endOffset="233"/>
+    </incident>
+
+    <incident
+        id="GradleDependency"
+        severity="warning"
+        message="A newer version of androidx.datastore:datastore-preferences than 1.1.1 is available: 1.2.1">
+        <fix-replace
+            description="Change to 1.2.1"
+            family="Update versions"
+            oldString="1.1.1"
+            replacement="1.2.1"
+            priority="0"/>
+        <location
+            file="$HOME/dev/gitfudge0/audio-metadata/gradle/libs.versions.toml"
+            line="13"
+            column="13"
+            startOffset="246"
+            endLine="13"
+            endColumn="20"
+            endOffset="253"/>
+    </incident>
+
+    <incident
+        id="GradleDependency"
+        severity="warning"
+        message="A newer version of androidx.documentfile:documentfile than 1.0.1 is available: 1.1.0">
+        <fix-replace
+            description="Change to 1.1.0"
+            family="Update versions"
+            oldString="1.0.1"
+            replacement="1.1.0"
+            priority="0"/>
+        <location
+            file="$HOME/dev/gitfudge0/audio-metadata/gradle/libs.versions.toml"
+            line="14"
+            column="16"
+            startOffset="269"
+            endLine="14"
+            endColumn="23"
+            endOffset="276"/>
+    </incident>
+
+    <incident
+        id="GradleDependency"
+        severity="warning"
+        message="A newer version of androidx.work:work-runtime-ktx than 2.10.0 is available: 2.11.2">
+        <fix-replace
+            description="Change to 2.11.2"
+            family="Update versions"
+            oldString="2.10.0"
+            replacement="2.11.2"
+            priority="0"/>
+        <location
+            file="$HOME/dev/gitfudge0/audio-metadata/gradle/libs.versions.toml"
+            line="15"
+            column="8"
+            startOffset="284"
+            endLine="15"
+            endColumn="16"
+            endOffset="292"/>
+    </incident>
+
+    <incident
+        id="GradleDependency"
+        severity="warning"
+        message="A newer version of androidx.core:core-splashscreen than 1.0.1 is available: 1.2.0">
+        <fix-replace
+            description="Change to 1.2.0"
+            family="Update versions"
+            oldString="1.0.1"
+            replacement="1.2.0"
+            priority="0"/>
+        <location
+            file="$HOME/dev/gitfudge0/audio-metadata/gradle/libs.versions.toml"
+            line="20"
+            column="20"
+            startOffset="396"
+            endLine="20"
+            endColumn="27"
+            endOffset="403"/>
+    </incident>
+
+    <incident
+        id="GradleDependency"
+        severity="warning"
+        message="A newer version of androidx.test.ext:junit than 1.2.1 is available: 1.3.0">
+        <fix-replace
+            description="Change to 1.3.0"
+            family="Update versions"
+            oldString="1.2.1"
+            replacement="1.3.0"
+            priority="0"/>
+        <location
+            file="$HOME/dev/gitfudge0/audio-metadata/gradle/libs.versions.toml"
+            line="23"
+            column="17"
+            startOffset="461"
+            endLine="23"
+            endColumn="24"
+            endOffset="468"/>
+    </incident>
+
+    <incident
+        id="NewerVersionAvailable"
+        severity="warning"
+        message="A newer version of org.jetbrains.kotlin.android than 2.1.20 is available: 2.3.21">
+        <fix-replace
+            description="Change to 2.3.21"
+            family="Update versions"
+            oldString="2.1.20"
+            replacement="2.3.21"
+            priority="0"/>
+        <location
+            file="$HOME/dev/gitfudge0/audio-metadata/gradle/libs.versions.toml"
+            line="3"
+            column="10"
+            startOffset="35"
+            endLine="3"
+            endColumn="18"
+            endOffset="43"/>
+    </incident>
+
+    <incident
+        id="NewerVersionAvailable"
+        severity="warning"
+        message="A newer version of org.jetbrains.kotlin.plugin.compose than 2.1.20 is available: 2.3.21">
+        <fix-replace
+            description="Change to 2.3.21"
+            family="Update versions"
+            oldString="2.1.20"
+            replacement="2.3.21"
+            priority="0"/>
+        <location
+            file="$HOME/dev/gitfudge0/audio-metadata/gradle/libs.versions.toml"
+            line="3"
+            column="10"
+            startOffset="35"
+            endLine="3"
+            endColumn="18"
+            endOffset="43"/>
+    </incident>
+
+    <incident
+        id="NewerVersionAvailable"
+        severity="warning"
+        message="A newer version of org.jetbrains.kotlin.plugin.serialization than 2.1.20 is available: 2.3.21">
+        <fix-replace
+            description="Change to 2.3.21"
+            family="Update versions"
+            oldString="2.1.20"
+            replacement="2.3.21"
+            priority="0"/>
+        <location
+            file="$HOME/dev/gitfudge0/audio-metadata/gradle/libs.versions.toml"
+            line="3"
+            column="10"
+            startOffset="35"
+            endLine="3"
+            endColumn="18"
+            endOffset="43"/>
+    </incident>
+
+    <incident
+        id="NewerVersionAvailable"
+        severity="warning"
+        message="A newer version of com.google.dagger.hilt.android than 2.56.2 is available: 2.59.2">
+        <fix-replace
+            description="Change to 2.59.2"
+            family="Update versions"
+            oldString="2.56.2"
+            replacement="2.59.2"
+            priority="0"/>
+        <location
+            file="$HOME/dev/gitfudge0/audio-metadata/gradle/libs.versions.toml"
+            line="10"
+            column="8"
+            startOffset="192"
+            endLine="10"
+            endColumn="16"
+            endOffset="200"/>
+    </incident>
+
+    <incident
+        id="NewerVersionAvailable"
+        severity="warning"
+        message="A newer version of com.google.dagger:hilt-android than 2.56.2 is available: 2.59.2">
+        <fix-replace
+            description="Change to 2.59.2"
+            family="Update versions"
+            oldString="2.56.2"
+            replacement="2.59.2"
+            priority="0"/>
+        <location
+            file="$HOME/dev/gitfudge0/audio-metadata/gradle/libs.versions.toml"
+            line="10"
+            column="8"
+            startOffset="192"
+            endLine="10"
+            endColumn="16"
+            endOffset="200"/>
+    </incident>
+
+    <incident
+        id="NewerVersionAvailable"
+        severity="warning"
+        message="A newer version of com.google.dagger:hilt-compiler than 2.56.2 is available: 2.59.2">
+        <fix-replace
+            description="Change to 2.59.2"
+            family="Update versions"
+            oldString="2.56.2"
+            replacement="2.59.2"
+            priority="0"/>
+        <location
+            file="$HOME/dev/gitfudge0/audio-metadata/gradle/libs.versions.toml"
+            line="10"
+            column="8"
+            startOffset="192"
+            endLine="10"
+            endColumn="16"
+            endOffset="200"/>
+    </incident>
+
+    <incident
+        id="NewerVersionAvailable"
+        severity="warning"
+        message="A newer version of com.squareup.retrofit2:converter-kotlinx-serialization than 2.11.0 is available: 3.0.0">
+        <fix-replace
+            description="Change to 3.0.0"
+            family="Update versions"
+            oldString="2.11.0"
+            replacement="3.0.0"
+            priority="0"/>
+        <location
+            file="$HOME/dev/gitfudge0/audio-metadata/gradle/libs.versions.toml"
+            line="16"
+            column="12"
+            startOffset="304"
+            endLine="16"
+            endColumn="20"
+            endOffset="312"/>
+    </incident>
+
+    <incident
+        id="NewerVersionAvailable"
+        severity="warning"
+        message="A newer version of com.squareup.retrofit2:retrofit than 2.11.0 is available: 3.0.0">
+        <fix-replace
+            description="Change to 3.0.0"
+            family="Update versions"
+            oldString="2.11.0"
+            replacement="3.0.0"
+            priority="0"/>
+        <location
+            file="$HOME/dev/gitfudge0/audio-metadata/gradle/libs.versions.toml"
+            line="16"
+            column="12"
+            startOffset="304"
+            endLine="16"
+            endColumn="20"
+            endOffset="312"/>
+    </incident>
+
+    <incident
+        id="NewerVersionAvailable"
+        severity="warning"
+        message="A newer version of com.squareup.okhttp3:logging-interceptor than 4.12.0 is available: 5.3.2">
+        <fix-replace
+            description="Change to 5.3.2"
+            family="Update versions"
+            oldString="4.12.0"
+            replacement="5.3.2"
+            priority="0"/>
+        <location
+            file="$HOME/dev/gitfudge0/audio-metadata/gradle/libs.versions.toml"
+            line="17"
+            column="10"
+            startOffset="322"
+            endLine="17"
+            endColumn="18"
+            endOffset="330"/>
+    </incident>
+
+    <incident
+        id="NewerVersionAvailable"
+        severity="warning"
+        message="A newer version of com.squareup.okhttp3:okhttp than 4.12.0 is available: 5.3.2">
+        <fix-replace
+            description="Change to 5.3.2"
+            family="Update versions"
+            oldString="4.12.0"
+            replacement="5.3.2"
+            priority="0"/>
+        <location
+            file="$HOME/dev/gitfudge0/audio-metadata/gradle/libs.versions.toml"
+            line="17"
+            column="10"
+            startOffset="322"
+            endLine="17"
+            endColumn="18"
+            endOffset="330"/>
+    </incident>
+
+    <incident
+        id="NewerVersionAvailable"
+        severity="warning"
+        message="A newer version of org.jetbrains.kotlinx:kotlinx-serialization-json than 1.7.3 is available: 1.11.0">
+        <fix-replace
+            description="Change to 1.11.0"
+            family="Update versions"
+            oldString="1.7.3"
+            replacement="1.11.0"
+            priority="0"/>
+        <location
+            file="$HOME/dev/gitfudge0/audio-metadata/gradle/libs.versions.toml"
+            line="18"
+            column="24"
+            startOffset="354"
+            endLine="18"
+            endColumn="31"
+            endOffset="361"/>
+    </incident>
+
+    <incident
+        id="ModifierParameter"
+        severity="warning"
+        message="Modifier parameter should be the first optional parameter">
+        <location
+            file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/dev/gitfudge/musicworkbench/ui/detail/TrackDetailScreen.kt"
+            line="508"
+            column="5"
+            startOffset="20413"
+            endLine="508"
+            endColumn="13"
+            endOffset="20421"/>
+    </incident>
+
+    <incident
+        id="PluralsCandidate"
+        severity="warning"
+        message="Formatting %d followed by words (&quot;selected&quot;): This should probably be a plural rather than a string">
+        <location
+            file="${:app*debug*MAIN*sourceProvider*0*resDir*0}/values/strings.xml"
+            line="20"
+            column="5"
+            startOffset="974"
+            endLine="20"
+            endColumn="58"
+            endOffset="1027"/>
+    </incident>
+
+    <incident
+        id="PluralsCandidate"
+        severity="warning"
+        message="Formatting %d followed by words (&quot;files&quot;): This should probably be a plural rather than a string">
+        <location
+            file="${:app*debug*MAIN*sourceProvider*0*resDir*0}/values/strings.xml"
+            line="26"
+            column="5"
+            startOffset="1233"
+            endLine="26"
+            endColumn="75"
+            endOffset="1303"/>
+    </incident>
+
+    <incident
+        id="PluralsCandidate"
+        severity="warning"
+        message="Formatting %d followed by words (&quot;tracks&quot;): This should probably be a plural rather than a string">
+        <location
+            file="${:app*debug*MAIN*sourceProvider*0*resDir*0}/values/strings.xml"
+            line="27"
+            column="5"
+            startOffset="1308"
+            endLine="27"
+            endColumn="80"
+            endOffset="1383"/>
+    </incident>
+
+    <incident
+        id="ObsoleteSdkInt"
+        severity="warning"
+        message="This folder configuration (`v26`) is unnecessary; `minSdkVersion` is 26. Merge all the resources in this folder into `mipmap-anydpi`.">
+        <fix-data file="${:app*debug*MAIN*sourceProvider*0*resDir*0}/mipmap-anydpi-v26" folderName="mipmap-anydpi" requiresApi="26"/>
+        <location
+            file="${:app*debug*MAIN*sourceProvider*0*resDir*0}/mipmap-anydpi-v26"/>
+    </incident>
+
+    <incident
+        id="UseKtx"
+        severity="warning"
+        message="Use the KTX extension function `String.toUri` instead?">
+        <fix-replace
+            description="Replace with the toUri extension function"
+            family="Replace with the toUri extension function"
+            robot="true"
+            independent="true"
+            oldString="Uri.parse(treeUri)"
+            replacement="treeUri.toUri()"
+            reformat="value"
+            imports="androidx.core.net.toUri"
+            priority="0">
+            <range
+                file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/dev/gitfudge/musicworkbench/ui/MainViewModel.kt"
+                startOffset="2141"
+                endOffset="2159"/>
+        </fix-replace>
+        <location
+            file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/dev/gitfudge/musicworkbench/ui/MainViewModel.kt"
+            line="65"
+            column="47"
+            startOffset="2141"
+            endLine="65"
+            endColumn="65"
+            endOffset="2159"/>
+    </incident>
+
+    <incident
+        id="UseKtx"
+        severity="warning"
+        message="Use the KTX extension function `String.toUri` instead?">
+        <fix-replace
+            description="Replace with the toUri extension function"
+            family="Replace with the toUri extension function"
+            robot="true"
+            independent="true"
+            oldString="Uri.parse(treeUri)"
+            replacement="treeUri.toUri()"
+            reformat="value"
+            imports="androidx.core.net.toUri"
+            priority="0">
+            <range
+                file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/dev/gitfudge/musicworkbench/ui/MainViewModel.kt"
+                startOffset="2232"
+                endOffset="2250"/>
+        </fix-replace>
+        <location
+            file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/dev/gitfudge/musicworkbench/ui/MainViewModel.kt"
+            line="67"
+            column="16"
+            startOffset="2232"
+            endLine="67"
+            endColumn="34"
+            endOffset="2250"/>
+    </incident>
+
+    <incident
+        id="UseKtx"
+        severity="warning"
+        message="Use the KTX extension function `Bitmap.scale` instead?">
+        <fix-replace
+            description="Replace with the scale extension function"
+            family="Replace with the scale extension function"
+            robot="true"
+            independent="true"
+            oldString="Bitmap.createScaledBitmap(&#xA;                original,&#xA;                (original.width * scale).toInt(),&#xA;                (original.height * scale).toInt(),&#xA;                true,&#xA;            )"
+            replacement="original.scale((original.width * scale).toInt(), (original.height * scale).toInt(), )"
+            reformat="value"
+            imports="androidx.core.graphics.scale"
+            priority="0">
+            <range
+                file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/dev/gitfudge/musicworkbench/data/tags/TagWriter.kt"
+                startOffset="4960"
+                endOffset="5149"/>
+        </fix-replace>
+        <location
+            file="${:app*debug*MAIN*sourceProvider*0*javaDir*0}/dev/gitfudge/musicworkbench/data/tags/TagWriter.kt"
+            line="128"
+            column="13"
+            startOffset="4960"
+            endLine="133"
+            endColumn="14"
+            endOffset="5149"/>
+    </incident>
+
+</incidents>

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Mirrors DESIGN.md background + accent for window/splash/launcher. -->
+    <color name="bg">#14161A</color>
+    <color name="accent">#E0A35B</color>
+    <color name="ic_launcher_bg">#1B1E23</color>
+</resources>

@@ -1,0 +1,696 @@
+-- Merging decision tree log ---
+provider#androidx.startup.InitializationProvider
+INJECTED from /home/gitfudge/dev/gitfudge0/audio-metadata/app/src/main/AndroidManifest.xml:31:9-40:20
+MERGED from [androidx.work:work-runtime:2.10.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/6c06de0026132b23a61ccf9a48f6d1ea/transformed/work-runtime-2.10.0/AndroidManifest.xml:29:9-37:20
+MERGED from [androidx.work:work-runtime:2.10.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/6c06de0026132b23a61ccf9a48f6d1ea/transformed/work-runtime-2.10.0/AndroidManifest.xml:29:9-37:20
+MERGED from [androidx.emoji2:emoji2:1.3.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/b2aedb692beb1291f1e542d4bf52d5a3/transformed/emoji2-1.3.0/AndroidManifest.xml:24:9-32:20
+MERGED from [androidx.emoji2:emoji2:1.3.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/b2aedb692beb1291f1e542d4bf52d5a3/transformed/emoji2-1.3.0/AndroidManifest.xml:24:9-32:20
+MERGED from [androidx.lifecycle:lifecycle-process:2.8.7] /home/gitfudge/.gradle/caches/9.0.0/transforms/c24adfa18306abb51a4f09c5727bacbc/transformed/lifecycle-process-2.8.7/AndroidManifest.xml:24:9-32:20
+MERGED from [androidx.lifecycle:lifecycle-process:2.8.7] /home/gitfudge/.gradle/caches/9.0.0/transforms/c24adfa18306abb51a4f09c5727bacbc/transformed/lifecycle-process-2.8.7/AndroidManifest.xml:24:9-32:20
+MERGED from [androidx.profileinstaller:profileinstaller:1.3.1] /home/gitfudge/.gradle/caches/9.0.0/transforms/c02cb7c2e5c0a220a5db1d9c32b46d70/transformed/profileinstaller-1.3.1/AndroidManifest.xml:24:9-32:20
+MERGED from [androidx.profileinstaller:profileinstaller:1.3.1] /home/gitfudge/.gradle/caches/9.0.0/transforms/c02cb7c2e5c0a220a5db1d9c32b46d70/transformed/profileinstaller-1.3.1/AndroidManifest.xml:24:9-32:20
+MERGED from [androidx.startup:startup-runtime:1.1.1] /home/gitfudge/.gradle/caches/9.0.0/transforms/d786685f8ba802c96c13d6e427e7f3cc/transformed/startup-runtime-1.1.1/AndroidManifest.xml:26:9-30:34
+MERGED from [androidx.startup:startup-runtime:1.1.1] /home/gitfudge/.gradle/caches/9.0.0/transforms/d786685f8ba802c96c13d6e427e7f3cc/transformed/startup-runtime-1.1.1/AndroidManifest.xml:26:9-30:34
+	tools:node
+		ADDED from /home/gitfudge/dev/gitfudge0/audio-metadata/app/src/main/AndroidManifest.xml:35:13-31
+	android:authorities
+		INJECTED from /home/gitfudge/dev/gitfudge0/audio-metadata/app/src/main/AndroidManifest.xml
+		ADDED from /home/gitfudge/dev/gitfudge0/audio-metadata/app/src/main/AndroidManifest.xml:33:13-68
+	android:exported
+		ADDED from /home/gitfudge/dev/gitfudge0/audio-metadata/app/src/main/AndroidManifest.xml:34:13-37
+	android:name
+		ADDED from /home/gitfudge/dev/gitfudge0/audio-metadata/app/src/main/AndroidManifest.xml:32:13-67
+manifest
+ADDED from /home/gitfudge/dev/gitfudge0/audio-metadata/app/src/main/AndroidManifest.xml:2:1-42:12
+INJECTED from /home/gitfudge/dev/gitfudge0/audio-metadata/app/src/main/AndroidManifest.xml:2:1-42:12
+INJECTED from /home/gitfudge/dev/gitfudge0/audio-metadata/app/src/main/AndroidManifest.xml:2:1-42:12
+INJECTED from /home/gitfudge/dev/gitfudge0/audio-metadata/app/src/main/AndroidManifest.xml:2:1-42:12
+MERGED from [androidx.hilt:hilt-work:1.2.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/ed9b3b544c90f83aecaf74b7db7b1f2b/transformed/hilt-work-1.2.0/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.work:work-runtime-ktx:2.10.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/7a5f801f3d9c3d1938158b991d3943b8/transformed/work-runtime-ktx-2.10.0/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.work:work-runtime:2.10.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/6c06de0026132b23a61ccf9a48f6d1ea/transformed/work-runtime-2.10.0/AndroidManifest.xml:17:1-145:12
+MERGED from [androidx.hilt:hilt-navigation-compose:1.2.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/845a98b1356483d40b9ee5f07051a20f/transformed/hilt-navigation-compose-1.2.0/AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.hilt:hilt-navigation:1.2.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/28b024e2df98ba3e4d96baca881a97e1/transformed/hilt-navigation-1.2.0/AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.navigation:navigation-common:2.8.5] /home/gitfudge/.gradle/caches/9.0.0/transforms/9d717ecc3dc405bc43d0dcec8a74a06e/transformed/navigation-common-2.8.5/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.navigation:navigation-runtime:2.8.5] /home/gitfudge/.gradle/caches/9.0.0/transforms/6c9c9e928234f2767496a47cca3039ee/transformed/navigation-runtime-2.8.5/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.navigation:navigation-common-ktx:2.8.5] /home/gitfudge/.gradle/caches/9.0.0/transforms/48c43be36257f4898dbe76505e4f5816/transformed/navigation-common-ktx-2.8.5/AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.navigation:navigation-runtime-ktx:2.8.5] /home/gitfudge/.gradle/caches/9.0.0/transforms/7f63cc39d294bdb813c52b78112952d2/transformed/navigation-runtime-ktx-2.8.5/AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.navigation:navigation-compose:2.8.5] /home/gitfudge/.gradle/caches/9.0.0/transforms/7f0519583db91da130a5ef9c0775b95d/transformed/navigation-compose-2.8.5/AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.compose.material3:material3-window-size-class-android:1.3.1] /home/gitfudge/.gradle/caches/9.0.0/transforms/ca9c04dd2f5e7580ee4348df110550f6/transformed/material3-window-size-class-release/AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.compose.material3:material3-android:1.3.1] /home/gitfudge/.gradle/caches/9.0.0/transforms/aab9c2dfd25a605bb6352e0313fd575c/transformed/material3-release/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.activity:activity-compose:1.9.3] /home/gitfudge/.gradle/caches/9.0.0/transforms/70cdc467fc6beb7653b2860d8846aa42/transformed/activity-compose-1.9.3/AndroidManifest.xml:2:1-7:12
+MERGED from [com.google.dagger:hilt-android:2.56.2] /home/gitfudge/.gradle/caches/9.0.0/transforms/2a0f0f38e12068d90132353415b6382d/transformed/hilt-android-2.56.2/AndroidManifest.xml:16:1-19:12
+MERGED from [androidx.fragment:fragment:1.5.1] /home/gitfudge/.gradle/caches/9.0.0/transforms/904fdf4350862fd89e4e8b8a602ad557/transformed/fragment-1.5.1/AndroidManifest.xml:17:1-24:12
+MERGED from [androidx.loader:loader:1.0.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/b1317057ca11fe9a59c8fd5e8f5509fc/transformed/loader-1.0.0/AndroidManifest.xml:17:1-22:12
+MERGED from [io.coil-kt:coil-compose:2.7.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/4ead63a29acad5479b558c51d009646c/transformed/coil-compose-2.7.0/AndroidManifest.xml:2:1-7:12
+MERGED from [io.coil-kt:coil-compose-base:2.7.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/76cccee7b26c5945084b2c093c2c434c/transformed/coil-compose-base-2.7.0/AndroidManifest.xml:2:1-7:12
+MERGED from [io.coil-kt:coil:2.7.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/31c963a428898a47f70e7c75842e6121/transformed/coil-2.7.0/AndroidManifest.xml:2:1-7:12
+MERGED from [io.coil-kt:coil-base:2.7.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/834df6249d0f385e102e0473d1d80551/transformed/coil-base-2.7.0/AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.compose.animation:animation-core-android:1.7.6] /home/gitfudge/.gradle/caches/9.0.0/transforms/03ba8ec1bddf9d1708512825fddc4021/transformed/animation-core-release/AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.compose.material:material-ripple-android:1.7.6] /home/gitfudge/.gradle/caches/9.0.0/transforms/554ceb34a4a7e83b804dac9822481fd8/transformed/material-ripple-release/AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.compose.animation:animation-android:1.7.6] /home/gitfudge/.gradle/caches/9.0.0/transforms/6cc736ce42353917e92cfd72e810b6d3/transformed/animation-release/AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.compose.foundation:foundation-layout-android:1.7.6] /home/gitfudge/.gradle/caches/9.0.0/transforms/a7fa6ba406ad577110494d225407d84a/transformed/foundation-layout-release/AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.compose.foundation:foundation-android:1.7.6] /home/gitfudge/.gradle/caches/9.0.0/transforms/6af0e988345789d68fa09f1c601cda5d/transformed/foundation-release/AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.compose.ui:ui-geometry-android:1.7.6] /home/gitfudge/.gradle/caches/9.0.0/transforms/7216162d36e1f3c0878afc4a7d44affe/transformed/ui-geometry-release/AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.compose.ui:ui-unit-android:1.7.6] /home/gitfudge/.gradle/caches/9.0.0/transforms/403126939e2314bd1fc3703325f56483/transformed/ui-unit-release/AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.compose.ui:ui-util-android:1.7.6] /home/gitfudge/.gradle/caches/9.0.0/transforms/95b81ea6234b94db5b6d05603a94c084/transformed/ui-util-release/AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.compose.ui:ui-tooling-preview-android:1.7.6] /home/gitfudge/.gradle/caches/9.0.0/transforms/96940857a9a5b09e4231abe28312e751/transformed/ui-tooling-preview-release/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.compose.ui:ui-graphics-android:1.7.6] /home/gitfudge/.gradle/caches/9.0.0/transforms/ca1ea5ca2a840c765d129edba12fa16e/transformed/ui-graphics-release/AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.compose.ui:ui-text-android:1.7.6] /home/gitfudge/.gradle/caches/9.0.0/transforms/6a25cdf1724009add5aa944ef5bd4949/transformed/ui-text-release/AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.emoji2:emoji2:1.3.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/b2aedb692beb1291f1e542d4bf52d5a3/transformed/emoji2-1.3.0/AndroidManifest.xml:17:1-35:12
+MERGED from [androidx.lifecycle:lifecycle-process:2.8.7] /home/gitfudge/.gradle/caches/9.0.0/transforms/c24adfa18306abb51a4f09c5727bacbc/transformed/lifecycle-process-2.8.7/AndroidManifest.xml:17:1-35:12
+MERGED from [androidx.lifecycle:lifecycle-livedata-core-ktx:2.8.7] /home/gitfudge/.gradle/caches/9.0.0/transforms/d9e9c1787af7c57072d879e3031eb35b/transformed/lifecycle-livedata-core-ktx-2.8.7/AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.lifecycle:lifecycle-viewmodel:2.8.7] /home/gitfudge/.gradle/caches/9.0.0/transforms/405d0bb7f9d3b73b056df8dd817c1269/transformed/lifecycle-viewmodel-2.8.7/AndroidManifest.xml:2:1-5:12
+MERGED from [androidx.lifecycle:lifecycle-viewmodel-android:2.8.7] /home/gitfudge/.gradle/caches/9.0.0/transforms/bda20a22b44f5c04736b87bcb3eb3b64/transformed/lifecycle-viewmodel-release/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.savedstate:savedstate-ktx:1.2.1] /home/gitfudge/.gradle/caches/9.0.0/transforms/1f23bd20bca5f886db09c06201e563e0/transformed/savedstate-ktx-1.2.1/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.savedstate:savedstate:1.2.1] /home/gitfudge/.gradle/caches/9.0.0/transforms/6ff32d6729434f52a706486fba6e1b7a/transformed/savedstate-1.2.1/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.lifecycle:lifecycle-runtime-android:2.8.7] /home/gitfudge/.gradle/caches/9.0.0/transforms/dc86ba5d6f721cf37fb441da858a19c7/transformed/lifecycle-runtime-release/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.lifecycle:lifecycle-service:2.8.7] /home/gitfudge/.gradle/caches/9.0.0/transforms/88b708ab8ac0e9946f11bcc6e7108e31/transformed/lifecycle-service-2.8.7/AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.lifecycle:lifecycle-livedata:2.8.7] /home/gitfudge/.gradle/caches/9.0.0/transforms/929482baa24d9357ca58634c338da4fd/transformed/lifecycle-livedata-2.8.7/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.lifecycle:lifecycle-livedata-core:2.8.7] /home/gitfudge/.gradle/caches/9.0.0/transforms/d3e3f9f00a555bcb87f6dd117f8a83d7/transformed/lifecycle-livedata-core-2.8.7/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.7] /home/gitfudge/.gradle/caches/9.0.0/transforms/1b611923255d2c13954881daecef4473/transformed/lifecycle-viewmodel-ktx-2.8.7/AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.lifecycle:lifecycle-viewmodel-savedstate:2.8.7] /home/gitfudge/.gradle/caches/9.0.0/transforms/2c45dc16236e5d7bfed674e425497f8a/transformed/lifecycle-viewmodel-savedstate-2.8.7/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.lifecycle:lifecycle-runtime-compose-android:2.8.7] /home/gitfudge/.gradle/caches/9.0.0/transforms/fe111bbdcb86da2f4d349fd2e6aca7a8/transformed/lifecycle-runtime-compose-release/AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.lifecycle:lifecycle-runtime-ktx-android:2.8.7] /home/gitfudge/.gradle/caches/9.0.0/transforms/68e981ea9ad0a44de8e8beecc1bd4f16/transformed/lifecycle-runtime-ktx-release/AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.lifecycle:lifecycle-viewmodel-compose-android:2.8.7] /home/gitfudge/.gradle/caches/9.0.0/transforms/62eff8ba34f925a7b21b80e260b4a800/transformed/lifecycle-viewmodel-compose-release/AndroidManifest.xml:2:1-7:12
+MERGED from [com.google.accompanist:accompanist-drawablepainter:0.32.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/597adbadc77e10c7c4ecf09fa60ecf9e/transformed/accompanist-drawablepainter-0.32.0/AndroidManifest.xml:17:1-23:12
+MERGED from [androidx.compose.material:material-icons-extended-android:1.7.6] /home/gitfudge/.gradle/caches/9.0.0/transforms/3117ce3b15363081c5e225cd1b4a22f3/transformed/material-icons-extended-release/AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.compose.material:material-icons-core-android:1.7.6] /home/gitfudge/.gradle/caches/9.0.0/transforms/bfd35bf0f83dc9179323222cd8f8b58f/transformed/material-icons-core-release/AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.compose.ui:ui-android:1.7.6] /home/gitfudge/.gradle/caches/9.0.0/transforms/309bf387a90ea54ef84ed741a493932e/transformed/ui-release/AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.activity:activity-ktx:1.9.3] /home/gitfudge/.gradle/caches/9.0.0/transforms/8f890259c1bc43f77f3e67dac12e7429/transformed/activity-ktx-1.9.3/AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.activity:activity:1.9.3] /home/gitfudge/.gradle/caches/9.0.0/transforms/ec2b6efe099d874c79558595f6664819/transformed/activity-1.9.3/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.viewpager:viewpager:1.0.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/d66bcaf46c546f4c5904848613650da0/transformed/viewpager-1.0.0/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.window:window:1.0.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/a69646317921a835fcbef709f6de19a3/transformed/window-1.0.0/AndroidManifest.xml:17:1-33:12
+MERGED from [androidx.autofill:autofill:1.0.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/8a92da6f2becdc671c015955ef463a01/transformed/autofill-1.0.0/AndroidManifest.xml:17:1-24:12
+MERGED from [androidx.graphics:graphics-path:1.0.1] /home/gitfudge/.gradle/caches/9.0.0/transforms/92ec8640c6e340211be5cd834facd5c4/transformed/graphics-path-1.0.1/AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.customview:customview:1.0.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/629322eee8d99b39f283298f38828988/transformed/customview-1.0.0/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.appcompat:appcompat-resources:1.6.1] /home/gitfudge/.gradle/caches/9.0.0/transforms/6fb92b676294284f4aa4090367335f41/transformed/appcompat-resources-1.6.1/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.vectordrawable:vectordrawable-animated:1.1.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/691aa4079eca8cfd967a8104a51a1c94/transformed/vectordrawable-animated-1.1.0/AndroidManifest.xml:17:1-24:12
+MERGED from [androidx.vectordrawable:vectordrawable:1.1.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/43342e770cb21d197137dc2f4d0f22b5/transformed/vectordrawable-1.1.0/AndroidManifest.xml:17:1-24:12
+MERGED from [androidx.core:core:1.13.1] /home/gitfudge/.gradle/caches/9.0.0/transforms/a54e463b99dd32b2f95fdcc17f11e003/transformed/core-1.13.1/AndroidManifest.xml:17:1-30:12
+MERGED from [androidx.customview:customview-poolingcontainer:1.0.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/1fb9d641d9ec94f062e1fec9b670e96a/transformed/customview-poolingcontainer-1.0.0/AndroidManifest.xml:17:1-23:12
+MERGED from [androidx.core:core-ktx:1.13.1] /home/gitfudge/.gradle/caches/9.0.0/transforms/6e5dcb05bffb3e3e7fa83d7dfd69214f/transformed/core-ktx-1.13.1/AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.core:core-splashscreen:1.0.1] /home/gitfudge/.gradle/caches/9.0.0/transforms/4c7cbf652b17758a17f29387169425a5/transformed/core-splashscreen-1.0.1/AndroidManifest.xml:17:1-24:12
+MERGED from [androidx.room:room-runtime:2.6.1] /home/gitfudge/.gradle/caches/9.0.0/transforms/8a048d8f5a36b7453bb75449f88864bf/transformed/room-runtime-2.6.1/AndroidManifest.xml:17:1-31:12
+MERGED from [androidx.room:room-ktx:2.6.1] /home/gitfudge/.gradle/caches/9.0.0/transforms/5dfcc25928684be1da4c991fcb15c9b9/transformed/room-ktx-2.6.1/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.sqlite:sqlite-framework:2.4.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/025621751e3a24eb1cd7f7c6f60051b0/transformed/sqlite-framework-2.4.0/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.sqlite:sqlite:2.4.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/846d1b4bdbcc78083d2b4a003995dc7b/transformed/sqlite-2.4.0/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.datastore:datastore-core-android:1.1.1] /home/gitfudge/.gradle/caches/9.0.0/transforms/a6c5b736efb2e27af6d2229bb2a3102e/transformed/datastore-core-release/AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.datastore:datastore-android:1.1.1] /home/gitfudge/.gradle/caches/9.0.0/transforms/3c37bb1bdaf05fb7d3e550d857b1cd83/transformed/datastore-release/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.datastore:datastore-preferences-android:1.1.1] /home/gitfudge/.gradle/caches/9.0.0/transforms/661cb729951ac1ad10ceeb2fc0e13ab4/transformed/datastore-preferences-release/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.compose.runtime:runtime-saveable-android:1.7.6] /home/gitfudge/.gradle/caches/9.0.0/transforms/488d0cac645519fd5bd84335e93b0a22/transformed/runtime-saveable-release/AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.compose.runtime:runtime-android:1.7.6] /home/gitfudge/.gradle/caches/9.0.0/transforms/ff15ee5fa8c6df3e54f16da1075288a0/transformed/runtime-release/AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.annotation:annotation-experimental:1.4.1] /home/gitfudge/.gradle/caches/9.0.0/transforms/c24309ebe0b7352b3a4233a809e757ff/transformed/annotation-experimental-1.4.1/AndroidManifest.xml:2:1-7:12
+MERGED from [androidx.profileinstaller:profileinstaller:1.3.1] /home/gitfudge/.gradle/caches/9.0.0/transforms/c02cb7c2e5c0a220a5db1d9c32b46d70/transformed/profileinstaller-1.3.1/AndroidManifest.xml:17:1-55:12
+MERGED from [androidx.startup:startup-runtime:1.1.1] /home/gitfudge/.gradle/caches/9.0.0/transforms/d786685f8ba802c96c13d6e427e7f3cc/transformed/startup-runtime-1.1.1/AndroidManifest.xml:17:1-33:12
+MERGED from [androidx.tracing:tracing:1.2.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/4c2d54d05e9bf7e7565bc7fd48606a91/transformed/tracing-1.2.0/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.tracing:tracing-ktx:1.2.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/3c22551812a45697a78cc06448aff56f/transformed/tracing-ktx-1.2.0/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.documentfile:documentfile:1.0.1] /home/gitfudge/.gradle/caches/9.0.0/transforms/fdda6093bfb9f7bc2643a00fb73daecd/transformed/documentfile-1.0.1/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.arch.core:core-runtime:2.2.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/6e268315e06d220f60efe56ed61805dd/transformed/core-runtime-2.2.0/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.interpolator:interpolator:1.0.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/ad2a82d473409f9506097010848641b4/transformed/interpolator-1.0.0/AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.versionedparcelable:versionedparcelable:1.1.1] /home/gitfudge/.gradle/caches/9.0.0/transforms/b68531e616fd4932888ed8a3f6e1a09b/transformed/versionedparcelable-1.1.1/AndroidManifest.xml:17:1-27:12
+MERGED from [androidx.exifinterface:exifinterface:1.3.7] /home/gitfudge/.gradle/caches/9.0.0/transforms/1b9a9c831d720b67c829a6cc2cdfb74e/transformed/exifinterface-1.3.7/AndroidManifest.xml:17:1-24:12
+MERGED from [com.google.dagger:dagger-lint-aar:2.56.2] /home/gitfudge/.gradle/caches/9.0.0/transforms/73cff95e95b0e84ed4c274fcec2b45fa/transformed/dagger-lint-aar-2.56.2/AndroidManifest.xml:16:1-19:12
+	package
+		INJECTED from /home/gitfudge/dev/gitfudge0/audio-metadata/app/src/main/AndroidManifest.xml
+	android:versionName
+		INJECTED from /home/gitfudge/dev/gitfudge0/audio-metadata/app/src/main/AndroidManifest.xml
+	xmlns:tools
+		ADDED from /home/gitfudge/dev/gitfudge0/audio-metadata/app/src/main/AndroidManifest.xml:3:5-51
+	android:versionCode
+		INJECTED from /home/gitfudge/dev/gitfudge0/audio-metadata/app/src/main/AndroidManifest.xml
+	xmlns:android
+		ADDED from /home/gitfudge/dev/gitfudge0/audio-metadata/app/src/main/AndroidManifest.xml:2:11-69
+uses-permission#android.permission.INTERNET
+ADDED from /home/gitfudge/dev/gitfudge0/audio-metadata/app/src/main/AndroidManifest.xml:5:5-67
+	android:name
+		ADDED from /home/gitfudge/dev/gitfudge0/audio-metadata/app/src/main/AndroidManifest.xml:5:22-64
+uses-permission#android.permission.ACCESS_NETWORK_STATE
+ADDED from /home/gitfudge/dev/gitfudge0/audio-metadata/app/src/main/AndroidManifest.xml:6:5-79
+MERGED from [androidx.work:work-runtime:2.10.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/6c06de0026132b23a61ccf9a48f6d1ea/transformed/work-runtime-2.10.0/AndroidManifest.xml:24:5-79
+MERGED from [androidx.work:work-runtime:2.10.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/6c06de0026132b23a61ccf9a48f6d1ea/transformed/work-runtime-2.10.0/AndroidManifest.xml:24:5-79
+	android:name
+		ADDED from /home/gitfudge/dev/gitfudge0/audio-metadata/app/src/main/AndroidManifest.xml:6:22-76
+uses-permission#android.permission.POST_NOTIFICATIONS
+ADDED from /home/gitfudge/dev/gitfudge0/audio-metadata/app/src/main/AndroidManifest.xml:7:5-77
+	android:name
+		ADDED from /home/gitfudge/dev/gitfudge0/audio-metadata/app/src/main/AndroidManifest.xml:7:22-74
+application
+ADDED from /home/gitfudge/dev/gitfudge0/audio-metadata/app/src/main/AndroidManifest.xml:9:5-41:19
+INJECTED from /home/gitfudge/dev/gitfudge0/audio-metadata/app/src/main/AndroidManifest.xml:9:5-41:19
+MERGED from [androidx.work:work-runtime:2.10.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/6c06de0026132b23a61ccf9a48f6d1ea/transformed/work-runtime-2.10.0/AndroidManifest.xml:28:5-143:19
+MERGED from [androidx.work:work-runtime:2.10.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/6c06de0026132b23a61ccf9a48f6d1ea/transformed/work-runtime-2.10.0/AndroidManifest.xml:28:5-143:19
+MERGED from [androidx.emoji2:emoji2:1.3.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/b2aedb692beb1291f1e542d4bf52d5a3/transformed/emoji2-1.3.0/AndroidManifest.xml:23:5-33:19
+MERGED from [androidx.emoji2:emoji2:1.3.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/b2aedb692beb1291f1e542d4bf52d5a3/transformed/emoji2-1.3.0/AndroidManifest.xml:23:5-33:19
+MERGED from [androidx.lifecycle:lifecycle-process:2.8.7] /home/gitfudge/.gradle/caches/9.0.0/transforms/c24adfa18306abb51a4f09c5727bacbc/transformed/lifecycle-process-2.8.7/AndroidManifest.xml:23:5-33:19
+MERGED from [androidx.lifecycle:lifecycle-process:2.8.7] /home/gitfudge/.gradle/caches/9.0.0/transforms/c24adfa18306abb51a4f09c5727bacbc/transformed/lifecycle-process-2.8.7/AndroidManifest.xml:23:5-33:19
+MERGED from [androidx.window:window:1.0.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/a69646317921a835fcbef709f6de19a3/transformed/window-1.0.0/AndroidManifest.xml:24:5-31:19
+MERGED from [androidx.window:window:1.0.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/a69646317921a835fcbef709f6de19a3/transformed/window-1.0.0/AndroidManifest.xml:24:5-31:19
+MERGED from [androidx.core:core:1.13.1] /home/gitfudge/.gradle/caches/9.0.0/transforms/a54e463b99dd32b2f95fdcc17f11e003/transformed/core-1.13.1/AndroidManifest.xml:28:5-89
+MERGED from [androidx.core:core:1.13.1] /home/gitfudge/.gradle/caches/9.0.0/transforms/a54e463b99dd32b2f95fdcc17f11e003/transformed/core-1.13.1/AndroidManifest.xml:28:5-89
+MERGED from [androidx.room:room-runtime:2.6.1] /home/gitfudge/.gradle/caches/9.0.0/transforms/8a048d8f5a36b7453bb75449f88864bf/transformed/room-runtime-2.6.1/AndroidManifest.xml:23:5-29:19
+MERGED from [androidx.room:room-runtime:2.6.1] /home/gitfudge/.gradle/caches/9.0.0/transforms/8a048d8f5a36b7453bb75449f88864bf/transformed/room-runtime-2.6.1/AndroidManifest.xml:23:5-29:19
+MERGED from [androidx.profileinstaller:profileinstaller:1.3.1] /home/gitfudge/.gradle/caches/9.0.0/transforms/c02cb7c2e5c0a220a5db1d9c32b46d70/transformed/profileinstaller-1.3.1/AndroidManifest.xml:23:5-53:19
+MERGED from [androidx.profileinstaller:profileinstaller:1.3.1] /home/gitfudge/.gradle/caches/9.0.0/transforms/c02cb7c2e5c0a220a5db1d9c32b46d70/transformed/profileinstaller-1.3.1/AndroidManifest.xml:23:5-53:19
+MERGED from [androidx.startup:startup-runtime:1.1.1] /home/gitfudge/.gradle/caches/9.0.0/transforms/d786685f8ba802c96c13d6e427e7f3cc/transformed/startup-runtime-1.1.1/AndroidManifest.xml:25:5-31:19
+MERGED from [androidx.startup:startup-runtime:1.1.1] /home/gitfudge/.gradle/caches/9.0.0/transforms/d786685f8ba802c96c13d6e427e7f3cc/transformed/startup-runtime-1.1.1/AndroidManifest.xml:25:5-31:19
+MERGED from [androidx.versionedparcelable:versionedparcelable:1.1.1] /home/gitfudge/.gradle/caches/9.0.0/transforms/b68531e616fd4932888ed8a3f6e1a09b/transformed/versionedparcelable-1.1.1/AndroidManifest.xml:24:5-25:19
+MERGED from [androidx.versionedparcelable:versionedparcelable:1.1.1] /home/gitfudge/.gradle/caches/9.0.0/transforms/b68531e616fd4932888ed8a3f6e1a09b/transformed/versionedparcelable-1.1.1/AndroidManifest.xml:24:5-25:19
+	android:extractNativeLibs
+		INJECTED from /home/gitfudge/dev/gitfudge0/audio-metadata/app/src/main/AndroidManifest.xml
+	android:appComponentFactory
+		ADDED from [androidx.core:core:1.13.1] /home/gitfudge/.gradle/caches/9.0.0/transforms/a54e463b99dd32b2f95fdcc17f11e003/transformed/core-1.13.1/AndroidManifest.xml:28:18-86
+	android:supportsRtl
+		ADDED from /home/gitfudge/dev/gitfudge0/audio-metadata/app/src/main/AndroidManifest.xml:17:9-35
+	android:label
+		ADDED from /home/gitfudge/dev/gitfudge0/audio-metadata/app/src/main/AndroidManifest.xml:15:9-41
+	android:fullBackupContent
+		ADDED from /home/gitfudge/dev/gitfudge0/audio-metadata/app/src/main/AndroidManifest.xml:13:9-54
+	android:roundIcon
+		ADDED from /home/gitfudge/dev/gitfudge0/audio-metadata/app/src/main/AndroidManifest.xml:16:9-54
+	android:icon
+		ADDED from /home/gitfudge/dev/gitfudge0/audio-metadata/app/src/main/AndroidManifest.xml:14:9-43
+	android:allowBackup
+		ADDED from /home/gitfudge/dev/gitfudge0/audio-metadata/app/src/main/AndroidManifest.xml:11:9-35
+	android:theme
+		ADDED from /home/gitfudge/dev/gitfudge0/audio-metadata/app/src/main/AndroidManifest.xml:18:9-61
+	android:dataExtractionRules
+		ADDED from /home/gitfudge/dev/gitfudge0/audio-metadata/app/src/main/AndroidManifest.xml:12:9-65
+	android:name
+		ADDED from /home/gitfudge/dev/gitfudge0/audio-metadata/app/src/main/AndroidManifest.xml:10:9-42
+activity#dev.gitfudge.musicworkbench.MainActivity
+ADDED from /home/gitfudge/dev/gitfudge0/audio-metadata/app/src/main/AndroidManifest.xml:20:9-29:20
+	android:windowSoftInputMode
+		ADDED from /home/gitfudge/dev/gitfudge0/audio-metadata/app/src/main/AndroidManifest.xml:24:13-55
+	android:exported
+		ADDED from /home/gitfudge/dev/gitfudge0/audio-metadata/app/src/main/AndroidManifest.xml:22:13-36
+	android:theme
+		ADDED from /home/gitfudge/dev/gitfudge0/audio-metadata/app/src/main/AndroidManifest.xml:23:13-65
+	android:name
+		ADDED from /home/gitfudge/dev/gitfudge0/audio-metadata/app/src/main/AndroidManifest.xml:21:13-41
+intent-filter#action:name:android.intent.action.MAIN+category:name:android.intent.category.LAUNCHER
+ADDED from /home/gitfudge/dev/gitfudge0/audio-metadata/app/src/main/AndroidManifest.xml:25:13-28:29
+action#android.intent.action.MAIN
+ADDED from /home/gitfudge/dev/gitfudge0/audio-metadata/app/src/main/AndroidManifest.xml:26:17-69
+	android:name
+		ADDED from /home/gitfudge/dev/gitfudge0/audio-metadata/app/src/main/AndroidManifest.xml:26:25-66
+category#android.intent.category.LAUNCHER
+ADDED from /home/gitfudge/dev/gitfudge0/audio-metadata/app/src/main/AndroidManifest.xml:27:17-77
+	android:name
+		ADDED from /home/gitfudge/dev/gitfudge0/audio-metadata/app/src/main/AndroidManifest.xml:27:27-74
+meta-data#androidx.work.WorkManagerInitializer
+ADDED from /home/gitfudge/dev/gitfudge0/audio-metadata/app/src/main/AndroidManifest.xml:36:13-39:39
+REJECTED from [androidx.work:work-runtime:2.10.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/6c06de0026132b23a61ccf9a48f6d1ea/transformed/work-runtime-2.10.0/AndroidManifest.xml:34:13-36:52
+	tools:node
+		ADDED from /home/gitfudge/dev/gitfudge0/audio-metadata/app/src/main/AndroidManifest.xml:39:17-36
+	android:value
+		ADDED from /home/gitfudge/dev/gitfudge0/audio-metadata/app/src/main/AndroidManifest.xml:38:17-49
+	android:name
+		ADDED from /home/gitfudge/dev/gitfudge0/audio-metadata/app/src/main/AndroidManifest.xml:37:17-68
+uses-sdk
+INJECTED from /home/gitfudge/dev/gitfudge0/audio-metadata/app/src/main/AndroidManifest.xml reason: use-sdk injection requested
+INJECTED from /home/gitfudge/dev/gitfudge0/audio-metadata/app/src/main/AndroidManifest.xml
+INJECTED from /home/gitfudge/dev/gitfudge0/audio-metadata/app/src/main/AndroidManifest.xml
+MERGED from [androidx.hilt:hilt-work:1.2.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/ed9b3b544c90f83aecaf74b7db7b1f2b/transformed/hilt-work-1.2.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.hilt:hilt-work:1.2.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/ed9b3b544c90f83aecaf74b7db7b1f2b/transformed/hilt-work-1.2.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.work:work-runtime-ktx:2.10.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/7a5f801f3d9c3d1938158b991d3943b8/transformed/work-runtime-ktx-2.10.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.work:work-runtime-ktx:2.10.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/7a5f801f3d9c3d1938158b991d3943b8/transformed/work-runtime-ktx-2.10.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.work:work-runtime:2.10.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/6c06de0026132b23a61ccf9a48f6d1ea/transformed/work-runtime-2.10.0/AndroidManifest.xml:21:5-44
+MERGED from [androidx.work:work-runtime:2.10.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/6c06de0026132b23a61ccf9a48f6d1ea/transformed/work-runtime-2.10.0/AndroidManifest.xml:21:5-44
+MERGED from [androidx.hilt:hilt-navigation-compose:1.2.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/845a98b1356483d40b9ee5f07051a20f/transformed/hilt-navigation-compose-1.2.0/AndroidManifest.xml:5:5-44
+MERGED from [androidx.hilt:hilt-navigation-compose:1.2.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/845a98b1356483d40b9ee5f07051a20f/transformed/hilt-navigation-compose-1.2.0/AndroidManifest.xml:5:5-44
+MERGED from [androidx.hilt:hilt-navigation:1.2.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/28b024e2df98ba3e4d96baca881a97e1/transformed/hilt-navigation-1.2.0/AndroidManifest.xml:5:5-44
+MERGED from [androidx.hilt:hilt-navigation:1.2.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/28b024e2df98ba3e4d96baca881a97e1/transformed/hilt-navigation-1.2.0/AndroidManifest.xml:5:5-44
+MERGED from [androidx.navigation:navigation-common:2.8.5] /home/gitfudge/.gradle/caches/9.0.0/transforms/9d717ecc3dc405bc43d0dcec8a74a06e/transformed/navigation-common-2.8.5/AndroidManifest.xml:20:5-44
+MERGED from [androidx.navigation:navigation-common:2.8.5] /home/gitfudge/.gradle/caches/9.0.0/transforms/9d717ecc3dc405bc43d0dcec8a74a06e/transformed/navigation-common-2.8.5/AndroidManifest.xml:20:5-44
+MERGED from [androidx.navigation:navigation-runtime:2.8.5] /home/gitfudge/.gradle/caches/9.0.0/transforms/6c9c9e928234f2767496a47cca3039ee/transformed/navigation-runtime-2.8.5/AndroidManifest.xml:20:5-44
+MERGED from [androidx.navigation:navigation-runtime:2.8.5] /home/gitfudge/.gradle/caches/9.0.0/transforms/6c9c9e928234f2767496a47cca3039ee/transformed/navigation-runtime-2.8.5/AndroidManifest.xml:20:5-44
+MERGED from [androidx.navigation:navigation-common-ktx:2.8.5] /home/gitfudge/.gradle/caches/9.0.0/transforms/48c43be36257f4898dbe76505e4f5816/transformed/navigation-common-ktx-2.8.5/AndroidManifest.xml:5:5-44
+MERGED from [androidx.navigation:navigation-common-ktx:2.8.5] /home/gitfudge/.gradle/caches/9.0.0/transforms/48c43be36257f4898dbe76505e4f5816/transformed/navigation-common-ktx-2.8.5/AndroidManifest.xml:5:5-44
+MERGED from [androidx.navigation:navigation-runtime-ktx:2.8.5] /home/gitfudge/.gradle/caches/9.0.0/transforms/7f63cc39d294bdb813c52b78112952d2/transformed/navigation-runtime-ktx-2.8.5/AndroidManifest.xml:5:5-44
+MERGED from [androidx.navigation:navigation-runtime-ktx:2.8.5] /home/gitfudge/.gradle/caches/9.0.0/transforms/7f63cc39d294bdb813c52b78112952d2/transformed/navigation-runtime-ktx-2.8.5/AndroidManifest.xml:5:5-44
+MERGED from [androidx.navigation:navigation-compose:2.8.5] /home/gitfudge/.gradle/caches/9.0.0/transforms/7f0519583db91da130a5ef9c0775b95d/transformed/navigation-compose-2.8.5/AndroidManifest.xml:5:5-44
+MERGED from [androidx.navigation:navigation-compose:2.8.5] /home/gitfudge/.gradle/caches/9.0.0/transforms/7f0519583db91da130a5ef9c0775b95d/transformed/navigation-compose-2.8.5/AndroidManifest.xml:5:5-44
+MERGED from [androidx.compose.material3:material3-window-size-class-android:1.3.1] /home/gitfudge/.gradle/caches/9.0.0/transforms/ca9c04dd2f5e7580ee4348df110550f6/transformed/material3-window-size-class-release/AndroidManifest.xml:5:5-44
+MERGED from [androidx.compose.material3:material3-window-size-class-android:1.3.1] /home/gitfudge/.gradle/caches/9.0.0/transforms/ca9c04dd2f5e7580ee4348df110550f6/transformed/material3-window-size-class-release/AndroidManifest.xml:5:5-44
+MERGED from [androidx.compose.material3:material3-android:1.3.1] /home/gitfudge/.gradle/caches/9.0.0/transforms/aab9c2dfd25a605bb6352e0313fd575c/transformed/material3-release/AndroidManifest.xml:20:5-44
+MERGED from [androidx.compose.material3:material3-android:1.3.1] /home/gitfudge/.gradle/caches/9.0.0/transforms/aab9c2dfd25a605bb6352e0313fd575c/transformed/material3-release/AndroidManifest.xml:20:5-44
+MERGED from [androidx.activity:activity-compose:1.9.3] /home/gitfudge/.gradle/caches/9.0.0/transforms/70cdc467fc6beb7653b2860d8846aa42/transformed/activity-compose-1.9.3/AndroidManifest.xml:5:5-44
+MERGED from [androidx.activity:activity-compose:1.9.3] /home/gitfudge/.gradle/caches/9.0.0/transforms/70cdc467fc6beb7653b2860d8846aa42/transformed/activity-compose-1.9.3/AndroidManifest.xml:5:5-44
+MERGED from [com.google.dagger:hilt-android:2.56.2] /home/gitfudge/.gradle/caches/9.0.0/transforms/2a0f0f38e12068d90132353415b6382d/transformed/hilt-android-2.56.2/AndroidManifest.xml:18:3-42
+MERGED from [com.google.dagger:hilt-android:2.56.2] /home/gitfudge/.gradle/caches/9.0.0/transforms/2a0f0f38e12068d90132353415b6382d/transformed/hilt-android-2.56.2/AndroidManifest.xml:18:3-42
+MERGED from [androidx.fragment:fragment:1.5.1] /home/gitfudge/.gradle/caches/9.0.0/transforms/904fdf4350862fd89e4e8b8a602ad557/transformed/fragment-1.5.1/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.fragment:fragment:1.5.1] /home/gitfudge/.gradle/caches/9.0.0/transforms/904fdf4350862fd89e4e8b8a602ad557/transformed/fragment-1.5.1/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.loader:loader:1.0.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/b1317057ca11fe9a59c8fd5e8f5509fc/transformed/loader-1.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.loader:loader:1.0.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/b1317057ca11fe9a59c8fd5e8f5509fc/transformed/loader-1.0.0/AndroidManifest.xml:20:5-44
+MERGED from [io.coil-kt:coil-compose:2.7.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/4ead63a29acad5479b558c51d009646c/transformed/coil-compose-2.7.0/AndroidManifest.xml:5:5-44
+MERGED from [io.coil-kt:coil-compose:2.7.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/4ead63a29acad5479b558c51d009646c/transformed/coil-compose-2.7.0/AndroidManifest.xml:5:5-44
+MERGED from [io.coil-kt:coil-compose-base:2.7.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/76cccee7b26c5945084b2c093c2c434c/transformed/coil-compose-base-2.7.0/AndroidManifest.xml:5:5-44
+MERGED from [io.coil-kt:coil-compose-base:2.7.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/76cccee7b26c5945084b2c093c2c434c/transformed/coil-compose-base-2.7.0/AndroidManifest.xml:5:5-44
+MERGED from [io.coil-kt:coil:2.7.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/31c963a428898a47f70e7c75842e6121/transformed/coil-2.7.0/AndroidManifest.xml:5:5-44
+MERGED from [io.coil-kt:coil:2.7.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/31c963a428898a47f70e7c75842e6121/transformed/coil-2.7.0/AndroidManifest.xml:5:5-44
+MERGED from [io.coil-kt:coil-base:2.7.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/834df6249d0f385e102e0473d1d80551/transformed/coil-base-2.7.0/AndroidManifest.xml:5:5-44
+MERGED from [io.coil-kt:coil-base:2.7.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/834df6249d0f385e102e0473d1d80551/transformed/coil-base-2.7.0/AndroidManifest.xml:5:5-44
+MERGED from [androidx.compose.animation:animation-core-android:1.7.6] /home/gitfudge/.gradle/caches/9.0.0/transforms/03ba8ec1bddf9d1708512825fddc4021/transformed/animation-core-release/AndroidManifest.xml:5:5-44
+MERGED from [androidx.compose.animation:animation-core-android:1.7.6] /home/gitfudge/.gradle/caches/9.0.0/transforms/03ba8ec1bddf9d1708512825fddc4021/transformed/animation-core-release/AndroidManifest.xml:5:5-44
+MERGED from [androidx.compose.material:material-ripple-android:1.7.6] /home/gitfudge/.gradle/caches/9.0.0/transforms/554ceb34a4a7e83b804dac9822481fd8/transformed/material-ripple-release/AndroidManifest.xml:5:5-44
+MERGED from [androidx.compose.material:material-ripple-android:1.7.6] /home/gitfudge/.gradle/caches/9.0.0/transforms/554ceb34a4a7e83b804dac9822481fd8/transformed/material-ripple-release/AndroidManifest.xml:5:5-44
+MERGED from [androidx.compose.animation:animation-android:1.7.6] /home/gitfudge/.gradle/caches/9.0.0/transforms/6cc736ce42353917e92cfd72e810b6d3/transformed/animation-release/AndroidManifest.xml:5:5-44
+MERGED from [androidx.compose.animation:animation-android:1.7.6] /home/gitfudge/.gradle/caches/9.0.0/transforms/6cc736ce42353917e92cfd72e810b6d3/transformed/animation-release/AndroidManifest.xml:5:5-44
+MERGED from [androidx.compose.foundation:foundation-layout-android:1.7.6] /home/gitfudge/.gradle/caches/9.0.0/transforms/a7fa6ba406ad577110494d225407d84a/transformed/foundation-layout-release/AndroidManifest.xml:5:5-44
+MERGED from [androidx.compose.foundation:foundation-layout-android:1.7.6] /home/gitfudge/.gradle/caches/9.0.0/transforms/a7fa6ba406ad577110494d225407d84a/transformed/foundation-layout-release/AndroidManifest.xml:5:5-44
+MERGED from [androidx.compose.foundation:foundation-android:1.7.6] /home/gitfudge/.gradle/caches/9.0.0/transforms/6af0e988345789d68fa09f1c601cda5d/transformed/foundation-release/AndroidManifest.xml:5:5-44
+MERGED from [androidx.compose.foundation:foundation-android:1.7.6] /home/gitfudge/.gradle/caches/9.0.0/transforms/6af0e988345789d68fa09f1c601cda5d/transformed/foundation-release/AndroidManifest.xml:5:5-44
+MERGED from [androidx.compose.ui:ui-geometry-android:1.7.6] /home/gitfudge/.gradle/caches/9.0.0/transforms/7216162d36e1f3c0878afc4a7d44affe/transformed/ui-geometry-release/AndroidManifest.xml:5:5-44
+MERGED from [androidx.compose.ui:ui-geometry-android:1.7.6] /home/gitfudge/.gradle/caches/9.0.0/transforms/7216162d36e1f3c0878afc4a7d44affe/transformed/ui-geometry-release/AndroidManifest.xml:5:5-44
+MERGED from [androidx.compose.ui:ui-unit-android:1.7.6] /home/gitfudge/.gradle/caches/9.0.0/transforms/403126939e2314bd1fc3703325f56483/transformed/ui-unit-release/AndroidManifest.xml:5:5-44
+MERGED from [androidx.compose.ui:ui-unit-android:1.7.6] /home/gitfudge/.gradle/caches/9.0.0/transforms/403126939e2314bd1fc3703325f56483/transformed/ui-unit-release/AndroidManifest.xml:5:5-44
+MERGED from [androidx.compose.ui:ui-util-android:1.7.6] /home/gitfudge/.gradle/caches/9.0.0/transforms/95b81ea6234b94db5b6d05603a94c084/transformed/ui-util-release/AndroidManifest.xml:5:5-44
+MERGED from [androidx.compose.ui:ui-util-android:1.7.6] /home/gitfudge/.gradle/caches/9.0.0/transforms/95b81ea6234b94db5b6d05603a94c084/transformed/ui-util-release/AndroidManifest.xml:5:5-44
+MERGED from [androidx.compose.ui:ui-tooling-preview-android:1.7.6] /home/gitfudge/.gradle/caches/9.0.0/transforms/96940857a9a5b09e4231abe28312e751/transformed/ui-tooling-preview-release/AndroidManifest.xml:20:5-44
+MERGED from [androidx.compose.ui:ui-tooling-preview-android:1.7.6] /home/gitfudge/.gradle/caches/9.0.0/transforms/96940857a9a5b09e4231abe28312e751/transformed/ui-tooling-preview-release/AndroidManifest.xml:20:5-44
+MERGED from [androidx.compose.ui:ui-graphics-android:1.7.6] /home/gitfudge/.gradle/caches/9.0.0/transforms/ca1ea5ca2a840c765d129edba12fa16e/transformed/ui-graphics-release/AndroidManifest.xml:5:5-44
+MERGED from [androidx.compose.ui:ui-graphics-android:1.7.6] /home/gitfudge/.gradle/caches/9.0.0/transforms/ca1ea5ca2a840c765d129edba12fa16e/transformed/ui-graphics-release/AndroidManifest.xml:5:5-44
+MERGED from [androidx.compose.ui:ui-text-android:1.7.6] /home/gitfudge/.gradle/caches/9.0.0/transforms/6a25cdf1724009add5aa944ef5bd4949/transformed/ui-text-release/AndroidManifest.xml:5:5-44
+MERGED from [androidx.compose.ui:ui-text-android:1.7.6] /home/gitfudge/.gradle/caches/9.0.0/transforms/6a25cdf1724009add5aa944ef5bd4949/transformed/ui-text-release/AndroidManifest.xml:5:5-44
+MERGED from [androidx.emoji2:emoji2:1.3.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/b2aedb692beb1291f1e542d4bf52d5a3/transformed/emoji2-1.3.0/AndroidManifest.xml:21:5-44
+MERGED from [androidx.emoji2:emoji2:1.3.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/b2aedb692beb1291f1e542d4bf52d5a3/transformed/emoji2-1.3.0/AndroidManifest.xml:21:5-44
+MERGED from [androidx.lifecycle:lifecycle-process:2.8.7] /home/gitfudge/.gradle/caches/9.0.0/transforms/c24adfa18306abb51a4f09c5727bacbc/transformed/lifecycle-process-2.8.7/AndroidManifest.xml:21:5-44
+MERGED from [androidx.lifecycle:lifecycle-process:2.8.7] /home/gitfudge/.gradle/caches/9.0.0/transforms/c24adfa18306abb51a4f09c5727bacbc/transformed/lifecycle-process-2.8.7/AndroidManifest.xml:21:5-44
+MERGED from [androidx.lifecycle:lifecycle-livedata-core-ktx:2.8.7] /home/gitfudge/.gradle/caches/9.0.0/transforms/d9e9c1787af7c57072d879e3031eb35b/transformed/lifecycle-livedata-core-ktx-2.8.7/AndroidManifest.xml:5:5-44
+MERGED from [androidx.lifecycle:lifecycle-livedata-core-ktx:2.8.7] /home/gitfudge/.gradle/caches/9.0.0/transforms/d9e9c1787af7c57072d879e3031eb35b/transformed/lifecycle-livedata-core-ktx-2.8.7/AndroidManifest.xml:5:5-44
+MERGED from [androidx.lifecycle:lifecycle-viewmodel:2.8.7] /home/gitfudge/.gradle/caches/9.0.0/transforms/405d0bb7f9d3b73b056df8dd817c1269/transformed/lifecycle-viewmodel-2.8.7/AndroidManifest.xml:4:5-43
+MERGED from [androidx.lifecycle:lifecycle-viewmodel:2.8.7] /home/gitfudge/.gradle/caches/9.0.0/transforms/405d0bb7f9d3b73b056df8dd817c1269/transformed/lifecycle-viewmodel-2.8.7/AndroidManifest.xml:4:5-43
+MERGED from [androidx.lifecycle:lifecycle-viewmodel-android:2.8.7] /home/gitfudge/.gradle/caches/9.0.0/transforms/bda20a22b44f5c04736b87bcb3eb3b64/transformed/lifecycle-viewmodel-release/AndroidManifest.xml:20:5-44
+MERGED from [androidx.lifecycle:lifecycle-viewmodel-android:2.8.7] /home/gitfudge/.gradle/caches/9.0.0/transforms/bda20a22b44f5c04736b87bcb3eb3b64/transformed/lifecycle-viewmodel-release/AndroidManifest.xml:20:5-44
+MERGED from [androidx.savedstate:savedstate-ktx:1.2.1] /home/gitfudge/.gradle/caches/9.0.0/transforms/1f23bd20bca5f886db09c06201e563e0/transformed/savedstate-ktx-1.2.1/AndroidManifest.xml:20:5-44
+MERGED from [androidx.savedstate:savedstate-ktx:1.2.1] /home/gitfudge/.gradle/caches/9.0.0/transforms/1f23bd20bca5f886db09c06201e563e0/transformed/savedstate-ktx-1.2.1/AndroidManifest.xml:20:5-44
+MERGED from [androidx.savedstate:savedstate:1.2.1] /home/gitfudge/.gradle/caches/9.0.0/transforms/6ff32d6729434f52a706486fba6e1b7a/transformed/savedstate-1.2.1/AndroidManifest.xml:20:5-44
+MERGED from [androidx.savedstate:savedstate:1.2.1] /home/gitfudge/.gradle/caches/9.0.0/transforms/6ff32d6729434f52a706486fba6e1b7a/transformed/savedstate-1.2.1/AndroidManifest.xml:20:5-44
+MERGED from [androidx.lifecycle:lifecycle-runtime-android:2.8.7] /home/gitfudge/.gradle/caches/9.0.0/transforms/dc86ba5d6f721cf37fb441da858a19c7/transformed/lifecycle-runtime-release/AndroidManifest.xml:20:5-44
+MERGED from [androidx.lifecycle:lifecycle-runtime-android:2.8.7] /home/gitfudge/.gradle/caches/9.0.0/transforms/dc86ba5d6f721cf37fb441da858a19c7/transformed/lifecycle-runtime-release/AndroidManifest.xml:20:5-44
+MERGED from [androidx.lifecycle:lifecycle-service:2.8.7] /home/gitfudge/.gradle/caches/9.0.0/transforms/88b708ab8ac0e9946f11bcc6e7108e31/transformed/lifecycle-service-2.8.7/AndroidManifest.xml:5:5-44
+MERGED from [androidx.lifecycle:lifecycle-service:2.8.7] /home/gitfudge/.gradle/caches/9.0.0/transforms/88b708ab8ac0e9946f11bcc6e7108e31/transformed/lifecycle-service-2.8.7/AndroidManifest.xml:5:5-44
+MERGED from [androidx.lifecycle:lifecycle-livedata:2.8.7] /home/gitfudge/.gradle/caches/9.0.0/transforms/929482baa24d9357ca58634c338da4fd/transformed/lifecycle-livedata-2.8.7/AndroidManifest.xml:20:5-44
+MERGED from [androidx.lifecycle:lifecycle-livedata:2.8.7] /home/gitfudge/.gradle/caches/9.0.0/transforms/929482baa24d9357ca58634c338da4fd/transformed/lifecycle-livedata-2.8.7/AndroidManifest.xml:20:5-44
+MERGED from [androidx.lifecycle:lifecycle-livedata-core:2.8.7] /home/gitfudge/.gradle/caches/9.0.0/transforms/d3e3f9f00a555bcb87f6dd117f8a83d7/transformed/lifecycle-livedata-core-2.8.7/AndroidManifest.xml:20:5-44
+MERGED from [androidx.lifecycle:lifecycle-livedata-core:2.8.7] /home/gitfudge/.gradle/caches/9.0.0/transforms/d3e3f9f00a555bcb87f6dd117f8a83d7/transformed/lifecycle-livedata-core-2.8.7/AndroidManifest.xml:20:5-44
+MERGED from [androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.7] /home/gitfudge/.gradle/caches/9.0.0/transforms/1b611923255d2c13954881daecef4473/transformed/lifecycle-viewmodel-ktx-2.8.7/AndroidManifest.xml:5:5-44
+MERGED from [androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.7] /home/gitfudge/.gradle/caches/9.0.0/transforms/1b611923255d2c13954881daecef4473/transformed/lifecycle-viewmodel-ktx-2.8.7/AndroidManifest.xml:5:5-44
+MERGED from [androidx.lifecycle:lifecycle-viewmodel-savedstate:2.8.7] /home/gitfudge/.gradle/caches/9.0.0/transforms/2c45dc16236e5d7bfed674e425497f8a/transformed/lifecycle-viewmodel-savedstate-2.8.7/AndroidManifest.xml:20:5-44
+MERGED from [androidx.lifecycle:lifecycle-viewmodel-savedstate:2.8.7] /home/gitfudge/.gradle/caches/9.0.0/transforms/2c45dc16236e5d7bfed674e425497f8a/transformed/lifecycle-viewmodel-savedstate-2.8.7/AndroidManifest.xml:20:5-44
+MERGED from [androidx.lifecycle:lifecycle-runtime-compose-android:2.8.7] /home/gitfudge/.gradle/caches/9.0.0/transforms/fe111bbdcb86da2f4d349fd2e6aca7a8/transformed/lifecycle-runtime-compose-release/AndroidManifest.xml:5:5-44
+MERGED from [androidx.lifecycle:lifecycle-runtime-compose-android:2.8.7] /home/gitfudge/.gradle/caches/9.0.0/transforms/fe111bbdcb86da2f4d349fd2e6aca7a8/transformed/lifecycle-runtime-compose-release/AndroidManifest.xml:5:5-44
+MERGED from [androidx.lifecycle:lifecycle-runtime-ktx-android:2.8.7] /home/gitfudge/.gradle/caches/9.0.0/transforms/68e981ea9ad0a44de8e8beecc1bd4f16/transformed/lifecycle-runtime-ktx-release/AndroidManifest.xml:5:5-44
+MERGED from [androidx.lifecycle:lifecycle-runtime-ktx-android:2.8.7] /home/gitfudge/.gradle/caches/9.0.0/transforms/68e981ea9ad0a44de8e8beecc1bd4f16/transformed/lifecycle-runtime-ktx-release/AndroidManifest.xml:5:5-44
+MERGED from [androidx.lifecycle:lifecycle-viewmodel-compose-android:2.8.7] /home/gitfudge/.gradle/caches/9.0.0/transforms/62eff8ba34f925a7b21b80e260b4a800/transformed/lifecycle-viewmodel-compose-release/AndroidManifest.xml:5:5-44
+MERGED from [androidx.lifecycle:lifecycle-viewmodel-compose-android:2.8.7] /home/gitfudge/.gradle/caches/9.0.0/transforms/62eff8ba34f925a7b21b80e260b4a800/transformed/lifecycle-viewmodel-compose-release/AndroidManifest.xml:5:5-44
+MERGED from [com.google.accompanist:accompanist-drawablepainter:0.32.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/597adbadc77e10c7c4ecf09fa60ecf9e/transformed/accompanist-drawablepainter-0.32.0/AndroidManifest.xml:21:5-44
+MERGED from [com.google.accompanist:accompanist-drawablepainter:0.32.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/597adbadc77e10c7c4ecf09fa60ecf9e/transformed/accompanist-drawablepainter-0.32.0/AndroidManifest.xml:21:5-44
+MERGED from [androidx.compose.material:material-icons-extended-android:1.7.6] /home/gitfudge/.gradle/caches/9.0.0/transforms/3117ce3b15363081c5e225cd1b4a22f3/transformed/material-icons-extended-release/AndroidManifest.xml:5:5-44
+MERGED from [androidx.compose.material:material-icons-extended-android:1.7.6] /home/gitfudge/.gradle/caches/9.0.0/transforms/3117ce3b15363081c5e225cd1b4a22f3/transformed/material-icons-extended-release/AndroidManifest.xml:5:5-44
+MERGED from [androidx.compose.material:material-icons-core-android:1.7.6] /home/gitfudge/.gradle/caches/9.0.0/transforms/bfd35bf0f83dc9179323222cd8f8b58f/transformed/material-icons-core-release/AndroidManifest.xml:5:5-44
+MERGED from [androidx.compose.material:material-icons-core-android:1.7.6] /home/gitfudge/.gradle/caches/9.0.0/transforms/bfd35bf0f83dc9179323222cd8f8b58f/transformed/material-icons-core-release/AndroidManifest.xml:5:5-44
+MERGED from [androidx.compose.ui:ui-android:1.7.6] /home/gitfudge/.gradle/caches/9.0.0/transforms/309bf387a90ea54ef84ed741a493932e/transformed/ui-release/AndroidManifest.xml:5:5-44
+MERGED from [androidx.compose.ui:ui-android:1.7.6] /home/gitfudge/.gradle/caches/9.0.0/transforms/309bf387a90ea54ef84ed741a493932e/transformed/ui-release/AndroidManifest.xml:5:5-44
+MERGED from [androidx.activity:activity-ktx:1.9.3] /home/gitfudge/.gradle/caches/9.0.0/transforms/8f890259c1bc43f77f3e67dac12e7429/transformed/activity-ktx-1.9.3/AndroidManifest.xml:5:5-44
+MERGED from [androidx.activity:activity-ktx:1.9.3] /home/gitfudge/.gradle/caches/9.0.0/transforms/8f890259c1bc43f77f3e67dac12e7429/transformed/activity-ktx-1.9.3/AndroidManifest.xml:5:5-44
+MERGED from [androidx.activity:activity:1.9.3] /home/gitfudge/.gradle/caches/9.0.0/transforms/ec2b6efe099d874c79558595f6664819/transformed/activity-1.9.3/AndroidManifest.xml:20:5-44
+MERGED from [androidx.activity:activity:1.9.3] /home/gitfudge/.gradle/caches/9.0.0/transforms/ec2b6efe099d874c79558595f6664819/transformed/activity-1.9.3/AndroidManifest.xml:20:5-44
+MERGED from [androidx.viewpager:viewpager:1.0.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/d66bcaf46c546f4c5904848613650da0/transformed/viewpager-1.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.viewpager:viewpager:1.0.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/d66bcaf46c546f4c5904848613650da0/transformed/viewpager-1.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.window:window:1.0.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/a69646317921a835fcbef709f6de19a3/transformed/window-1.0.0/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.window:window:1.0.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/a69646317921a835fcbef709f6de19a3/transformed/window-1.0.0/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.autofill:autofill:1.0.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/8a92da6f2becdc671c015955ef463a01/transformed/autofill-1.0.0/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.autofill:autofill:1.0.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/8a92da6f2becdc671c015955ef463a01/transformed/autofill-1.0.0/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.graphics:graphics-path:1.0.1] /home/gitfudge/.gradle/caches/9.0.0/transforms/92ec8640c6e340211be5cd834facd5c4/transformed/graphics-path-1.0.1/AndroidManifest.xml:5:5-44
+MERGED from [androidx.graphics:graphics-path:1.0.1] /home/gitfudge/.gradle/caches/9.0.0/transforms/92ec8640c6e340211be5cd834facd5c4/transformed/graphics-path-1.0.1/AndroidManifest.xml:5:5-44
+MERGED from [androidx.customview:customview:1.0.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/629322eee8d99b39f283298f38828988/transformed/customview-1.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.customview:customview:1.0.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/629322eee8d99b39f283298f38828988/transformed/customview-1.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.appcompat:appcompat-resources:1.6.1] /home/gitfudge/.gradle/caches/9.0.0/transforms/6fb92b676294284f4aa4090367335f41/transformed/appcompat-resources-1.6.1/AndroidManifest.xml:20:5-44
+MERGED from [androidx.appcompat:appcompat-resources:1.6.1] /home/gitfudge/.gradle/caches/9.0.0/transforms/6fb92b676294284f4aa4090367335f41/transformed/appcompat-resources-1.6.1/AndroidManifest.xml:20:5-44
+MERGED from [androidx.vectordrawable:vectordrawable-animated:1.1.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/691aa4079eca8cfd967a8104a51a1c94/transformed/vectordrawable-animated-1.1.0/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.vectordrawable:vectordrawable-animated:1.1.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/691aa4079eca8cfd967a8104a51a1c94/transformed/vectordrawable-animated-1.1.0/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.vectordrawable:vectordrawable:1.1.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/43342e770cb21d197137dc2f4d0f22b5/transformed/vectordrawable-1.1.0/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.vectordrawable:vectordrawable:1.1.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/43342e770cb21d197137dc2f4d0f22b5/transformed/vectordrawable-1.1.0/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.core:core:1.13.1] /home/gitfudge/.gradle/caches/9.0.0/transforms/a54e463b99dd32b2f95fdcc17f11e003/transformed/core-1.13.1/AndroidManifest.xml:20:5-44
+MERGED from [androidx.core:core:1.13.1] /home/gitfudge/.gradle/caches/9.0.0/transforms/a54e463b99dd32b2f95fdcc17f11e003/transformed/core-1.13.1/AndroidManifest.xml:20:5-44
+MERGED from [androidx.customview:customview-poolingcontainer:1.0.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/1fb9d641d9ec94f062e1fec9b670e96a/transformed/customview-poolingcontainer-1.0.0/AndroidManifest.xml:20:5-21:38
+MERGED from [androidx.customview:customview-poolingcontainer:1.0.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/1fb9d641d9ec94f062e1fec9b670e96a/transformed/customview-poolingcontainer-1.0.0/AndroidManifest.xml:20:5-21:38
+MERGED from [androidx.core:core-ktx:1.13.1] /home/gitfudge/.gradle/caches/9.0.0/transforms/6e5dcb05bffb3e3e7fa83d7dfd69214f/transformed/core-ktx-1.13.1/AndroidManifest.xml:5:5-44
+MERGED from [androidx.core:core-ktx:1.13.1] /home/gitfudge/.gradle/caches/9.0.0/transforms/6e5dcb05bffb3e3e7fa83d7dfd69214f/transformed/core-ktx-1.13.1/AndroidManifest.xml:5:5-44
+MERGED from [androidx.core:core-splashscreen:1.0.1] /home/gitfudge/.gradle/caches/9.0.0/transforms/4c7cbf652b17758a17f29387169425a5/transformed/core-splashscreen-1.0.1/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.core:core-splashscreen:1.0.1] /home/gitfudge/.gradle/caches/9.0.0/transforms/4c7cbf652b17758a17f29387169425a5/transformed/core-splashscreen-1.0.1/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.room:room-runtime:2.6.1] /home/gitfudge/.gradle/caches/9.0.0/transforms/8a048d8f5a36b7453bb75449f88864bf/transformed/room-runtime-2.6.1/AndroidManifest.xml:21:5-44
+MERGED from [androidx.room:room-runtime:2.6.1] /home/gitfudge/.gradle/caches/9.0.0/transforms/8a048d8f5a36b7453bb75449f88864bf/transformed/room-runtime-2.6.1/AndroidManifest.xml:21:5-44
+MERGED from [androidx.room:room-ktx:2.6.1] /home/gitfudge/.gradle/caches/9.0.0/transforms/5dfcc25928684be1da4c991fcb15c9b9/transformed/room-ktx-2.6.1/AndroidManifest.xml:20:5-44
+MERGED from [androidx.room:room-ktx:2.6.1] /home/gitfudge/.gradle/caches/9.0.0/transforms/5dfcc25928684be1da4c991fcb15c9b9/transformed/room-ktx-2.6.1/AndroidManifest.xml:20:5-44
+MERGED from [androidx.sqlite:sqlite-framework:2.4.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/025621751e3a24eb1cd7f7c6f60051b0/transformed/sqlite-framework-2.4.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.sqlite:sqlite-framework:2.4.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/025621751e3a24eb1cd7f7c6f60051b0/transformed/sqlite-framework-2.4.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.sqlite:sqlite:2.4.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/846d1b4bdbcc78083d2b4a003995dc7b/transformed/sqlite-2.4.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.sqlite:sqlite:2.4.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/846d1b4bdbcc78083d2b4a003995dc7b/transformed/sqlite-2.4.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.datastore:datastore-core-android:1.1.1] /home/gitfudge/.gradle/caches/9.0.0/transforms/a6c5b736efb2e27af6d2229bb2a3102e/transformed/datastore-core-release/AndroidManifest.xml:5:5-44
+MERGED from [androidx.datastore:datastore-core-android:1.1.1] /home/gitfudge/.gradle/caches/9.0.0/transforms/a6c5b736efb2e27af6d2229bb2a3102e/transformed/datastore-core-release/AndroidManifest.xml:5:5-44
+MERGED from [androidx.datastore:datastore-android:1.1.1] /home/gitfudge/.gradle/caches/9.0.0/transforms/3c37bb1bdaf05fb7d3e550d857b1cd83/transformed/datastore-release/AndroidManifest.xml:20:5-44
+MERGED from [androidx.datastore:datastore-android:1.1.1] /home/gitfudge/.gradle/caches/9.0.0/transforms/3c37bb1bdaf05fb7d3e550d857b1cd83/transformed/datastore-release/AndroidManifest.xml:20:5-44
+MERGED from [androidx.datastore:datastore-preferences-android:1.1.1] /home/gitfudge/.gradle/caches/9.0.0/transforms/661cb729951ac1ad10ceeb2fc0e13ab4/transformed/datastore-preferences-release/AndroidManifest.xml:20:5-44
+MERGED from [androidx.datastore:datastore-preferences-android:1.1.1] /home/gitfudge/.gradle/caches/9.0.0/transforms/661cb729951ac1ad10ceeb2fc0e13ab4/transformed/datastore-preferences-release/AndroidManifest.xml:20:5-44
+MERGED from [androidx.compose.runtime:runtime-saveable-android:1.7.6] /home/gitfudge/.gradle/caches/9.0.0/transforms/488d0cac645519fd5bd84335e93b0a22/transformed/runtime-saveable-release/AndroidManifest.xml:5:5-44
+MERGED from [androidx.compose.runtime:runtime-saveable-android:1.7.6] /home/gitfudge/.gradle/caches/9.0.0/transforms/488d0cac645519fd5bd84335e93b0a22/transformed/runtime-saveable-release/AndroidManifest.xml:5:5-44
+MERGED from [androidx.compose.runtime:runtime-android:1.7.6] /home/gitfudge/.gradle/caches/9.0.0/transforms/ff15ee5fa8c6df3e54f16da1075288a0/transformed/runtime-release/AndroidManifest.xml:5:5-44
+MERGED from [androidx.compose.runtime:runtime-android:1.7.6] /home/gitfudge/.gradle/caches/9.0.0/transforms/ff15ee5fa8c6df3e54f16da1075288a0/transformed/runtime-release/AndroidManifest.xml:5:5-44
+MERGED from [androidx.annotation:annotation-experimental:1.4.1] /home/gitfudge/.gradle/caches/9.0.0/transforms/c24309ebe0b7352b3a4233a809e757ff/transformed/annotation-experimental-1.4.1/AndroidManifest.xml:5:5-44
+MERGED from [androidx.annotation:annotation-experimental:1.4.1] /home/gitfudge/.gradle/caches/9.0.0/transforms/c24309ebe0b7352b3a4233a809e757ff/transformed/annotation-experimental-1.4.1/AndroidManifest.xml:5:5-44
+MERGED from [androidx.profileinstaller:profileinstaller:1.3.1] /home/gitfudge/.gradle/caches/9.0.0/transforms/c02cb7c2e5c0a220a5db1d9c32b46d70/transformed/profileinstaller-1.3.1/AndroidManifest.xml:21:5-44
+MERGED from [androidx.profileinstaller:profileinstaller:1.3.1] /home/gitfudge/.gradle/caches/9.0.0/transforms/c02cb7c2e5c0a220a5db1d9c32b46d70/transformed/profileinstaller-1.3.1/AndroidManifest.xml:21:5-44
+MERGED from [androidx.startup:startup-runtime:1.1.1] /home/gitfudge/.gradle/caches/9.0.0/transforms/d786685f8ba802c96c13d6e427e7f3cc/transformed/startup-runtime-1.1.1/AndroidManifest.xml:21:5-23:41
+MERGED from [androidx.startup:startup-runtime:1.1.1] /home/gitfudge/.gradle/caches/9.0.0/transforms/d786685f8ba802c96c13d6e427e7f3cc/transformed/startup-runtime-1.1.1/AndroidManifest.xml:21:5-23:41
+MERGED from [androidx.tracing:tracing:1.2.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/4c2d54d05e9bf7e7565bc7fd48606a91/transformed/tracing-1.2.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.tracing:tracing:1.2.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/4c2d54d05e9bf7e7565bc7fd48606a91/transformed/tracing-1.2.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.tracing:tracing-ktx:1.2.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/3c22551812a45697a78cc06448aff56f/transformed/tracing-ktx-1.2.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.tracing:tracing-ktx:1.2.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/3c22551812a45697a78cc06448aff56f/transformed/tracing-ktx-1.2.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.documentfile:documentfile:1.0.1] /home/gitfudge/.gradle/caches/9.0.0/transforms/fdda6093bfb9f7bc2643a00fb73daecd/transformed/documentfile-1.0.1/AndroidManifest.xml:20:5-44
+MERGED from [androidx.documentfile:documentfile:1.0.1] /home/gitfudge/.gradle/caches/9.0.0/transforms/fdda6093bfb9f7bc2643a00fb73daecd/transformed/documentfile-1.0.1/AndroidManifest.xml:20:5-44
+MERGED from [androidx.arch.core:core-runtime:2.2.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/6e268315e06d220f60efe56ed61805dd/transformed/core-runtime-2.2.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.arch.core:core-runtime:2.2.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/6e268315e06d220f60efe56ed61805dd/transformed/core-runtime-2.2.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.interpolator:interpolator:1.0.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/ad2a82d473409f9506097010848641b4/transformed/interpolator-1.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.interpolator:interpolator:1.0.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/ad2a82d473409f9506097010848641b4/transformed/interpolator-1.0.0/AndroidManifest.xml:20:5-44
+MERGED from [androidx.versionedparcelable:versionedparcelable:1.1.1] /home/gitfudge/.gradle/caches/9.0.0/transforms/b68531e616fd4932888ed8a3f6e1a09b/transformed/versionedparcelable-1.1.1/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.versionedparcelable:versionedparcelable:1.1.1] /home/gitfudge/.gradle/caches/9.0.0/transforms/b68531e616fd4932888ed8a3f6e1a09b/transformed/versionedparcelable-1.1.1/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.exifinterface:exifinterface:1.3.7] /home/gitfudge/.gradle/caches/9.0.0/transforms/1b9a9c831d720b67c829a6cc2cdfb74e/transformed/exifinterface-1.3.7/AndroidManifest.xml:20:5-22:41
+MERGED from [androidx.exifinterface:exifinterface:1.3.7] /home/gitfudge/.gradle/caches/9.0.0/transforms/1b9a9c831d720b67c829a6cc2cdfb74e/transformed/exifinterface-1.3.7/AndroidManifest.xml:20:5-22:41
+MERGED from [com.google.dagger:dagger-lint-aar:2.56.2] /home/gitfudge/.gradle/caches/9.0.0/transforms/73cff95e95b0e84ed4c274fcec2b45fa/transformed/dagger-lint-aar-2.56.2/AndroidManifest.xml:18:3-42
+MERGED from [com.google.dagger:dagger-lint-aar:2.56.2] /home/gitfudge/.gradle/caches/9.0.0/transforms/73cff95e95b0e84ed4c274fcec2b45fa/transformed/dagger-lint-aar-2.56.2/AndroidManifest.xml:18:3-42
+	android:targetSdkVersion
+		INJECTED from /home/gitfudge/dev/gitfudge0/audio-metadata/app/src/main/AndroidManifest.xml
+	android:minSdkVersion
+		INJECTED from /home/gitfudge/dev/gitfudge0/audio-metadata/app/src/main/AndroidManifest.xml
+uses-permission#android.permission.WAKE_LOCK
+ADDED from [androidx.work:work-runtime:2.10.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/6c06de0026132b23a61ccf9a48f6d1ea/transformed/work-runtime-2.10.0/AndroidManifest.xml:23:5-68
+	android:name
+		ADDED from [androidx.work:work-runtime:2.10.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/6c06de0026132b23a61ccf9a48f6d1ea/transformed/work-runtime-2.10.0/AndroidManifest.xml:23:22-65
+uses-permission#android.permission.RECEIVE_BOOT_COMPLETED
+ADDED from [androidx.work:work-runtime:2.10.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/6c06de0026132b23a61ccf9a48f6d1ea/transformed/work-runtime-2.10.0/AndroidManifest.xml:25:5-81
+	android:name
+		ADDED from [androidx.work:work-runtime:2.10.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/6c06de0026132b23a61ccf9a48f6d1ea/transformed/work-runtime-2.10.0/AndroidManifest.xml:25:22-78
+uses-permission#android.permission.FOREGROUND_SERVICE
+ADDED from [androidx.work:work-runtime:2.10.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/6c06de0026132b23a61ccf9a48f6d1ea/transformed/work-runtime-2.10.0/AndroidManifest.xml:26:5-77
+	android:name
+		ADDED from [androidx.work:work-runtime:2.10.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/6c06de0026132b23a61ccf9a48f6d1ea/transformed/work-runtime-2.10.0/AndroidManifest.xml:26:22-74
+service#androidx.work.impl.background.systemalarm.SystemAlarmService
+ADDED from [androidx.work:work-runtime:2.10.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/6c06de0026132b23a61ccf9a48f6d1ea/transformed/work-runtime-2.10.0/AndroidManifest.xml:39:9-45:35
+	android:enabled
+		ADDED from [androidx.work:work-runtime:2.10.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/6c06de0026132b23a61ccf9a48f6d1ea/transformed/work-runtime-2.10.0/AndroidManifest.xml:42:13-72
+	android:exported
+		ADDED from [androidx.work:work-runtime:2.10.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/6c06de0026132b23a61ccf9a48f6d1ea/transformed/work-runtime-2.10.0/AndroidManifest.xml:43:13-37
+	tools:ignore
+		ADDED from [androidx.work:work-runtime:2.10.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/6c06de0026132b23a61ccf9a48f6d1ea/transformed/work-runtime-2.10.0/AndroidManifest.xml:44:13-60
+	tools:targetApi
+		ADDED from [androidx.work:work-runtime:2.10.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/6c06de0026132b23a61ccf9a48f6d1ea/transformed/work-runtime-2.10.0/AndroidManifest.xml:45:13-32
+	android:directBootAware
+		ADDED from [androidx.work:work-runtime:2.10.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/6c06de0026132b23a61ccf9a48f6d1ea/transformed/work-runtime-2.10.0/AndroidManifest.xml:41:13-44
+	android:name
+		ADDED from [androidx.work:work-runtime:2.10.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/6c06de0026132b23a61ccf9a48f6d1ea/transformed/work-runtime-2.10.0/AndroidManifest.xml:40:13-88
+service#androidx.work.impl.background.systemjob.SystemJobService
+ADDED from [androidx.work:work-runtime:2.10.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/6c06de0026132b23a61ccf9a48f6d1ea/transformed/work-runtime-2.10.0/AndroidManifest.xml:46:9-52:35
+	android:enabled
+		ADDED from [androidx.work:work-runtime:2.10.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/6c06de0026132b23a61ccf9a48f6d1ea/transformed/work-runtime-2.10.0/AndroidManifest.xml:49:13-70
+	android:exported
+		ADDED from [androidx.work:work-runtime:2.10.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/6c06de0026132b23a61ccf9a48f6d1ea/transformed/work-runtime-2.10.0/AndroidManifest.xml:50:13-36
+	android:permission
+		ADDED from [androidx.work:work-runtime:2.10.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/6c06de0026132b23a61ccf9a48f6d1ea/transformed/work-runtime-2.10.0/AndroidManifest.xml:51:13-69
+	tools:targetApi
+		ADDED from [androidx.work:work-runtime:2.10.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/6c06de0026132b23a61ccf9a48f6d1ea/transformed/work-runtime-2.10.0/AndroidManifest.xml:52:13-32
+	android:directBootAware
+		ADDED from [androidx.work:work-runtime:2.10.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/6c06de0026132b23a61ccf9a48f6d1ea/transformed/work-runtime-2.10.0/AndroidManifest.xml:48:13-44
+	android:name
+		ADDED from [androidx.work:work-runtime:2.10.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/6c06de0026132b23a61ccf9a48f6d1ea/transformed/work-runtime-2.10.0/AndroidManifest.xml:47:13-84
+service#androidx.work.impl.foreground.SystemForegroundService
+ADDED from [androidx.work:work-runtime:2.10.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/6c06de0026132b23a61ccf9a48f6d1ea/transformed/work-runtime-2.10.0/AndroidManifest.xml:53:9-59:35
+	android:enabled
+		ADDED from [androidx.work:work-runtime:2.10.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/6c06de0026132b23a61ccf9a48f6d1ea/transformed/work-runtime-2.10.0/AndroidManifest.xml:56:13-77
+	android:exported
+		ADDED from [androidx.work:work-runtime:2.10.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/6c06de0026132b23a61ccf9a48f6d1ea/transformed/work-runtime-2.10.0/AndroidManifest.xml:57:13-37
+	tools:ignore
+		ADDED from [androidx.work:work-runtime:2.10.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/6c06de0026132b23a61ccf9a48f6d1ea/transformed/work-runtime-2.10.0/AndroidManifest.xml:58:13-60
+	tools:targetApi
+		ADDED from [androidx.work:work-runtime:2.10.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/6c06de0026132b23a61ccf9a48f6d1ea/transformed/work-runtime-2.10.0/AndroidManifest.xml:59:13-32
+	android:directBootAware
+		ADDED from [androidx.work:work-runtime:2.10.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/6c06de0026132b23a61ccf9a48f6d1ea/transformed/work-runtime-2.10.0/AndroidManifest.xml:55:13-44
+	android:name
+		ADDED from [androidx.work:work-runtime:2.10.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/6c06de0026132b23a61ccf9a48f6d1ea/transformed/work-runtime-2.10.0/AndroidManifest.xml:54:13-81
+receiver#androidx.work.impl.utils.ForceStopRunnable$BroadcastReceiver
+ADDED from [androidx.work:work-runtime:2.10.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/6c06de0026132b23a61ccf9a48f6d1ea/transformed/work-runtime-2.10.0/AndroidManifest.xml:61:9-66:35
+	android:enabled
+		ADDED from [androidx.work:work-runtime:2.10.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/6c06de0026132b23a61ccf9a48f6d1ea/transformed/work-runtime-2.10.0/AndroidManifest.xml:64:13-35
+	android:exported
+		ADDED from [androidx.work:work-runtime:2.10.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/6c06de0026132b23a61ccf9a48f6d1ea/transformed/work-runtime-2.10.0/AndroidManifest.xml:65:13-37
+	tools:targetApi
+		ADDED from [androidx.work:work-runtime:2.10.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/6c06de0026132b23a61ccf9a48f6d1ea/transformed/work-runtime-2.10.0/AndroidManifest.xml:66:13-32
+	android:directBootAware
+		ADDED from [androidx.work:work-runtime:2.10.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/6c06de0026132b23a61ccf9a48f6d1ea/transformed/work-runtime-2.10.0/AndroidManifest.xml:63:13-44
+	android:name
+		ADDED from [androidx.work:work-runtime:2.10.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/6c06de0026132b23a61ccf9a48f6d1ea/transformed/work-runtime-2.10.0/AndroidManifest.xml:62:13-88
+receiver#androidx.work.impl.background.systemalarm.ConstraintProxy$BatteryChargingProxy
+ADDED from [androidx.work:work-runtime:2.10.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/6c06de0026132b23a61ccf9a48f6d1ea/transformed/work-runtime-2.10.0/AndroidManifest.xml:67:9-77:20
+	android:enabled
+		ADDED from [androidx.work:work-runtime:2.10.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/6c06de0026132b23a61ccf9a48f6d1ea/transformed/work-runtime-2.10.0/AndroidManifest.xml:70:13-36
+	android:exported
+		ADDED from [androidx.work:work-runtime:2.10.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/6c06de0026132b23a61ccf9a48f6d1ea/transformed/work-runtime-2.10.0/AndroidManifest.xml:71:13-37
+	tools:targetApi
+		ADDED from [androidx.work:work-runtime:2.10.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/6c06de0026132b23a61ccf9a48f6d1ea/transformed/work-runtime-2.10.0/AndroidManifest.xml:72:13-32
+	android:directBootAware
+		ADDED from [androidx.work:work-runtime:2.10.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/6c06de0026132b23a61ccf9a48f6d1ea/transformed/work-runtime-2.10.0/AndroidManifest.xml:69:13-44
+	android:name
+		ADDED from [androidx.work:work-runtime:2.10.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/6c06de0026132b23a61ccf9a48f6d1ea/transformed/work-runtime-2.10.0/AndroidManifest.xml:68:13-106
+intent-filter#action:name:android.intent.action.ACTION_POWER_CONNECTED+action:name:android.intent.action.ACTION_POWER_DISCONNECTED
+ADDED from [androidx.work:work-runtime:2.10.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/6c06de0026132b23a61ccf9a48f6d1ea/transformed/work-runtime-2.10.0/AndroidManifest.xml:73:13-76:29
+action#android.intent.action.ACTION_POWER_CONNECTED
+ADDED from [androidx.work:work-runtime:2.10.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/6c06de0026132b23a61ccf9a48f6d1ea/transformed/work-runtime-2.10.0/AndroidManifest.xml:74:17-87
+	android:name
+		ADDED from [androidx.work:work-runtime:2.10.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/6c06de0026132b23a61ccf9a48f6d1ea/transformed/work-runtime-2.10.0/AndroidManifest.xml:74:25-84
+action#android.intent.action.ACTION_POWER_DISCONNECTED
+ADDED from [androidx.work:work-runtime:2.10.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/6c06de0026132b23a61ccf9a48f6d1ea/transformed/work-runtime-2.10.0/AndroidManifest.xml:75:17-90
+	android:name
+		ADDED from [androidx.work:work-runtime:2.10.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/6c06de0026132b23a61ccf9a48f6d1ea/transformed/work-runtime-2.10.0/AndroidManifest.xml:75:25-87
+receiver#androidx.work.impl.background.systemalarm.ConstraintProxy$BatteryNotLowProxy
+ADDED from [androidx.work:work-runtime:2.10.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/6c06de0026132b23a61ccf9a48f6d1ea/transformed/work-runtime-2.10.0/AndroidManifest.xml:78:9-88:20
+	android:enabled
+		ADDED from [androidx.work:work-runtime:2.10.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/6c06de0026132b23a61ccf9a48f6d1ea/transformed/work-runtime-2.10.0/AndroidManifest.xml:81:13-36
+	android:exported
+		ADDED from [androidx.work:work-runtime:2.10.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/6c06de0026132b23a61ccf9a48f6d1ea/transformed/work-runtime-2.10.0/AndroidManifest.xml:82:13-37
+	tools:targetApi
+		ADDED from [androidx.work:work-runtime:2.10.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/6c06de0026132b23a61ccf9a48f6d1ea/transformed/work-runtime-2.10.0/AndroidManifest.xml:83:13-32
+	android:directBootAware
+		ADDED from [androidx.work:work-runtime:2.10.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/6c06de0026132b23a61ccf9a48f6d1ea/transformed/work-runtime-2.10.0/AndroidManifest.xml:80:13-44
+	android:name
+		ADDED from [androidx.work:work-runtime:2.10.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/6c06de0026132b23a61ccf9a48f6d1ea/transformed/work-runtime-2.10.0/AndroidManifest.xml:79:13-104
+intent-filter#action:name:android.intent.action.BATTERY_LOW+action:name:android.intent.action.BATTERY_OKAY
+ADDED from [androidx.work:work-runtime:2.10.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/6c06de0026132b23a61ccf9a48f6d1ea/transformed/work-runtime-2.10.0/AndroidManifest.xml:84:13-87:29
+action#android.intent.action.BATTERY_OKAY
+ADDED from [androidx.work:work-runtime:2.10.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/6c06de0026132b23a61ccf9a48f6d1ea/transformed/work-runtime-2.10.0/AndroidManifest.xml:85:17-77
+	android:name
+		ADDED from [androidx.work:work-runtime:2.10.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/6c06de0026132b23a61ccf9a48f6d1ea/transformed/work-runtime-2.10.0/AndroidManifest.xml:85:25-74
+action#android.intent.action.BATTERY_LOW
+ADDED from [androidx.work:work-runtime:2.10.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/6c06de0026132b23a61ccf9a48f6d1ea/transformed/work-runtime-2.10.0/AndroidManifest.xml:86:17-76
+	android:name
+		ADDED from [androidx.work:work-runtime:2.10.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/6c06de0026132b23a61ccf9a48f6d1ea/transformed/work-runtime-2.10.0/AndroidManifest.xml:86:25-73
+receiver#androidx.work.impl.background.systemalarm.ConstraintProxy$StorageNotLowProxy
+ADDED from [androidx.work:work-runtime:2.10.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/6c06de0026132b23a61ccf9a48f6d1ea/transformed/work-runtime-2.10.0/AndroidManifest.xml:89:9-99:20
+	android:enabled
+		ADDED from [androidx.work:work-runtime:2.10.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/6c06de0026132b23a61ccf9a48f6d1ea/transformed/work-runtime-2.10.0/AndroidManifest.xml:92:13-36
+	android:exported
+		ADDED from [androidx.work:work-runtime:2.10.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/6c06de0026132b23a61ccf9a48f6d1ea/transformed/work-runtime-2.10.0/AndroidManifest.xml:93:13-37
+	tools:targetApi
+		ADDED from [androidx.work:work-runtime:2.10.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/6c06de0026132b23a61ccf9a48f6d1ea/transformed/work-runtime-2.10.0/AndroidManifest.xml:94:13-32
+	android:directBootAware
+		ADDED from [androidx.work:work-runtime:2.10.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/6c06de0026132b23a61ccf9a48f6d1ea/transformed/work-runtime-2.10.0/AndroidManifest.xml:91:13-44
+	android:name
+		ADDED from [androidx.work:work-runtime:2.10.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/6c06de0026132b23a61ccf9a48f6d1ea/transformed/work-runtime-2.10.0/AndroidManifest.xml:90:13-104
+intent-filter#action:name:android.intent.action.DEVICE_STORAGE_LOW+action:name:android.intent.action.DEVICE_STORAGE_OK
+ADDED from [androidx.work:work-runtime:2.10.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/6c06de0026132b23a61ccf9a48f6d1ea/transformed/work-runtime-2.10.0/AndroidManifest.xml:95:13-98:29
+action#android.intent.action.DEVICE_STORAGE_LOW
+ADDED from [androidx.work:work-runtime:2.10.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/6c06de0026132b23a61ccf9a48f6d1ea/transformed/work-runtime-2.10.0/AndroidManifest.xml:96:17-83
+	android:name
+		ADDED from [androidx.work:work-runtime:2.10.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/6c06de0026132b23a61ccf9a48f6d1ea/transformed/work-runtime-2.10.0/AndroidManifest.xml:96:25-80
+action#android.intent.action.DEVICE_STORAGE_OK
+ADDED from [androidx.work:work-runtime:2.10.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/6c06de0026132b23a61ccf9a48f6d1ea/transformed/work-runtime-2.10.0/AndroidManifest.xml:97:17-82
+	android:name
+		ADDED from [androidx.work:work-runtime:2.10.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/6c06de0026132b23a61ccf9a48f6d1ea/transformed/work-runtime-2.10.0/AndroidManifest.xml:97:25-79
+receiver#androidx.work.impl.background.systemalarm.ConstraintProxy$NetworkStateProxy
+ADDED from [androidx.work:work-runtime:2.10.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/6c06de0026132b23a61ccf9a48f6d1ea/transformed/work-runtime-2.10.0/AndroidManifest.xml:100:9-109:20
+	android:enabled
+		ADDED from [androidx.work:work-runtime:2.10.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/6c06de0026132b23a61ccf9a48f6d1ea/transformed/work-runtime-2.10.0/AndroidManifest.xml:103:13-36
+	android:exported
+		ADDED from [androidx.work:work-runtime:2.10.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/6c06de0026132b23a61ccf9a48f6d1ea/transformed/work-runtime-2.10.0/AndroidManifest.xml:104:13-37
+	tools:targetApi
+		ADDED from [androidx.work:work-runtime:2.10.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/6c06de0026132b23a61ccf9a48f6d1ea/transformed/work-runtime-2.10.0/AndroidManifest.xml:105:13-32
+	android:directBootAware
+		ADDED from [androidx.work:work-runtime:2.10.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/6c06de0026132b23a61ccf9a48f6d1ea/transformed/work-runtime-2.10.0/AndroidManifest.xml:102:13-44
+	android:name
+		ADDED from [androidx.work:work-runtime:2.10.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/6c06de0026132b23a61ccf9a48f6d1ea/transformed/work-runtime-2.10.0/AndroidManifest.xml:101:13-103
+intent-filter#action:name:android.net.conn.CONNECTIVITY_CHANGE
+ADDED from [androidx.work:work-runtime:2.10.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/6c06de0026132b23a61ccf9a48f6d1ea/transformed/work-runtime-2.10.0/AndroidManifest.xml:106:13-108:29
+action#android.net.conn.CONNECTIVITY_CHANGE
+ADDED from [androidx.work:work-runtime:2.10.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/6c06de0026132b23a61ccf9a48f6d1ea/transformed/work-runtime-2.10.0/AndroidManifest.xml:107:17-79
+	android:name
+		ADDED from [androidx.work:work-runtime:2.10.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/6c06de0026132b23a61ccf9a48f6d1ea/transformed/work-runtime-2.10.0/AndroidManifest.xml:107:25-76
+receiver#androidx.work.impl.background.systemalarm.RescheduleReceiver
+ADDED from [androidx.work:work-runtime:2.10.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/6c06de0026132b23a61ccf9a48f6d1ea/transformed/work-runtime-2.10.0/AndroidManifest.xml:110:9-121:20
+	android:enabled
+		ADDED from [androidx.work:work-runtime:2.10.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/6c06de0026132b23a61ccf9a48f6d1ea/transformed/work-runtime-2.10.0/AndroidManifest.xml:113:13-36
+	android:exported
+		ADDED from [androidx.work:work-runtime:2.10.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/6c06de0026132b23a61ccf9a48f6d1ea/transformed/work-runtime-2.10.0/AndroidManifest.xml:114:13-37
+	tools:targetApi
+		ADDED from [androidx.work:work-runtime:2.10.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/6c06de0026132b23a61ccf9a48f6d1ea/transformed/work-runtime-2.10.0/AndroidManifest.xml:115:13-32
+	android:directBootAware
+		ADDED from [androidx.work:work-runtime:2.10.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/6c06de0026132b23a61ccf9a48f6d1ea/transformed/work-runtime-2.10.0/AndroidManifest.xml:112:13-44
+	android:name
+		ADDED from [androidx.work:work-runtime:2.10.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/6c06de0026132b23a61ccf9a48f6d1ea/transformed/work-runtime-2.10.0/AndroidManifest.xml:111:13-88
+intent-filter#action:name:android.intent.action.BOOT_COMPLETED+action:name:android.intent.action.TIMEZONE_CHANGED+action:name:android.intent.action.TIME_SET
+ADDED from [androidx.work:work-runtime:2.10.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/6c06de0026132b23a61ccf9a48f6d1ea/transformed/work-runtime-2.10.0/AndroidManifest.xml:116:13-120:29
+action#android.intent.action.BOOT_COMPLETED
+ADDED from [androidx.work:work-runtime:2.10.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/6c06de0026132b23a61ccf9a48f6d1ea/transformed/work-runtime-2.10.0/AndroidManifest.xml:117:17-79
+	android:name
+		ADDED from [androidx.work:work-runtime:2.10.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/6c06de0026132b23a61ccf9a48f6d1ea/transformed/work-runtime-2.10.0/AndroidManifest.xml:117:25-76
+action#android.intent.action.TIME_SET
+ADDED from [androidx.work:work-runtime:2.10.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/6c06de0026132b23a61ccf9a48f6d1ea/transformed/work-runtime-2.10.0/AndroidManifest.xml:118:17-73
+	android:name
+		ADDED from [androidx.work:work-runtime:2.10.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/6c06de0026132b23a61ccf9a48f6d1ea/transformed/work-runtime-2.10.0/AndroidManifest.xml:118:25-70
+action#android.intent.action.TIMEZONE_CHANGED
+ADDED from [androidx.work:work-runtime:2.10.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/6c06de0026132b23a61ccf9a48f6d1ea/transformed/work-runtime-2.10.0/AndroidManifest.xml:119:17-81
+	android:name
+		ADDED from [androidx.work:work-runtime:2.10.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/6c06de0026132b23a61ccf9a48f6d1ea/transformed/work-runtime-2.10.0/AndroidManifest.xml:119:25-78
+receiver#androidx.work.impl.background.systemalarm.ConstraintProxyUpdateReceiver
+ADDED from [androidx.work:work-runtime:2.10.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/6c06de0026132b23a61ccf9a48f6d1ea/transformed/work-runtime-2.10.0/AndroidManifest.xml:122:9-131:20
+	android:enabled
+		ADDED from [androidx.work:work-runtime:2.10.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/6c06de0026132b23a61ccf9a48f6d1ea/transformed/work-runtime-2.10.0/AndroidManifest.xml:125:13-72
+	android:exported
+		ADDED from [androidx.work:work-runtime:2.10.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/6c06de0026132b23a61ccf9a48f6d1ea/transformed/work-runtime-2.10.0/AndroidManifest.xml:126:13-37
+	tools:targetApi
+		ADDED from [androidx.work:work-runtime:2.10.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/6c06de0026132b23a61ccf9a48f6d1ea/transformed/work-runtime-2.10.0/AndroidManifest.xml:127:13-32
+	android:directBootAware
+		ADDED from [androidx.work:work-runtime:2.10.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/6c06de0026132b23a61ccf9a48f6d1ea/transformed/work-runtime-2.10.0/AndroidManifest.xml:124:13-44
+	android:name
+		ADDED from [androidx.work:work-runtime:2.10.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/6c06de0026132b23a61ccf9a48f6d1ea/transformed/work-runtime-2.10.0/AndroidManifest.xml:123:13-99
+intent-filter#action:name:androidx.work.impl.background.systemalarm.UpdateProxies
+ADDED from [androidx.work:work-runtime:2.10.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/6c06de0026132b23a61ccf9a48f6d1ea/transformed/work-runtime-2.10.0/AndroidManifest.xml:128:13-130:29
+action#androidx.work.impl.background.systemalarm.UpdateProxies
+ADDED from [androidx.work:work-runtime:2.10.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/6c06de0026132b23a61ccf9a48f6d1ea/transformed/work-runtime-2.10.0/AndroidManifest.xml:129:17-98
+	android:name
+		ADDED from [androidx.work:work-runtime:2.10.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/6c06de0026132b23a61ccf9a48f6d1ea/transformed/work-runtime-2.10.0/AndroidManifest.xml:129:25-95
+receiver#androidx.work.impl.diagnostics.DiagnosticsReceiver
+ADDED from [androidx.work:work-runtime:2.10.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/6c06de0026132b23a61ccf9a48f6d1ea/transformed/work-runtime-2.10.0/AndroidManifest.xml:132:9-142:20
+	android:enabled
+		ADDED from [androidx.work:work-runtime:2.10.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/6c06de0026132b23a61ccf9a48f6d1ea/transformed/work-runtime-2.10.0/AndroidManifest.xml:135:13-35
+	android:exported
+		ADDED from [androidx.work:work-runtime:2.10.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/6c06de0026132b23a61ccf9a48f6d1ea/transformed/work-runtime-2.10.0/AndroidManifest.xml:136:13-36
+	android:permission
+		ADDED from [androidx.work:work-runtime:2.10.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/6c06de0026132b23a61ccf9a48f6d1ea/transformed/work-runtime-2.10.0/AndroidManifest.xml:137:13-57
+	tools:targetApi
+		ADDED from [androidx.work:work-runtime:2.10.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/6c06de0026132b23a61ccf9a48f6d1ea/transformed/work-runtime-2.10.0/AndroidManifest.xml:138:13-32
+	android:directBootAware
+		ADDED from [androidx.work:work-runtime:2.10.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/6c06de0026132b23a61ccf9a48f6d1ea/transformed/work-runtime-2.10.0/AndroidManifest.xml:134:13-44
+	android:name
+		ADDED from [androidx.work:work-runtime:2.10.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/6c06de0026132b23a61ccf9a48f6d1ea/transformed/work-runtime-2.10.0/AndroidManifest.xml:133:13-78
+intent-filter#action:name:androidx.work.diagnostics.REQUEST_DIAGNOSTICS
+ADDED from [androidx.work:work-runtime:2.10.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/6c06de0026132b23a61ccf9a48f6d1ea/transformed/work-runtime-2.10.0/AndroidManifest.xml:139:13-141:29
+action#androidx.work.diagnostics.REQUEST_DIAGNOSTICS
+ADDED from [androidx.work:work-runtime:2.10.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/6c06de0026132b23a61ccf9a48f6d1ea/transformed/work-runtime-2.10.0/AndroidManifest.xml:140:17-88
+	android:name
+		ADDED from [androidx.work:work-runtime:2.10.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/6c06de0026132b23a61ccf9a48f6d1ea/transformed/work-runtime-2.10.0/AndroidManifest.xml:140:25-85
+meta-data#androidx.emoji2.text.EmojiCompatInitializer
+ADDED from [androidx.emoji2:emoji2:1.3.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/b2aedb692beb1291f1e542d4bf52d5a3/transformed/emoji2-1.3.0/AndroidManifest.xml:29:13-31:52
+	android:value
+		ADDED from [androidx.emoji2:emoji2:1.3.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/b2aedb692beb1291f1e542d4bf52d5a3/transformed/emoji2-1.3.0/AndroidManifest.xml:31:17-49
+	android:name
+		ADDED from [androidx.emoji2:emoji2:1.3.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/b2aedb692beb1291f1e542d4bf52d5a3/transformed/emoji2-1.3.0/AndroidManifest.xml:30:17-75
+meta-data#androidx.lifecycle.ProcessLifecycleInitializer
+ADDED from [androidx.lifecycle:lifecycle-process:2.8.7] /home/gitfudge/.gradle/caches/9.0.0/transforms/c24adfa18306abb51a4f09c5727bacbc/transformed/lifecycle-process-2.8.7/AndroidManifest.xml:29:13-31:52
+	android:value
+		ADDED from [androidx.lifecycle:lifecycle-process:2.8.7] /home/gitfudge/.gradle/caches/9.0.0/transforms/c24adfa18306abb51a4f09c5727bacbc/transformed/lifecycle-process-2.8.7/AndroidManifest.xml:31:17-49
+	android:name
+		ADDED from [androidx.lifecycle:lifecycle-process:2.8.7] /home/gitfudge/.gradle/caches/9.0.0/transforms/c24adfa18306abb51a4f09c5727bacbc/transformed/lifecycle-process-2.8.7/AndroidManifest.xml:30:17-78
+uses-library#androidx.window.extensions
+ADDED from [androidx.window:window:1.0.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/a69646317921a835fcbef709f6de19a3/transformed/window-1.0.0/AndroidManifest.xml:25:9-27:40
+	android:required
+		ADDED from [androidx.window:window:1.0.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/a69646317921a835fcbef709f6de19a3/transformed/window-1.0.0/AndroidManifest.xml:27:13-37
+	android:name
+		ADDED from [androidx.window:window:1.0.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/a69646317921a835fcbef709f6de19a3/transformed/window-1.0.0/AndroidManifest.xml:26:13-54
+uses-library#androidx.window.sidecar
+ADDED from [androidx.window:window:1.0.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/a69646317921a835fcbef709f6de19a3/transformed/window-1.0.0/AndroidManifest.xml:28:9-30:40
+	android:required
+		ADDED from [androidx.window:window:1.0.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/a69646317921a835fcbef709f6de19a3/transformed/window-1.0.0/AndroidManifest.xml:30:13-37
+	android:name
+		ADDED from [androidx.window:window:1.0.0] /home/gitfudge/.gradle/caches/9.0.0/transforms/a69646317921a835fcbef709f6de19a3/transformed/window-1.0.0/AndroidManifest.xml:29:13-51
+permission#${applicationId}.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION
+ADDED from [androidx.core:core:1.13.1] /home/gitfudge/.gradle/caches/9.0.0/transforms/a54e463b99dd32b2f95fdcc17f11e003/transformed/core-1.13.1/AndroidManifest.xml:22:5-24:47
+	android:protectionLevel
+		ADDED from [androidx.core:core:1.13.1] /home/gitfudge/.gradle/caches/9.0.0/transforms/a54e463b99dd32b2f95fdcc17f11e003/transformed/core-1.13.1/AndroidManifest.xml:24:9-44
+	android:name
+		ADDED from [androidx.core:core:1.13.1] /home/gitfudge/.gradle/caches/9.0.0/transforms/a54e463b99dd32b2f95fdcc17f11e003/transformed/core-1.13.1/AndroidManifest.xml:23:9-81
+permission#dev.gitfudge.musicworkbench.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION
+ADDED from [androidx.core:core:1.13.1] /home/gitfudge/.gradle/caches/9.0.0/transforms/a54e463b99dd32b2f95fdcc17f11e003/transformed/core-1.13.1/AndroidManifest.xml:22:5-24:47
+	android:protectionLevel
+		ADDED from [androidx.core:core:1.13.1] /home/gitfudge/.gradle/caches/9.0.0/transforms/a54e463b99dd32b2f95fdcc17f11e003/transformed/core-1.13.1/AndroidManifest.xml:24:9-44
+	android:name
+		ADDED from [androidx.core:core:1.13.1] /home/gitfudge/.gradle/caches/9.0.0/transforms/a54e463b99dd32b2f95fdcc17f11e003/transformed/core-1.13.1/AndroidManifest.xml:23:9-81
+uses-permission#${applicationId}.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION
+ADDED from [androidx.core:core:1.13.1] /home/gitfudge/.gradle/caches/9.0.0/transforms/a54e463b99dd32b2f95fdcc17f11e003/transformed/core-1.13.1/AndroidManifest.xml:26:5-97
+	android:name
+		ADDED from [androidx.core:core:1.13.1] /home/gitfudge/.gradle/caches/9.0.0/transforms/a54e463b99dd32b2f95fdcc17f11e003/transformed/core-1.13.1/AndroidManifest.xml:26:22-94
+uses-permission#dev.gitfudge.musicworkbench.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION
+ADDED from [androidx.core:core:1.13.1] /home/gitfudge/.gradle/caches/9.0.0/transforms/a54e463b99dd32b2f95fdcc17f11e003/transformed/core-1.13.1/AndroidManifest.xml:26:5-97
+	android:name
+		ADDED from [androidx.core:core:1.13.1] /home/gitfudge/.gradle/caches/9.0.0/transforms/a54e463b99dd32b2f95fdcc17f11e003/transformed/core-1.13.1/AndroidManifest.xml:26:22-94
+service#androidx.room.MultiInstanceInvalidationService
+ADDED from [androidx.room:room-runtime:2.6.1] /home/gitfudge/.gradle/caches/9.0.0/transforms/8a048d8f5a36b7453bb75449f88864bf/transformed/room-runtime-2.6.1/AndroidManifest.xml:24:9-28:63
+	android:exported
+		ADDED from [androidx.room:room-runtime:2.6.1] /home/gitfudge/.gradle/caches/9.0.0/transforms/8a048d8f5a36b7453bb75449f88864bf/transformed/room-runtime-2.6.1/AndroidManifest.xml:27:13-37
+	tools:ignore
+		ADDED from [androidx.room:room-runtime:2.6.1] /home/gitfudge/.gradle/caches/9.0.0/transforms/8a048d8f5a36b7453bb75449f88864bf/transformed/room-runtime-2.6.1/AndroidManifest.xml:28:13-60
+	android:directBootAware
+		ADDED from [androidx.room:room-runtime:2.6.1] /home/gitfudge/.gradle/caches/9.0.0/transforms/8a048d8f5a36b7453bb75449f88864bf/transformed/room-runtime-2.6.1/AndroidManifest.xml:26:13-43
+	android:name
+		ADDED from [androidx.room:room-runtime:2.6.1] /home/gitfudge/.gradle/caches/9.0.0/transforms/8a048d8f5a36b7453bb75449f88864bf/transformed/room-runtime-2.6.1/AndroidManifest.xml:25:13-74
+meta-data#androidx.profileinstaller.ProfileInstallerInitializer
+ADDED from [androidx.profileinstaller:profileinstaller:1.3.1] /home/gitfudge/.gradle/caches/9.0.0/transforms/c02cb7c2e5c0a220a5db1d9c32b46d70/transformed/profileinstaller-1.3.1/AndroidManifest.xml:29:13-31:52
+	android:value
+		ADDED from [androidx.profileinstaller:profileinstaller:1.3.1] /home/gitfudge/.gradle/caches/9.0.0/transforms/c02cb7c2e5c0a220a5db1d9c32b46d70/transformed/profileinstaller-1.3.1/AndroidManifest.xml:31:17-49
+	android:name
+		ADDED from [androidx.profileinstaller:profileinstaller:1.3.1] /home/gitfudge/.gradle/caches/9.0.0/transforms/c02cb7c2e5c0a220a5db1d9c32b46d70/transformed/profileinstaller-1.3.1/AndroidManifest.xml:30:17-85
+receiver#androidx.profileinstaller.ProfileInstallReceiver
+ADDED from [androidx.profileinstaller:profileinstaller:1.3.1] /home/gitfudge/.gradle/caches/9.0.0/transforms/c02cb7c2e5c0a220a5db1d9c32b46d70/transformed/profileinstaller-1.3.1/AndroidManifest.xml:34:9-52:20
+	android:enabled
+		ADDED from [androidx.profileinstaller:profileinstaller:1.3.1] /home/gitfudge/.gradle/caches/9.0.0/transforms/c02cb7c2e5c0a220a5db1d9c32b46d70/transformed/profileinstaller-1.3.1/AndroidManifest.xml:37:13-35
+	android:exported
+		ADDED from [androidx.profileinstaller:profileinstaller:1.3.1] /home/gitfudge/.gradle/caches/9.0.0/transforms/c02cb7c2e5c0a220a5db1d9c32b46d70/transformed/profileinstaller-1.3.1/AndroidManifest.xml:38:13-36
+	android:permission
+		ADDED from [androidx.profileinstaller:profileinstaller:1.3.1] /home/gitfudge/.gradle/caches/9.0.0/transforms/c02cb7c2e5c0a220a5db1d9c32b46d70/transformed/profileinstaller-1.3.1/AndroidManifest.xml:39:13-57
+	android:directBootAware
+		ADDED from [androidx.profileinstaller:profileinstaller:1.3.1] /home/gitfudge/.gradle/caches/9.0.0/transforms/c02cb7c2e5c0a220a5db1d9c32b46d70/transformed/profileinstaller-1.3.1/AndroidManifest.xml:36:13-44
+	android:name
+		ADDED from [androidx.profileinstaller:profileinstaller:1.3.1] /home/gitfudge/.gradle/caches/9.0.0/transforms/c02cb7c2e5c0a220a5db1d9c32b46d70/transformed/profileinstaller-1.3.1/AndroidManifest.xml:35:13-76
+intent-filter#action:name:androidx.profileinstaller.action.INSTALL_PROFILE
+ADDED from [androidx.profileinstaller:profileinstaller:1.3.1] /home/gitfudge/.gradle/caches/9.0.0/transforms/c02cb7c2e5c0a220a5db1d9c32b46d70/transformed/profileinstaller-1.3.1/AndroidManifest.xml:40:13-42:29
+action#androidx.profileinstaller.action.INSTALL_PROFILE
+ADDED from [androidx.profileinstaller:profileinstaller:1.3.1] /home/gitfudge/.gradle/caches/9.0.0/transforms/c02cb7c2e5c0a220a5db1d9c32b46d70/transformed/profileinstaller-1.3.1/AndroidManifest.xml:41:17-91
+	android:name
+		ADDED from [androidx.profileinstaller:profileinstaller:1.3.1] /home/gitfudge/.gradle/caches/9.0.0/transforms/c02cb7c2e5c0a220a5db1d9c32b46d70/transformed/profileinstaller-1.3.1/AndroidManifest.xml:41:25-88
+intent-filter#action:name:androidx.profileinstaller.action.SKIP_FILE
+ADDED from [androidx.profileinstaller:profileinstaller:1.3.1] /home/gitfudge/.gradle/caches/9.0.0/transforms/c02cb7c2e5c0a220a5db1d9c32b46d70/transformed/profileinstaller-1.3.1/AndroidManifest.xml:43:13-45:29
+action#androidx.profileinstaller.action.SKIP_FILE
+ADDED from [androidx.profileinstaller:profileinstaller:1.3.1] /home/gitfudge/.gradle/caches/9.0.0/transforms/c02cb7c2e5c0a220a5db1d9c32b46d70/transformed/profileinstaller-1.3.1/AndroidManifest.xml:44:17-85
+	android:name
+		ADDED from [androidx.profileinstaller:profileinstaller:1.3.1] /home/gitfudge/.gradle/caches/9.0.0/transforms/c02cb7c2e5c0a220a5db1d9c32b46d70/transformed/profileinstaller-1.3.1/AndroidManifest.xml:44:25-82
+intent-filter#action:name:androidx.profileinstaller.action.SAVE_PROFILE
+ADDED from [androidx.profileinstaller:profileinstaller:1.3.1] /home/gitfudge/.gradle/caches/9.0.0/transforms/c02cb7c2e5c0a220a5db1d9c32b46d70/transformed/profileinstaller-1.3.1/AndroidManifest.xml:46:13-48:29
+action#androidx.profileinstaller.action.SAVE_PROFILE
+ADDED from [androidx.profileinstaller:profileinstaller:1.3.1] /home/gitfudge/.gradle/caches/9.0.0/transforms/c02cb7c2e5c0a220a5db1d9c32b46d70/transformed/profileinstaller-1.3.1/AndroidManifest.xml:47:17-88
+	android:name
+		ADDED from [androidx.profileinstaller:profileinstaller:1.3.1] /home/gitfudge/.gradle/caches/9.0.0/transforms/c02cb7c2e5c0a220a5db1d9c32b46d70/transformed/profileinstaller-1.3.1/AndroidManifest.xml:47:25-85
+intent-filter#action:name:androidx.profileinstaller.action.BENCHMARK_OPERATION
+ADDED from [androidx.profileinstaller:profileinstaller:1.3.1] /home/gitfudge/.gradle/caches/9.0.0/transforms/c02cb7c2e5c0a220a5db1d9c32b46d70/transformed/profileinstaller-1.3.1/AndroidManifest.xml:49:13-51:29
+action#androidx.profileinstaller.action.BENCHMARK_OPERATION
+ADDED from [androidx.profileinstaller:profileinstaller:1.3.1] /home/gitfudge/.gradle/caches/9.0.0/transforms/c02cb7c2e5c0a220a5db1d9c32b46d70/transformed/profileinstaller-1.3.1/AndroidManifest.xml:50:17-95
+	android:name
+		ADDED from [androidx.profileinstaller:profileinstaller:1.3.1] /home/gitfudge/.gradle/caches/9.0.0/transforms/c02cb7c2e5c0a220a5db1d9c32b46d70/transformed/profileinstaller-1.3.1/AndroidManifest.xml:50:25-92

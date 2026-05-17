@@ -1,0 +1,1 @@
+-keep,allowobfuscation,allowshrinking class dev.gitfudge.musicworkbench.ui.detail.TrackDetailViewModel
