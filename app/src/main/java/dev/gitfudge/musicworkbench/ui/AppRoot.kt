@@ -27,6 +27,7 @@ import dev.gitfudge.musicworkbench.ui.library.LibraryViewModel
 import dev.gitfudge.musicworkbench.ui.onboarding.OnboardingScreen
 import dev.gitfudge.musicworkbench.ui.theme.LocalMotion
 import dev.gitfudge.musicworkbench.ui.theme.MusicWorkbenchTheme
+import dev.gitfudge.musicworkbench.ui.unfiled.UnfiledScreen
 
 @Composable
 fun AppRoot(viewModel: MainViewModel) {
@@ -72,6 +73,7 @@ fun AppRoot(viewModel: MainViewModel) {
                                 onAlbumClick = { albumKey ->
                                     navController.navigate("album/${Uri.encode(albumKey)}")
                                 },
+                                onUnfiledClick = { navController.navigate("unfiled") },
                                 viewModel = libraryViewModel,
                             )
                         }
@@ -86,6 +88,14 @@ fun AppRoot(viewModel: MainViewModel) {
                             arguments = listOf(navArgument("albumKey") { type = NavType.StringType }),
                         ) {
                             AlbumDetailScreen(
+                                onBack = { navController.popBackStack() },
+                                onTrackClick = { docUri ->
+                                    navController.navigate("detail/${Uri.encode(docUri)}")
+                                },
+                            )
+                        }
+                        composable("unfiled") {
+                            UnfiledScreen(
                                 onBack = { navController.popBackStack() },
                                 onTrackClick = { docUri ->
                                     navController.navigate("detail/${Uri.encode(docUri)}")

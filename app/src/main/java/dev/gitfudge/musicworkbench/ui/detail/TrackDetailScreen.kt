@@ -251,7 +251,20 @@ private fun TrackDetailContent(
                 .padding(horizontal = spacing.lg, vertical = spacing.md),
             verticalArrangement = Arrangement.spacedBy(spacing.md),
         ) {
+            // ── Lyrics (top, expanded) ───────────────────────────────────────
+            SectionLabel("Lyrics")
+            LyricsSection(
+                track = track,
+                lyricsState = lyricsState,
+                saving = savingLyrics,
+                onFetch = onFetchLyrics,
+                onSave = onSaveLyrics,
+                onDismiss = onDismissLyrics,
+            )
+
             // ── Art ──────────────────────────────────────────────────────────
+            Spacer(Modifier.height(spacing.sm))
+            SectionLabel("Cover art")
             ArtSection(
                 track = track,
                 pendingArtUri = pendingArtUri,
@@ -267,40 +280,27 @@ private fun TrackDetailContent(
                 onBackToCandidates = onBackToCandidates,
             )
 
-            // ── Tags ─────────────────────────────────────────────────────────
-            SectionLabel("Identity")
+            // ── Core tags ────────────────────────────────────────────────────
+            Spacer(Modifier.height(spacing.sm))
+            SectionLabel("Core")
             TagField("Title", form.title, onSetTitle, capitalization = KeyboardCapitalization.Words)
             TagField("Artist", form.artist, onSetArtist, capitalization = KeyboardCapitalization.Words)
+            TagField("Genre", form.genre, onSetGenre)
+
+            // ── Album tags ───────────────────────────────────────────────────
+            Spacer(Modifier.height(spacing.sm))
+            SectionLabel("Album")
             TagField("Album", form.album, onSetAlbum, capitalization = KeyboardCapitalization.Words)
             TagField("Album artist", form.albumArtist, onSetAlbumArtist, capitalization = KeyboardCapitalization.Words)
-
-            Spacer(Modifier.height(spacing.sm))
-            SectionLabel("Track info")
-
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(spacing.md)) {
                 TagField("Track #", form.trackNumber, onSetTrackNumber, KeyboardType.Number, modifier = Modifier.weight(1f))
                 TagField("Disc #", form.discNumber, onSetDiscNumber, KeyboardType.Number, modifier = Modifier.weight(1f))
             }
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(spacing.md)) {
-                TagField("Year", form.year, onSetYear, KeyboardType.Number, modifier = Modifier.weight(1f))
-                TagField("Genre", form.genre, onSetGenre, modifier = Modifier.weight(1f))
-            }
+            TagField("Year", form.year, onSetYear, KeyboardType.Number)
 
             AnimatedVisibility(isDirty, enter = expandVertically(), exit = shrinkVertically()) {
                 ChangesCard(changes)
             }
-
-            // ── Lyrics ───────────────────────────────────────────────────────
-            Spacer(Modifier.height(spacing.sm))
-            SectionLabel("Lyrics")
-            LyricsSection(
-                track = track,
-                lyricsState = lyricsState,
-                saving = savingLyrics,
-                onFetch = onFetchLyrics,
-                onSave = onSaveLyrics,
-                onDismiss = onDismissLyrics,
-            )
 
             Spacer(Modifier.height(spacing.xl))
         }
