@@ -46,7 +46,7 @@ fun AlbumArtPickerSheet(
     ModalBottomSheet(
         onDismissRequest = onSkip,
         sheetState = sheetState,
-        containerColor = colors.surface,
+        containerColor = colors.surfaceContainerHigh,
     ) {
         Column(
             modifier = Modifier

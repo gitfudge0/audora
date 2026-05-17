@@ -1,7 +1,6 @@
 package dev.gitfudge.musicworkbench.ui.library
 
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -56,7 +55,15 @@ fun TrackListItem(
     onLongClick: () -> Unit = {},
 ) {
     val colors = MaterialTheme.colorScheme
-    val containerColor = if (selected) colors.secondaryContainer else colors.surface
+    // DESIGN.md: selected row = full accentContainer fill + checkbox (banned: leading bar).
+    // primaryContainer is mapped to Palette.AccentContainer in the theme.
+    val containerColor = if (selected) colors.primaryContainer else colors.surface
+    val titleColor = if (selected) colors.onPrimaryContainer else colors.onSurface
+    val supportingColor = if (selected) {
+        colors.onPrimaryContainer.copy(alpha = 0.78f)
+    } else {
+        colors.onSurfaceVariant
+    }
 
     ListItem(
         modifier = modifier.combinedClickable(
@@ -75,7 +82,7 @@ fun TrackListItem(
             Text(
                 text = track.displayTitle(),
                 style = MaterialTheme.typography.titleSmall,
-                color = colors.onSurface,
+                color = titleColor,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
@@ -90,7 +97,7 @@ fun TrackListItem(
                     }
                 },
                 style = MaterialTheme.typography.bodySmall,
-                color = colors.onSurfaceVariant,
+                color = supportingColor,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )

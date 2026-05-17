@@ -62,7 +62,7 @@ fun ArtDownloadSheet(
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
-        containerColor = colors.surface,
+        containerColor = colors.surfaceContainerHigh,
     ) {
         Column(
             modifier = Modifier

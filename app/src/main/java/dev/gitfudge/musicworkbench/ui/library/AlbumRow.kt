@@ -53,7 +53,7 @@ fun AlbumRow(
         AlbumTile(summary.coverThumbnailPath)
         Column(
             modifier = Modifier.weight(1f),
-            verticalArrangement = Arrangement.spacedBy(2.dp),
+            verticalArrangement = Arrangement.spacedBy(spacing.hairline + 1.dp),
         ) {
             Text(
                 text = summary.albumLabel,
@@ -76,8 +76,8 @@ fun AlbumRow(
                 overflow = TextOverflow.Ellipsis,
             )
             Row(
-                horizontalArrangement = Arrangement.spacedBy(4.dp),
-                modifier = Modifier.padding(top = 4.dp),
+                horizontalArrangement = Arrangement.spacedBy(spacing.xs),
+                modifier = Modifier.padding(top = spacing.xs),
             ) {
                 AlbumArtStatusChip(summary.artStatus)
                 AlbumLyricsStatusChip(summary.lyricsStatus)

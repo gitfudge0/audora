@@ -2,10 +2,10 @@ package dev.gitfudge.musicworkbench.ui.library
 
 import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -30,12 +30,10 @@ import androidx.compose.material.icons.rounded.Clear
 import androidx.compose.material.icons.rounded.Download
 import androidx.compose.material.icons.rounded.FilterList
 import androidx.compose.material.icons.rounded.Folder
-import androidx.compose.material.icons.rounded.FolderOpen
 import androidx.compose.material.icons.rounded.GraphicEq
 import androidx.compose.material.icons.rounded.Image
 import androidx.compose.material.icons.rounded.Refresh
 import androidx.compose.material.icons.rounded.SwapHoriz
-import androidx.compose.material.icons.automirrored.rounded.ViewList
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.Badge
@@ -80,6 +78,7 @@ import dev.gitfudge.musicworkbench.data.scan.ScanResult
 import dev.gitfudge.musicworkbench.ui.common.AlbumArtPreviewDialog
 import dev.gitfudge.musicworkbench.domain.LibraryFilter
 import dev.gitfudge.musicworkbench.domain.LibrarySort
+import dev.gitfudge.musicworkbench.ui.theme.LocalMotion
 import dev.gitfudge.musicworkbench.ui.theme.LocalSpacing
 import dev.gitfudge.musicworkbench.ui.theme.MusicWorkbenchTheme
 
@@ -334,10 +333,12 @@ private fun LibraryScaffoldContent(
             )
         },
         bottomBar = {
+            val motion = LocalMotion.current
             AnimatedVisibility(
                 visible = isSelecting,
-                enter = slideInVertically { it },
-                exit = slideOutVertically { it },
+                // DESIGN.md motion: 200ms ease-out, never bounce. Default spring is banned.
+                enter = slideInVertically(animationSpec = tween(motion.standard, easing = motion.easeOut)) { it },
+                exit = slideOutVertically(animationSpec = tween(motion.fast, easing = motion.easeOut)) { it },
             ) {
                 SelectionBar(
                     selectedCount = selectedUris.size,
@@ -365,15 +366,9 @@ private fun LibraryScaffoldContent(
                 modifier = Modifier.padding(horizontal = spacing.lg),
             )
 
-            FilterSortBar(
-                filter = filter,
-                sort = sort,
-                onFilterChange = onFilterChange,
-                onSortChange = onSortChange,
-            )
-
-            HorizontalDivider(color = colors.outlineVariant)
-
+            // Scope first (Albums vs Tracks), then refinement (filters/sort) — but only
+            // for the Tracks tab. Filters don't apply to the Albums view and showing
+            // them there is IA drift.
             TabRow(
                 selectedTabIndex = if (tab == dev.gitfudge.musicworkbench.domain.LibraryTab.ALBUMS) 0 else 1,
                 containerColor = colors.background,
@@ -389,6 +384,16 @@ private fun LibraryScaffoldContent(
                     onClick = { onTabChange(dev.gitfudge.musicworkbench.domain.LibraryTab.TRACKS) },
                     text = { Text("Tracks") },
                 )
+            }
+
+            if (tab == dev.gitfudge.musicworkbench.domain.LibraryTab.TRACKS) {
+                FilterSortBar(
+                    filter = filter,
+                    sort = sort,
+                    onFilterChange = onFilterChange,
+                    onSortChange = onSortChange,
+                )
+                HorizontalDivider(color = colors.outlineVariant)
             }
 
             when {
@@ -439,9 +444,6 @@ private fun LibraryScaffoldContent(
 }
 
 @Composable
-private fun FolderHeaderRemoved() {}
-
-@Composable
 private fun SelectionBar(
     selectedCount: Int,
     batchFetchState: BatchFetchState,
@@ -452,18 +454,21 @@ private fun SelectionBar(
 ) {
     val colors = MaterialTheme.colorScheme
     val spacing = LocalSpacing.current
+    // DESIGN.md: batch action bar sits on `surfaceElevated` (== surfaceContainerHigh in the
+    // theme map) with a 1px outline hairline rather than a heavy shadow. No tonal elevation.
     Surface(
-        tonalElevation = 3.dp,
-        color = colors.surface,
+        color = colors.surfaceContainerHigh,
         modifier = Modifier.fillMaxWidth(),
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .navigationBarsPadding()
-                .padding(horizontal = spacing.lg, vertical = spacing.sm),
-            verticalArrangement = Arrangement.spacedBy(spacing.xs),
-        ) {
+        Column(modifier = Modifier.fillMaxWidth()) {
+            HorizontalDivider(color = colors.outline, thickness = 1.dp)
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .navigationBarsPadding()
+                    .padding(horizontal = spacing.lg, vertical = spacing.sm),
+                verticalArrangement = Arrangement.spacedBy(spacing.xs),
+            ) {
             // Top row: count + clear
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -522,6 +527,7 @@ private fun SelectionBar(
                     }
                 }
             }
+            }
         }
     }
 }
@@ -550,12 +556,12 @@ private fun FolderStrip(folderLabel: String, modifier: Modifier = Modifier) {
             Column {
                 Text(
                     text = stringResource(R.string.library_folder_label),
-                    style = MaterialTheme.typography.labelSmall,
+                    style = MaterialTheme.typography.labelMedium,
                     color = colors.onSurfaceVariant,
                 )
                 Text(
                     text = folderLabel,
-                    style = MaterialTheme.typography.bodyLarge,
+                    style = MaterialTheme.typography.bodyMedium,
                     color = colors.onSurface,
                 )
             }
@@ -565,16 +571,17 @@ private fun FolderStrip(folderLabel: String, modifier: Modifier = Modifier) {
 
 @Composable
 private fun ScanProgressRow(scanState: ScanState, modifier: Modifier = Modifier) {
+    val spacing = LocalSpacing.current
     when (scanState) {
         is ScanState.Idle -> {}
 
-        is ScanState.Running -> Column(modifier.padding(vertical = 6.dp)) {
+        is ScanState.Running -> Column(modifier.padding(vertical = spacing.xs)) {
             LinearProgressIndicator(
                 modifier = Modifier.fillMaxWidth(),
                 color = MaterialTheme.colorScheme.primary,
                 trackColor = MaterialTheme.colorScheme.surfaceContainer,
             )
-            Spacer(Modifier.height(4.dp))
+            Spacer(Modifier.height(spacing.xs))
             Text(
                 text = if (scanState.count == 0) {
                     stringResource(R.string.scan_running)
@@ -595,14 +602,14 @@ private fun ScanProgressRow(scanState: ScanState, modifier: Modifier = Modifier)
             ),
             style = MaterialTheme.typography.labelSmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = modifier.padding(vertical = 6.dp),
+            modifier = modifier.padding(vertical = spacing.xs),
         )
 
         is ScanState.Failed -> Text(
             text = stringResource(R.string.scan_failed, scanState.cause),
             style = MaterialTheme.typography.labelSmall,
             color = MaterialTheme.colorScheme.error,
-            modifier = modifier.padding(vertical = 6.dp),
+            modifier = modifier.padding(vertical = spacing.xs),
         )
     }
 }

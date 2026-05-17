@@ -3,6 +3,7 @@ package dev.gitfudge.musicworkbench.ui.onboarding
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -16,7 +17,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.FolderOpen
 import androidx.compose.material.icons.rounded.Lock
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -25,6 +25,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -38,6 +39,10 @@ import dev.gitfudge.musicworkbench.ui.theme.MusicWorkbenchTheme
 fun OnboardingScreen(onPickFolder: () -> Unit) {
     val spacing = LocalSpacing.current
     val colors = MaterialTheme.colorScheme
+    // Matches the Android adaptive icon mask used by the launcher (~22dp on a
+    // 96dp tile), not `shapes.extraLarge` (24dp), so the in-app logo matches
+    // the launcher icon shape exactly.
+    val launcherIconShape = RoundedCornerShape(22.dp)
 
     Column(
         modifier = Modifier
@@ -48,7 +53,7 @@ fun OnboardingScreen(onPickFolder: () -> Unit) {
         verticalArrangement = Arrangement.Center,
     ) {
         Surface(
-            shape = RoundedCornerShape(22.dp),
+            shape = launcherIconShape,
             color = colors.surfaceContainer,
             modifier = Modifier.size(96.dp),
         ) {
@@ -58,8 +63,8 @@ fun OnboardingScreen(onPickFolder: () -> Unit) {
                     contentDescription = stringResource(R.string.cd_app_logo),
                     modifier = Modifier
                         .size(96.dp)
-                        .clip(RoundedCornerShape(22.dp)),
-                    tint = androidx.compose.ui.graphics.Color.Unspecified,
+                        .clip(launcherIconShape),
+                    tint = Color.Unspecified,
                 )
             }
         }
@@ -85,13 +90,11 @@ fun OnboardingScreen(onPickFolder: () -> Unit) {
 
         Spacer(Modifier.height(spacing.xl))
 
+        // Button defaults already use `colors.primary` / `colors.onPrimary` from the
+        // theme; no explicit colors block needed.
         Button(
             onClick = onPickFolder,
-            colors = ButtonDefaults.buttonColors(
-                containerColor = colors.primary,
-                contentColor = colors.onPrimary,
-            ),
-            contentPadding = androidx.compose.foundation.layout.PaddingValues(
+            contentPadding = PaddingValues(
                 horizontal = spacing.xl,
                 vertical = spacing.md,
             ),

@@ -61,7 +61,7 @@ fun LyricsDownloadSheet(
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
-        containerColor = colors.surface,
+        containerColor = colors.surfaceContainerHigh,
     ) {
         Column(
             modifier = Modifier

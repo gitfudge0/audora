@@ -23,7 +23,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Album
-import androidx.compose.material.icons.rounded.ArrowBack
+import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.Edit
 import androidx.compose.material.icons.rounded.Image
 import androidx.compose.material.icons.rounded.Lyrics
@@ -74,16 +74,12 @@ fun AlbumDetailScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = {
-                    Text(
-                        text = ui?.albumLabel ?: "Album",
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                },
+                // Constant title; the album name lives in the hero, so duplicating it
+                // here just creates two title areas competing for attention.
+                title = { Text("Album") },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.Rounded.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = "Back")
                     }
                 },
             )
@@ -286,7 +282,7 @@ private fun AlbumHero(
         }
         Column(
             modifier = Modifier.weight(1f),
-            verticalArrangement = Arrangement.spacedBy(2.dp),
+            verticalArrangement = Arrangement.spacedBy(spacing.hairline + 1.dp),
         ) {
             Text(
                 text = title,
@@ -309,7 +305,7 @@ private fun AlbumHero(
                     year?.let { append(" · $it") }
                     if (mixedArtist) append(" · Mixed")
                 },
-                style = MaterialTheme.typography.bodySmall,
+                style = MaterialTheme.typography.labelSmall,
                 color = colors.onSurfaceVariant,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
@@ -521,7 +517,9 @@ private fun LyricsBatchReviewSheet(
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
-        containerColor = colors.surface,
+        // DESIGN.md: bottom sheets sit on surfaceElevated with the outline hairline,
+        // not on surface.
+        containerColor = colors.surfaceContainerHigh,
     ) {
         Column(
             modifier = Modifier

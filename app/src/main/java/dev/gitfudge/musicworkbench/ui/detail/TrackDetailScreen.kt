@@ -71,6 +71,7 @@ import dev.gitfudge.musicworkbench.domain.displayTitle
 import dev.gitfudge.musicworkbench.ui.common.AlbumArtPreviewDialog
 import dev.gitfudge.musicworkbench.domain.lyricsStatus
 import dev.gitfudge.musicworkbench.ui.library.previewTrack
+import dev.gitfudge.musicworkbench.ui.theme.LocalMotion
 import dev.gitfudge.musicworkbench.ui.theme.LocalSpacing
 import dev.gitfudge.musicworkbench.ui.theme.LocalStatusColors
 import dev.gitfudge.musicworkbench.ui.theme.MusicWorkbenchTheme
@@ -194,6 +195,7 @@ private fun TrackDetailContent(
 ) {
     val spacing = LocalSpacing.current
     val colors = MaterialTheme.colorScheme
+    val motion = LocalMotion.current
 
     Scaffold(
         containerColor = colors.background,
@@ -298,7 +300,12 @@ private fun TrackDetailContent(
             }
             TagField("Year", form.year, onSetYear, KeyboardType.Number)
 
-            AnimatedVisibility(isDirty, enter = expandVertically(), exit = shrinkVertically()) {
+            // DESIGN.md motion: tween-only, 150-250ms ease-out. Default spring would bounce.
+            AnimatedVisibility(
+                isDirty,
+                enter = expandVertically(animationSpec = motion.spec(motion.standard)),
+                exit = shrinkVertically(animationSpec = motion.spec(motion.fast)),
+            ) {
                 ChangesCard(changes)
             }
 
@@ -555,7 +562,8 @@ private fun LyricsSection(
                 )
             }
             FilledTonalButton(onClick = onFetch, modifier = Modifier.fillMaxWidth()) {
-                Icon(Icons.Rounded.MusicNote, null, Modifier.size(18.dp).padding(end = 4.dp))
+                Icon(Icons.Rounded.MusicNote, null, Modifier.size(18.dp))
+                Spacer(Modifier.size(spacing.xs))
                 Text("Fetch from LRCLIB")
             }
         }
