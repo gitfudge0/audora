@@ -12,8 +12,15 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Album
 import androidx.compose.material.icons.rounded.ArrowBack
@@ -40,9 +47,12 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import dev.gitfudge.musicworkbench.data.db.TrackEntity
+import dev.gitfudge.musicworkbench.ui.common.AlbumArtPreviewDialog
 import dev.gitfudge.musicworkbench.ui.common.AlbumArtStatusChip
 import dev.gitfudge.musicworkbench.ui.common.AlbumLyricsStatusChip
 import dev.gitfudge.musicworkbench.ui.common.AlbumTagStatusChip
+import dev.gitfudge.musicworkbench.ui.library.AlbumArtPickerSheet
+import dev.gitfudge.musicworkbench.ui.library.AlbumPickerState
 import dev.gitfudge.musicworkbench.ui.theme.LocalSpacing
 import java.io.File
 
@@ -54,6 +64,10 @@ fun AlbumDetailScreen(
     viewModel: AlbumDetailViewModel = hiltViewModel(),
 ) {
     val ui by viewModel.ui.collectAsStateWithLifecycle()
+    val tagEditorOpen by viewModel.tagEditorOpen.collectAsStateWithLifecycle()
+    val tagWriteInFlight by viewModel.tagWriteInFlight.collectAsStateWithLifecycle()
+    val artFlow by viewModel.artFlow.collectAsStateWithLifecycle()
+    val lyricsBatch by viewModel.lyricsBatch.collectAsStateWithLifecycle()
     val spacing = LocalSpacing.current
 
     Scaffold(
@@ -115,7 +129,7 @@ fun AlbumDetailScreen(
                     year = state.year,
                     trackCount = state.trackCount,
                     mixedArtist = state.mixedArtist,
-                    onTapCover = { /* Phase 4: hero art editor */ },
+                    onTapCover = { viewModel.startHeroArt() },
                 )
                 Row(
                     modifier = Modifier
@@ -128,9 +142,9 @@ fun AlbumDetailScreen(
                     AlbumTagStatusChip(state.tagStatus)
                 }
                 AlbumActionRow(
-                    onGetArt = { /* Phase 4 */ },
-                    onGetLyrics = { /* Phase 4 */ },
-                    onEditTags = { /* Phase 4 */ },
+                    onGetArt = { viewModel.startHeroArt() },
+                    onGetLyrics = { viewModel.startLyricsBatch() },
+                    onEditTags = { viewModel.openTagEditor() },
                 )
                 Spacer(Modifier.height(spacing.sm))
             }
@@ -156,6 +170,62 @@ fun AlbumDetailScreen(
                     )
                 }
             }
+        }
+
+        // ── Overlays ────────────────────────────────────────────────────────
+        if (tagEditorOpen) {
+            AlbumTagEditorSheet(
+                initial = viewModel.computeInitial(state.tracks),
+                onApply = { viewModel.applyTagEdits(it) },
+                onDismiss = { viewModel.dismissTagEditor() },
+            )
+        }
+        if (tagWriteInFlight) {
+            ProgressDialog("Saving tags…")
+        }
+
+        when (val af = artFlow) {
+            AlbumArtFlowState.Idle -> Unit
+            AlbumArtFlowState.Searching -> ProgressDialog("Searching for cover art…")
+            is AlbumArtFlowState.NoMatch -> InfoDialog(af.message) { viewModel.dismissArtFlow() }
+            is AlbumArtFlowState.Picker -> AlbumArtPickerSheet(
+                state = AlbumPickerState(
+                    albumName = state.albumLabel,
+                    artistName = state.artistLabel,
+                    trackCount = state.trackCount,
+                    candidates = af.candidates,
+                    albumIndex = 1,
+                    totalAlbums = 1,
+                ),
+                onPick = { viewModel.pickArtCandidate(it) },
+                onSkip = { viewModel.dismissArtFlow() },
+            )
+            is AlbumArtFlowState.Preview -> AlbumArtPreviewDialog(
+                bytes = af.bytes,
+                title = state.albumLabel,
+                artist = state.artistLabel,
+                saving = false,
+                onApply = { viewModel.confirmHeroArt() },
+                onBack = { viewModel.backToPicker() },
+                subtitle = "${state.trackCount} ${if (state.trackCount == 1) "track" else "tracks"}",
+            )
+            is AlbumArtFlowState.Writing -> ProgressDialog("Saving art… ${af.done}/${af.total}")
+        }
+
+        when (val lb = lyricsBatch) {
+            LyricsBatchPhase.Idle -> Unit
+            is LyricsBatchPhase.Fetching -> ProgressDialog("Fetching lyrics… ${lb.done}/${lb.total}")
+            is LyricsBatchPhase.Writing -> ProgressDialog("Saving lyrics… ${lb.done}/${lb.total}")
+            is LyricsBatchPhase.Review -> LyricsBatchReviewSheet(
+                review = lb,
+                onToggle = { viewModel.toggleReviewItem(it) },
+                onCommit = { viewModel.commitLyricsReview() },
+                onDismiss = { viewModel.dismissLyricsBatch() },
+            )
+            is LyricsBatchPhase.Done -> InfoDialog(
+                "Saved ${lb.saved} · Skipped ${lb.skipped} · No match ${lb.noMatch}" +
+                    if (lb.failed > 0) " · Failed ${lb.failed}" else "",
+            ) { viewModel.dismissLyricsBatch() }
         }
     }
 }
@@ -316,5 +386,116 @@ private fun AlbumTrackRow(
             style = MaterialTheme.typography.labelSmall,
             color = colors.onSurfaceVariant,
         )
+    }
+}
+
+@Composable
+private fun ProgressDialog(message: String) {
+    AlertDialog(
+        onDismissRequest = {},
+        confirmButton = {},
+        title = { Text(message) },
+        text = {
+            Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator()
+            }
+        },
+    )
+}
+
+@Composable
+private fun InfoDialog(message: String, onDismiss: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        confirmButton = { TextButton(onClick = onDismiss) { Text("OK") } },
+        text = { Text(message) },
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun LyricsBatchReviewSheet(
+    review: LyricsBatchPhase.Review,
+    onToggle: (String) -> Unit,
+    onCommit: () -> Unit,
+    onDismiss: () -> Unit,
+) {
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val spacing = LocalSpacing.current
+    val colors = MaterialTheme.colorScheme
+    val acceptedCount = review.items.count { it.accept }
+
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = sheetState,
+        containerColor = colors.surface,
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .navigationBarsPadding()
+                .padding(horizontal = spacing.lg, vertical = spacing.md),
+            verticalArrangement = Arrangement.spacedBy(spacing.sm),
+        ) {
+            Text(
+                text = "Review lyrics",
+                style = MaterialTheme.typography.titleMedium,
+                color = colors.onSurface,
+            )
+            val summary = buildString {
+                append("Found ${review.items.size}")
+                if (review.noMatchCount > 0) append(" · No match ${review.noMatchCount}")
+                if (review.failedCount > 0) append(" · Failed ${review.failedCount}")
+            }
+            Text(summary, style = MaterialTheme.typography.bodySmall, color = colors.onSurfaceVariant)
+
+            LazyColumn(
+                modifier = Modifier.fillMaxWidth().weight(1f, fill = false),
+                verticalArrangement = Arrangement.spacedBy(spacing.xs),
+            ) {
+                items(review.items, key = { it.documentUri }) { item ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { onToggle(item.documentUri) }
+                            .padding(vertical = spacing.xs),
+                        verticalAlignment = Alignment.Top,
+                        horizontalArrangement = Arrangement.spacedBy(spacing.sm),
+                    ) {
+                        Checkbox(checked = item.accept, onCheckedChange = { onToggle(item.documentUri) })
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = item.title + if (item.isSynced) "  (synced)" else "",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = colors.onSurface,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                            )
+                            Text(
+                                text = item.previewText,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = colors.onSurfaceVariant,
+                                maxLines = 3,
+                                overflow = TextOverflow.Ellipsis,
+                            )
+                        }
+                    }
+                }
+            }
+
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(top = spacing.sm),
+                horizontalArrangement = Arrangement.spacedBy(spacing.sm),
+            ) {
+                TextButton(onClick = onDismiss, modifier = Modifier.weight(1f)) { Text("Cancel") }
+                FilledTonalButton(
+                    onClick = onCommit,
+                    enabled = acceptedCount > 0,
+                    modifier = Modifier.weight(1f),
+                ) {
+                    Text("Save $acceptedCount")
+                }
+            }
+        }
     }
 }
