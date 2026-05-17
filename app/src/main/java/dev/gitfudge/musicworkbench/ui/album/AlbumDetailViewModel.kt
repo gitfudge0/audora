@@ -192,6 +192,9 @@ class AlbumDetailViewModel @Inject constructor(
     private val _artFlow = MutableStateFlow<AlbumArtFlowState>(AlbumArtFlowState.Idle)
     val artFlow: StateFlow<AlbumArtFlowState> = _artFlow.asStateFlow()
 
+    private val _artDownloading = MutableStateFlow(false)
+    val artDownloading: StateFlow<Boolean> = _artDownloading.asStateFlow()
+
     fun startHeroArt() {
         val state = ui.value ?: return
         if (_artFlow.value !is AlbumArtFlowState.Idle) return
@@ -212,13 +215,19 @@ class AlbumDetailViewModel @Inject constructor(
     }
 
     fun pickArtCandidate(candidate: CoverArtCandidate) {
+        if (_artDownloading.value) return
         viewModelScope.launch {
-            val bytes = runCatching { coverArtRepository.downloadFullRes(candidate) }.getOrNull()
-            if (bytes == null) {
-                _artFlow.value = AlbumArtFlowState.NoMatch("Could not download that image")
-                return@launch
+            _artDownloading.value = true
+            try {
+                val bytes = runCatching { coverArtRepository.downloadFullRes(candidate) }.getOrNull()
+                if (bytes == null) {
+                    _artFlow.value = AlbumArtFlowState.NoMatch("Could not download that image")
+                    return@launch
+                }
+                _artFlow.value = AlbumArtFlowState.Preview(candidate, bytes)
+            } finally {
+                _artDownloading.value = false
             }
-            _artFlow.value = AlbumArtFlowState.Preview(candidate, bytes)
         }
     }
 

@@ -56,6 +56,10 @@ import dev.gitfudge.musicworkbench.ui.MainViewModel;
 import dev.gitfudge.musicworkbench.ui.MainViewModel_HiltModules;
 import dev.gitfudge.musicworkbench.ui.MainViewModel_HiltModules_BindsModule_Binds_LazyMapKey;
 import dev.gitfudge.musicworkbench.ui.MainViewModel_HiltModules_KeyModule_Provide_LazyMapKey;
+import dev.gitfudge.musicworkbench.ui.album.AlbumDetailViewModel;
+import dev.gitfudge.musicworkbench.ui.album.AlbumDetailViewModel_HiltModules;
+import dev.gitfudge.musicworkbench.ui.album.AlbumDetailViewModel_HiltModules_BindsModule_Binds_LazyMapKey;
+import dev.gitfudge.musicworkbench.ui.album.AlbumDetailViewModel_HiltModules_KeyModule_Provide_LazyMapKey;
 import dev.gitfudge.musicworkbench.ui.detail.TrackDetailViewModel;
 import dev.gitfudge.musicworkbench.ui.detail.TrackDetailViewModel_HiltModules;
 import dev.gitfudge.musicworkbench.ui.detail.TrackDetailViewModel_HiltModules_BindsModule_Binds_LazyMapKey;
@@ -64,6 +68,10 @@ import dev.gitfudge.musicworkbench.ui.library.LibraryViewModel;
 import dev.gitfudge.musicworkbench.ui.library.LibraryViewModel_HiltModules;
 import dev.gitfudge.musicworkbench.ui.library.LibraryViewModel_HiltModules_BindsModule_Binds_LazyMapKey;
 import dev.gitfudge.musicworkbench.ui.library.LibraryViewModel_HiltModules_KeyModule_Provide_LazyMapKey;
+import dev.gitfudge.musicworkbench.ui.unfiled.UnfiledViewModel;
+import dev.gitfudge.musicworkbench.ui.unfiled.UnfiledViewModel_HiltModules;
+import dev.gitfudge.musicworkbench.ui.unfiled.UnfiledViewModel_HiltModules_BindsModule_Binds_LazyMapKey;
+import dev.gitfudge.musicworkbench.ui.unfiled.UnfiledViewModel_HiltModules_KeyModule_Provide_LazyMapKey;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
@@ -401,7 +409,7 @@ public final class DaggerMusicWorkbenchApp_HiltComponents_SingletonC {
 
     @Override
     public Map<Class<?>, Boolean> getViewModelKeys() {
-      return LazyClassKeyMap.<Boolean>of(MapBuilder.<String, Boolean>newMapBuilder(3).put(LibraryViewModel_HiltModules_KeyModule_Provide_LazyMapKey.lazyClassKeyName, LibraryViewModel_HiltModules.KeyModule.provide()).put(MainViewModel_HiltModules_KeyModule_Provide_LazyMapKey.lazyClassKeyName, MainViewModel_HiltModules.KeyModule.provide()).put(TrackDetailViewModel_HiltModules_KeyModule_Provide_LazyMapKey.lazyClassKeyName, TrackDetailViewModel_HiltModules.KeyModule.provide()).build());
+      return LazyClassKeyMap.<Boolean>of(MapBuilder.<String, Boolean>newMapBuilder(5).put(AlbumDetailViewModel_HiltModules_KeyModule_Provide_LazyMapKey.lazyClassKeyName, AlbumDetailViewModel_HiltModules.KeyModule.provide()).put(LibraryViewModel_HiltModules_KeyModule_Provide_LazyMapKey.lazyClassKeyName, LibraryViewModel_HiltModules.KeyModule.provide()).put(MainViewModel_HiltModules_KeyModule_Provide_LazyMapKey.lazyClassKeyName, MainViewModel_HiltModules.KeyModule.provide()).put(TrackDetailViewModel_HiltModules_KeyModule_Provide_LazyMapKey.lazyClassKeyName, TrackDetailViewModel_HiltModules.KeyModule.provide()).put(UnfiledViewModel_HiltModules_KeyModule_Provide_LazyMapKey.lazyClassKeyName, UnfiledViewModel_HiltModules.KeyModule.provide()).build());
     }
 
     @Override
@@ -433,11 +441,15 @@ public final class DaggerMusicWorkbenchApp_HiltComponents_SingletonC {
 
     private final ViewModelCImpl viewModelCImpl = this;
 
+    Provider<AlbumDetailViewModel> albumDetailViewModelProvider;
+
     Provider<LibraryViewModel> libraryViewModelProvider;
 
     Provider<MainViewModel> mainViewModelProvider;
 
     Provider<TrackDetailViewModel> trackDetailViewModelProvider;
+
+    Provider<UnfiledViewModel> unfiledViewModelProvider;
 
     ViewModelCImpl(SingletonCImpl singletonCImpl, ActivityRetainedCImpl activityRetainedCImpl,
         SavedStateHandle savedStateHandleParam, ViewModelLifecycle viewModelLifecycleParam) {
@@ -455,14 +467,16 @@ public final class DaggerMusicWorkbenchApp_HiltComponents_SingletonC {
     @SuppressWarnings("unchecked")
     private void initialize(final SavedStateHandle savedStateHandleParam,
         final ViewModelLifecycle viewModelLifecycleParam) {
-      this.libraryViewModelProvider = new SwitchingProvider<>(singletonCImpl, activityRetainedCImpl, viewModelCImpl, 0);
-      this.mainViewModelProvider = new SwitchingProvider<>(singletonCImpl, activityRetainedCImpl, viewModelCImpl, 1);
-      this.trackDetailViewModelProvider = new SwitchingProvider<>(singletonCImpl, activityRetainedCImpl, viewModelCImpl, 2);
+      this.albumDetailViewModelProvider = new SwitchingProvider<>(singletonCImpl, activityRetainedCImpl, viewModelCImpl, 0);
+      this.libraryViewModelProvider = new SwitchingProvider<>(singletonCImpl, activityRetainedCImpl, viewModelCImpl, 1);
+      this.mainViewModelProvider = new SwitchingProvider<>(singletonCImpl, activityRetainedCImpl, viewModelCImpl, 2);
+      this.trackDetailViewModelProvider = new SwitchingProvider<>(singletonCImpl, activityRetainedCImpl, viewModelCImpl, 3);
+      this.unfiledViewModelProvider = new SwitchingProvider<>(singletonCImpl, activityRetainedCImpl, viewModelCImpl, 4);
     }
 
     @Override
     public Map<Class<?>, javax.inject.Provider<ViewModel>> getHiltViewModelMap() {
-      return LazyClassKeyMap.<javax.inject.Provider<ViewModel>>of(MapBuilder.<String, javax.inject.Provider<ViewModel>>newMapBuilder(3).put(LibraryViewModel_HiltModules_BindsModule_Binds_LazyMapKey.lazyClassKeyName, ((Provider) (libraryViewModelProvider))).put(MainViewModel_HiltModules_BindsModule_Binds_LazyMapKey.lazyClassKeyName, ((Provider) (mainViewModelProvider))).put(TrackDetailViewModel_HiltModules_BindsModule_Binds_LazyMapKey.lazyClassKeyName, ((Provider) (trackDetailViewModelProvider))).build());
+      return LazyClassKeyMap.<javax.inject.Provider<ViewModel>>of(MapBuilder.<String, javax.inject.Provider<ViewModel>>newMapBuilder(5).put(AlbumDetailViewModel_HiltModules_BindsModule_Binds_LazyMapKey.lazyClassKeyName, ((Provider) (albumDetailViewModelProvider))).put(LibraryViewModel_HiltModules_BindsModule_Binds_LazyMapKey.lazyClassKeyName, ((Provider) (libraryViewModelProvider))).put(MainViewModel_HiltModules_BindsModule_Binds_LazyMapKey.lazyClassKeyName, ((Provider) (mainViewModelProvider))).put(TrackDetailViewModel_HiltModules_BindsModule_Binds_LazyMapKey.lazyClassKeyName, ((Provider) (trackDetailViewModelProvider))).put(UnfiledViewModel_HiltModules_BindsModule_Binds_LazyMapKey.lazyClassKeyName, ((Provider) (unfiledViewModelProvider))).build());
     }
 
     @Override
@@ -491,14 +505,20 @@ public final class DaggerMusicWorkbenchApp_HiltComponents_SingletonC {
       @Override
       public T get() {
         switch (id) {
-          case 0: // dev.gitfudge.musicworkbench.ui.library.LibraryViewModel
+          case 0: // dev.gitfudge.musicworkbench.ui.album.AlbumDetailViewModel
+          return (T) new AlbumDetailViewModel(viewModelCImpl.savedStateHandle, singletonCImpl.settingsRepositoryProvider.get(), singletonCImpl.trackDao(), singletonCImpl.tagWriterProvider.get(), singletonCImpl.coverArtRepositoryProvider.get(), singletonCImpl.lrclibRepositoryProvider.get(), singletonCImpl.lrcWriterProvider.get());
+
+          case 1: // dev.gitfudge.musicworkbench.ui.library.LibraryViewModel
           return (T) new LibraryViewModel(singletonCImpl.settingsRepositoryProvider.get(), singletonCImpl.trackDao(), viewModelCImpl.mediaScanner(), singletonCImpl.lrclibRepositoryProvider.get(), singletonCImpl.lrcWriterProvider.get(), singletonCImpl.tagWriterProvider.get(), singletonCImpl.coverArtRepositoryProvider.get());
 
-          case 1: // dev.gitfudge.musicworkbench.ui.MainViewModel
+          case 2: // dev.gitfudge.musicworkbench.ui.MainViewModel
           return (T) new MainViewModel(ApplicationContextModule_ProvideContextFactory.provideContext(singletonCImpl.applicationContextModule), singletonCImpl.settingsRepositoryProvider.get());
 
-          case 2: // dev.gitfudge.musicworkbench.ui.detail.TrackDetailViewModel
+          case 3: // dev.gitfudge.musicworkbench.ui.detail.TrackDetailViewModel
           return (T) new TrackDetailViewModel(viewModelCImpl.savedStateHandle, singletonCImpl.trackDao(), singletonCImpl.tagWriterProvider.get(), singletonCImpl.lrclibRepositoryProvider.get(), singletonCImpl.lrcWriterProvider.get(), singletonCImpl.settingsRepositoryProvider.get(), singletonCImpl.coverArtRepositoryProvider.get());
+
+          case 4: // dev.gitfudge.musicworkbench.ui.unfiled.UnfiledViewModel
+          return (T) new UnfiledViewModel(singletonCImpl.settingsRepositoryProvider.get(), singletonCImpl.trackDao());
 
           default: throw new AssertionError(id);
         }
@@ -586,9 +606,17 @@ public final class DaggerMusicWorkbenchApp_HiltComponents_SingletonC {
 
     Provider<LibraryDatabase> provideDatabaseProvider;
 
+    Provider<TagWriter> tagWriterProvider;
+
     Provider<Json> provideJsonProvider;
 
     Provider<OkHttpClient> provideOkHttpProvider;
+
+    Provider<Retrofit> provideMusicBrainzRetrofitProvider;
+
+    Provider<MusicBrainzApi> provideMusicBrainzApiProvider;
+
+    Provider<CoverArtRepository> coverArtRepositoryProvider;
 
     Provider<Retrofit> provideRetrofitProvider;
 
@@ -597,14 +625,6 @@ public final class DaggerMusicWorkbenchApp_HiltComponents_SingletonC {
     Provider<LrclibRepository> lrclibRepositoryProvider;
 
     Provider<LrcWriter> lrcWriterProvider;
-
-    Provider<TagWriter> tagWriterProvider;
-
-    Provider<Retrofit> provideMusicBrainzRetrofitProvider;
-
-    Provider<MusicBrainzApi> provideMusicBrainzApiProvider;
-
-    Provider<CoverArtRepository> coverArtRepositoryProvider;
 
     SingletonCImpl(ApplicationContextModule applicationContextModuleParam) {
       this.applicationContextModule = applicationContextModuleParam;
@@ -625,16 +645,16 @@ public final class DaggerMusicWorkbenchApp_HiltComponents_SingletonC {
       this.provideDataStoreProvider = DoubleCheck.provider(new SwitchingProvider<DataStore<Preferences>>(singletonCImpl, 1));
       this.settingsRepositoryProvider = DoubleCheck.provider(new SwitchingProvider<SettingsRepository>(singletonCImpl, 0));
       this.provideDatabaseProvider = DoubleCheck.provider(new SwitchingProvider<LibraryDatabase>(singletonCImpl, 2));
-      this.provideJsonProvider = DoubleCheck.provider(new SwitchingProvider<Json>(singletonCImpl, 6));
-      this.provideOkHttpProvider = DoubleCheck.provider(new SwitchingProvider<OkHttpClient>(singletonCImpl, 7));
-      this.provideRetrofitProvider = DoubleCheck.provider(new SwitchingProvider<Retrofit>(singletonCImpl, 5));
-      this.provideLrclibApiProvider = DoubleCheck.provider(new SwitchingProvider<LrclibApi>(singletonCImpl, 4));
-      this.lrclibRepositoryProvider = DoubleCheck.provider(new SwitchingProvider<LrclibRepository>(singletonCImpl, 3));
-      this.lrcWriterProvider = DoubleCheck.provider(new SwitchingProvider<LrcWriter>(singletonCImpl, 8));
-      this.tagWriterProvider = DoubleCheck.provider(new SwitchingProvider<TagWriter>(singletonCImpl, 9));
-      this.provideMusicBrainzRetrofitProvider = DoubleCheck.provider(new SwitchingProvider<Retrofit>(singletonCImpl, 12));
-      this.provideMusicBrainzApiProvider = DoubleCheck.provider(new SwitchingProvider<MusicBrainzApi>(singletonCImpl, 11));
-      this.coverArtRepositoryProvider = DoubleCheck.provider(new SwitchingProvider<CoverArtRepository>(singletonCImpl, 10));
+      this.tagWriterProvider = DoubleCheck.provider(new SwitchingProvider<TagWriter>(singletonCImpl, 3));
+      this.provideJsonProvider = DoubleCheck.provider(new SwitchingProvider<Json>(singletonCImpl, 7));
+      this.provideOkHttpProvider = DoubleCheck.provider(new SwitchingProvider<OkHttpClient>(singletonCImpl, 8));
+      this.provideMusicBrainzRetrofitProvider = DoubleCheck.provider(new SwitchingProvider<Retrofit>(singletonCImpl, 6));
+      this.provideMusicBrainzApiProvider = DoubleCheck.provider(new SwitchingProvider<MusicBrainzApi>(singletonCImpl, 5));
+      this.coverArtRepositoryProvider = DoubleCheck.provider(new SwitchingProvider<CoverArtRepository>(singletonCImpl, 4));
+      this.provideRetrofitProvider = DoubleCheck.provider(new SwitchingProvider<Retrofit>(singletonCImpl, 11));
+      this.provideLrclibApiProvider = DoubleCheck.provider(new SwitchingProvider<LrclibApi>(singletonCImpl, 10));
+      this.lrclibRepositoryProvider = DoubleCheck.provider(new SwitchingProvider<LrclibRepository>(singletonCImpl, 9));
+      this.lrcWriterProvider = DoubleCheck.provider(new SwitchingProvider<LrcWriter>(singletonCImpl, 12));
     }
 
     @Override
@@ -685,35 +705,35 @@ public final class DaggerMusicWorkbenchApp_HiltComponents_SingletonC {
           case 2: // dev.gitfudge.musicworkbench.data.db.LibraryDatabase
           return (T) DatabaseModule_ProvideDatabaseFactory.provideDatabase(ApplicationContextModule_ProvideContextFactory.provideContext(singletonCImpl.applicationContextModule));
 
-          case 3: // dev.gitfudge.musicworkbench.data.lyrics.LrclibRepository
-          return (T) new LrclibRepository(singletonCImpl.provideLrclibApiProvider.get());
-
-          case 4: // dev.gitfudge.musicworkbench.data.lyrics.LrclibApi
-          return (T) NetworkModule_ProvideLrclibApiFactory.provideLrclibApi(singletonCImpl.provideRetrofitProvider.get());
-
-          case 5: // @javax.inject.Named("lrclib") retrofit2.Retrofit
-          return (T) NetworkModule_ProvideRetrofitFactory.provideRetrofit(singletonCImpl.provideJsonProvider.get(), singletonCImpl.provideOkHttpProvider.get());
-
-          case 6: // kotlinx.serialization.json.Json
-          return (T) NetworkModule_ProvideJsonFactory.provideJson();
-
-          case 7: // okhttp3.OkHttpClient
-          return (T) NetworkModule_ProvideOkHttpFactory.provideOkHttp();
-
-          case 8: // dev.gitfudge.musicworkbench.data.lyrics.LrcWriter
-          return (T) new LrcWriter(ApplicationContextModule_ProvideContextFactory.provideContext(singletonCImpl.applicationContextModule));
-
-          case 9: // dev.gitfudge.musicworkbench.data.tags.TagWriter
+          case 3: // dev.gitfudge.musicworkbench.data.tags.TagWriter
           return (T) new TagWriter(ApplicationContextModule_ProvideContextFactory.provideContext(singletonCImpl.applicationContextModule));
 
-          case 10: // dev.gitfudge.musicworkbench.data.art.CoverArtRepository
+          case 4: // dev.gitfudge.musicworkbench.data.art.CoverArtRepository
           return (T) new CoverArtRepository(singletonCImpl.provideMusicBrainzApiProvider.get(), singletonCImpl.provideOkHttpProvider.get(), singletonCImpl.provideJsonProvider.get());
 
-          case 11: // dev.gitfudge.musicworkbench.data.art.MusicBrainzApi
+          case 5: // dev.gitfudge.musicworkbench.data.art.MusicBrainzApi
           return (T) NetworkModule_ProvideMusicBrainzApiFactory.provideMusicBrainzApi(singletonCImpl.provideMusicBrainzRetrofitProvider.get());
 
-          case 12: // @javax.inject.Named("musicbrainz") retrofit2.Retrofit
+          case 6: // @javax.inject.Named("musicbrainz") retrofit2.Retrofit
           return (T) NetworkModule_ProvideMusicBrainzRetrofitFactory.provideMusicBrainzRetrofit(singletonCImpl.provideJsonProvider.get(), singletonCImpl.provideOkHttpProvider.get());
+
+          case 7: // kotlinx.serialization.json.Json
+          return (T) NetworkModule_ProvideJsonFactory.provideJson();
+
+          case 8: // okhttp3.OkHttpClient
+          return (T) NetworkModule_ProvideOkHttpFactory.provideOkHttp();
+
+          case 9: // dev.gitfudge.musicworkbench.data.lyrics.LrclibRepository
+          return (T) new LrclibRepository(singletonCImpl.provideLrclibApiProvider.get());
+
+          case 10: // dev.gitfudge.musicworkbench.data.lyrics.LrclibApi
+          return (T) NetworkModule_ProvideLrclibApiFactory.provideLrclibApi(singletonCImpl.provideRetrofitProvider.get());
+
+          case 11: // @javax.inject.Named("lrclib") retrofit2.Retrofit
+          return (T) NetworkModule_ProvideRetrofitFactory.provideRetrofit(singletonCImpl.provideJsonProvider.get(), singletonCImpl.provideOkHttpProvider.get());
+
+          case 12: // dev.gitfudge.musicworkbench.data.lyrics.LrcWriter
+          return (T) new LrcWriter(ApplicationContextModule_ProvideContextFactory.provideContext(singletonCImpl.applicationContextModule));
 
           default: throw new AssertionError(id);
         }

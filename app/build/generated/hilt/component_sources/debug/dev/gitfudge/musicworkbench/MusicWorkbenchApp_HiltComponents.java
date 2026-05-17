@@ -49,8 +49,10 @@ import dev.gitfudge.musicworkbench.di.DataModule;
 import dev.gitfudge.musicworkbench.di.DatabaseModule;
 import dev.gitfudge.musicworkbench.di.NetworkModule;
 import dev.gitfudge.musicworkbench.ui.MainViewModel_HiltModules;
+import dev.gitfudge.musicworkbench.ui.album.AlbumDetailViewModel_HiltModules;
 import dev.gitfudge.musicworkbench.ui.detail.TrackDetailViewModel_HiltModules;
 import dev.gitfudge.musicworkbench.ui.library.LibraryViewModel_HiltModules;
+import dev.gitfudge.musicworkbench.ui.unfiled.UnfiledViewModel_HiltModules;
 import javax.annotation.processing.Generated;
 import javax.inject.Singleton;
 
@@ -161,13 +163,15 @@ public final class MusicWorkbenchApp_HiltComponents {
 
   @Subcomponent(
       modules = {
+          AlbumDetailViewModel_HiltModules.KeyModule.class,
           HiltWrapper_ActivityRetainedComponentManager_LifecycleModule.class,
           HiltWrapper_SavedStateHandleModule.class,
           LibraryViewModel_HiltModules.KeyModule.class,
           MainViewModel_HiltModules.KeyModule.class,
           ActivityCBuilderModule.class,
           ViewModelCBuilderModule.class,
-          TrackDetailViewModel_HiltModules.KeyModule.class
+          TrackDetailViewModel_HiltModules.KeyModule.class,
+          UnfiledViewModel_HiltModules.KeyModule.class
       }
   )
   @ActivityRetainedScoped
@@ -203,10 +207,12 @@ public final class MusicWorkbenchApp_HiltComponents {
 
   @Subcomponent(
       modules = {
+          AlbumDetailViewModel_HiltModules.BindsModule.class,
           HiltWrapper_HiltViewModelFactory_ViewModelModule.class,
           LibraryViewModel_HiltModules.BindsModule.class,
           MainViewModel_HiltModules.BindsModule.class,
-          TrackDetailViewModel_HiltModules.BindsModule.class
+          TrackDetailViewModel_HiltModules.BindsModule.class,
+          UnfiledViewModel_HiltModules.BindsModule.class
       }
   )
   @ViewModelScoped

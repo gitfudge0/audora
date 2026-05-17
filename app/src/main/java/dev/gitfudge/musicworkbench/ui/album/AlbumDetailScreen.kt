@@ -67,6 +67,7 @@ fun AlbumDetailScreen(
     val tagEditorOpen by viewModel.tagEditorOpen.collectAsStateWithLifecycle()
     val tagWriteInFlight by viewModel.tagWriteInFlight.collectAsStateWithLifecycle()
     val artFlow by viewModel.artFlow.collectAsStateWithLifecycle()
+    val artDownloading by viewModel.artDownloading.collectAsStateWithLifecycle()
     val lyricsBatch by viewModel.lyricsBatch.collectAsStateWithLifecycle()
     val spacing = LocalSpacing.current
 
@@ -199,6 +200,7 @@ fun AlbumDetailScreen(
                 ),
                 onPick = { viewModel.pickArtCandidate(it) },
                 onSkip = { viewModel.dismissArtFlow() },
+                downloadingCandidate = artDownloading,
             )
             is AlbumArtFlowState.Preview -> AlbumArtPreviewDialog(
                 bytes = af.bytes,
