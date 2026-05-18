@@ -1,0 +1,64 @@
+name: Release Build
+
+on:
+  release:
+    types:
+      - published
+
+permissions:
+  contents: write
+
+jobs:
+  build-release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Build release APK and bundle
+        run: ./gradlew assembleRelease bundleRelease
+
+      - name: Capture artifact names
+        id: artifacts
+        run: |
+          apk_name="$(basename app/build/outputs/apk/release/*.apk)"
+          aab_name="$(basename app/build/outputs/bundle/release/*.aab)"
+          {
+            echo "apk_name=$apk_name"
+            echo "aab_name=$aab_name"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Upload workflow artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: musicworkbench-release-artifacts
+          path: |
+            app/build/outputs/apk/release/*.apk
+            app/build/outputs/bundle/release/*.aab
+          if-no-files-found: error
+
+      - name: Attach artifacts to GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          append_body: true
+          body: |
+            ## Build artifacts
+
+            - `${{ steps.artifacts.outputs.apk_name }}`
+            - `${{ steps.artifacts.outputs.aab_name }}`
+          files: |
+            app/build/outputs/apk/release/*.apk
+            app/build/outputs/bundle/release/*.aab
