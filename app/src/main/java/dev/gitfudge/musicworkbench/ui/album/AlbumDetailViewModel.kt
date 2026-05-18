@@ -12,11 +12,12 @@ import dev.gitfudge.musicworkbench.data.db.TrackEntity
 import dev.gitfudge.musicworkbench.data.lyrics.LrcWriter
 import dev.gitfudge.musicworkbench.data.lyrics.LrclibRepository
 import dev.gitfudge.musicworkbench.data.settings.SettingsRepository
-import dev.gitfudge.musicworkbench.data.tags.TagEdits
+import dev.gitfudge.musicworkbench.data.tags.BulkTagApplier
 import dev.gitfudge.musicworkbench.data.tags.TagWriter
 import dev.gitfudge.musicworkbench.domain.AlbumArtStatus
 import dev.gitfudge.musicworkbench.domain.AlbumLyricsStatus
 import dev.gitfudge.musicworkbench.domain.AlbumTagStatus
+import dev.gitfudge.musicworkbench.domain.BulkTagField
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -49,6 +50,7 @@ data class AlbumDetailUi(
     val tagStatus: AlbumTagStatus,
     val mixedArtist: Boolean,
     val tracks: List<TrackEntity>,
+    val lowResThresholdPx: Int,
 )
 
 // ── Hero art ─────────────────────────────────────────────────────────────────
@@ -97,6 +99,7 @@ class AlbumDetailViewModel @Inject constructor(
     private val settings: SettingsRepository,
     private val trackDao: TrackDao,
     private val tagWriter: TagWriter,
+    private val bulkTagApplier: BulkTagApplier,
     private val coverArtRepository: CoverArtRepository,
     private val lrclibRepo: LrclibRepository,
     private val lrcWriter: LrcWriter,
@@ -109,10 +112,14 @@ class AlbumDetailViewModel @Inject constructor(
     @OptIn(ExperimentalCoroutinesApi::class)
     val ui: StateFlow<AlbumDetailUi?> = settings.settings
         .flatMapLatest { s ->
-            val uri = s.musicTreeUri ?: return@flatMapLatest flowOf(emptyList())
+            val uri = s.musicTreeUri
+                ?: return@flatMapLatest flowOf(emptyList<TrackEntity>() to s.lowResThresholdPx)
             trackDao.observeTracksInAlbum(uri, albumKey)
+                .map { tracks -> tracks to s.lowResThresholdPx }
         }
-        .map { tracks -> if (tracks.isEmpty()) null else summarize(albumKey, tracks) }
+        .map { (tracks, lowResPx) ->
+            if (tracks.isEmpty()) null else summarize(albumKey, tracks, lowResPx)
+        }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
     // ── Tag editor ───────────────────────────────────────────────────────────
@@ -143,45 +150,15 @@ class AlbumDetailViewModel @Inject constructor(
     fun applyTagEdits(edits: AlbumTagEdits) {
         if (_tagWriteInFlight.value) return
         val tracks = ui.value?.tracks ?: return
+        val bulkEdits = buildMap {
+            edits.album?.let { put(BulkTagField.ALBUM, it) }
+            edits.albumArtist?.let { put(BulkTagField.ALBUM_ARTIST, it) }
+            edits.year?.let { put(BulkTagField.YEAR, it) }
+            edits.genre?.let { put(BulkTagField.GENRE, it) }
+        }
         viewModelScope.launch {
             _tagWriteInFlight.value = true
-            runCatching {
-                tracks.forEach { track ->
-                    val newAlbum = edits.album ?: track.album ?: ""
-                    val newAlbumArtist = edits.albumArtist ?: track.albumArtist ?: ""
-                    val newYear = edits.year ?: track.year ?: ""
-                    val newGenre = edits.genre ?: track.genre ?: ""
-                    val tagEdits = TagEdits(
-                        title = track.title ?: "",
-                        artist = track.artist ?: "",
-                        album = newAlbum,
-                        albumArtist = newAlbumArtist,
-                        trackNumber = track.trackNumber?.toString() ?: "",
-                        discNumber = track.discNumber?.toString() ?: "",
-                        year = newYear,
-                        genre = newGenre,
-                    )
-                    val newMod = tagWriter.write(track.documentUri.toUri(), track.displayName, tagEdits)
-                    val resolvedAlbum = newAlbum.ifBlank { track.album }
-                    val newKey = buildAlbumKey(
-                        albumArtist = newAlbumArtist.ifBlank { track.albumArtist },
-                        artist = track.artist,
-                        album = resolvedAlbum,
-                    )
-                    trackDao.upsertAll(listOf(
-                        track.copy(
-                            album = resolvedAlbum,
-                            albumArtist = newAlbumArtist.ifBlank { track.albumArtist },
-                            year = newYear.ifBlank { track.year },
-                            genre = newGenre.ifBlank { track.genre },
-                            albumKey = newKey,
-                            albumLabel = resolvedAlbum ?: track.albumLabel,
-                            lastModified = newMod,
-                            scannedAt = System.currentTimeMillis(),
-                        ),
-                    ))
-                }
-            }
+            runCatching { bulkTagApplier.apply(tracks, bulkEdits) }
             _tagWriteInFlight.value = false
             _tagEditorOpen.value = false
         }
@@ -239,13 +216,17 @@ class AlbumDetailViewModel @Inject constructor(
             var done = 0
             tracks.forEach { track ->
                 runCatching {
-                    val res = tagWriter.writeArtFromBytes(track.documentUri.toUri(), track.displayName, preview.bytes)
+                    val res = tagWriter.writeArtFromBytes(
+                        track.documentUri.toUri(), track.displayName, preview.bytes,
+                        expectedLastModified = track.lastModified,
+                    )
                     trackDao.upsertAll(listOf(
                         track.copy(
                             hasEmbeddedArt = true,
                             artWidth = res.artWidth,
                             artHeight = res.artHeight,
                             thumbnailPath = res.thumbnailPath,
+                            artScanPending = false,
                             lastModified = res.lastModified,
                             scannedAt = System.currentTimeMillis(),
                         ),
@@ -377,7 +358,10 @@ class AlbumDetailViewModel @Inject constructor(
                     lrcWriter.write(treeUri, docUri, track.displayName, item.fullText)
                     var newMod = track.lastModified
                     if (s.embedLyricsInTags) {
-                        newMod = tagWriter.writeLyrics(docUri, track.displayName, item.fullText)
+                        newMod = tagWriter.writeLyrics(
+                            docUri, track.displayName, item.fullText,
+                            expectedLastModified = track.lastModified,
+                        )
                     }
                     trackDao.upsertAll(listOf(
                         track.copy(
@@ -404,15 +388,17 @@ class AlbumDetailViewModel @Inject constructor(
     fun dismissLyricsBatch() { _lyricsBatch.value = LyricsBatchPhase.Idle }
 }
 
-private fun summarize(albumKey: String, tracks: List<TrackEntity>): AlbumDetailUi {
+private fun summarize(albumKey: String, tracks: List<TrackEntity>, lowResThresholdPx: Int): AlbumDetailUi {
     val distinctArtists = tracks
         .map { (it.albumArtist?.takeIf(String::isNotBlank) ?: it.artist ?: "").trim() }
         .filter { it.isNotEmpty() }
         .distinct()
     val mixed = distinctArtists.size > 1
 
+    val pendingArt = tracks.count { it.artScanPending }
     val withArt = tracks.count { it.hasEmbeddedArt }
     val artStatus = when {
+        pendingArt > 0 -> AlbumArtStatus.PENDING
         withArt == 0 -> AlbumArtStatus.ALL_MISSING
         withArt < tracks.size -> AlbumArtStatus.PARTIAL
         else -> AlbumArtStatus.ALL_OK
@@ -446,12 +432,6 @@ private fun summarize(albumKey: String, tracks: List<TrackEntity>): AlbumDetailU
         tagStatus = tagStatus,
         mixedArtist = mixed,
         tracks = tracks,
+        lowResThresholdPx = lowResThresholdPx,
     )
-}
-
-/** Matches MediaScanner.kt: concatenated lowercase, no separator. */
-private fun buildAlbumKey(albumArtist: String?, artist: String?, album: String?): String {
-    val groupArtist = (albumArtist ?: artist ?: "").lowercase()
-    val groupAlbum = album.orEmpty().lowercase()
-    return "$groupArtist$groupAlbum"
 }

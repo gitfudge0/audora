@@ -3,6 +3,7 @@ package dev.gitfudge.musicworkbench.ui.library
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -25,7 +26,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -37,6 +37,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import dev.gitfudge.musicworkbench.R
+import dev.gitfudge.musicworkbench.ui.components.AppBottomSheet
 import dev.gitfudge.musicworkbench.ui.theme.LocalSpacing
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -58,10 +59,21 @@ fun LyricsDownloadSheet(
     val total = entries.size
     val progress = if (total > 0) done.toFloat() / total.toFloat() else 0f
 
-    ModalBottomSheet(
+    AppBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
-        containerColor = colors.surfaceContainerHigh,
+        title = stringResource(R.string.downloads_title),
+        titleTrailing = {
+            if (!isRunning && entries.isNotEmpty()) {
+                TextButton(onClick = onClear) {
+                    Text(stringResource(R.string.downloads_clear))
+                }
+            }
+            IconButton(onClick = onDismiss) {
+                Icon(Icons.Rounded.Close, contentDescription = stringResource(R.string.downloads_dismiss))
+            }
+        },
+        contentPadding = PaddingValues(0.dp),
     ) {
         Column(
             modifier = Modifier
@@ -69,40 +81,17 @@ fun LyricsDownloadSheet(
                 .navigationBarsPadding()
                 .padding(bottom = spacing.lg),
         ) {
-            // Header
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = spacing.lg, vertical = spacing.sm),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(
-                    text = stringResource(R.string.downloads_title),
-                    style = MaterialTheme.typography.titleMedium,
-                    color = colors.onSurface,
-                    modifier = Modifier.weight(1f),
-                )
-                if (!isRunning && entries.isNotEmpty()) {
-                    TextButton(onClick = onClear) {
-                        Text(stringResource(R.string.downloads_clear))
-                    }
-                }
-                IconButton(onClick = onDismiss) {
-                    Icon(Icons.Rounded.Close, contentDescription = stringResource(R.string.downloads_dismiss))
-                }
-            }
-
             // Overall progress bar (visible while running)
             if (isRunning || entries.isNotEmpty()) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = spacing.lg),
+                        .padding(horizontal = spacing.lg, vertical = spacing.sm),
                 ) {
                     LinearProgressIndicator(
                         progress = { progress },
                         modifier = Modifier.fillMaxWidth(),
-                        color = colors.primary,
+                        color = colors.secondary,
                         trackColor = colors.surfaceContainer,
                     )
                     Spacer(Modifier.height(4.dp))
@@ -119,7 +108,6 @@ fun LyricsDownloadSheet(
                         color = colors.onSurfaceVariant,
                     )
                 }
-                Spacer(Modifier.height(spacing.md))
                 HorizontalDivider(color = colors.outlineVariant)
             }
 
@@ -163,38 +151,46 @@ private fun DownloadEntryRow(entry: DownloadEntry) {
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(spacing.md),
     ) {
-        // Status icon
-        Box(modifier = Modifier.size(32.dp), contentAlignment = Alignment.Center) {
-            when (entry.status) {
-                DownloadStatus.PENDING -> Icon(
-                    imageVector = Icons.Rounded.MusicNote,
-                    contentDescription = null,
-                    tint = colors.onSurfaceVariant,
-                    modifier = Modifier.size(18.dp),
-                )
-                DownloadStatus.DOWNLOADING -> CircularProgressIndicator(
-                    modifier = Modifier.size(20.dp),
-                    strokeWidth = 2.dp,
-                    color = colors.primary,
-                )
-                DownloadStatus.SAVED -> Icon(
-                    imageVector = Icons.Rounded.CheckCircle,
-                    contentDescription = null,
-                    tint = colors.primary,
-                    modifier = Modifier.size(20.dp),
-                )
-                DownloadStatus.NO_MATCH -> Icon(
-                    imageVector = Icons.Rounded.Warning,
-                    contentDescription = null,
-                    tint = colors.onSurfaceVariant,
-                    modifier = Modifier.size(20.dp),
-                )
-                DownloadStatus.FAILED -> Icon(
-                    imageVector = Icons.Rounded.Warning,
-                    contentDescription = null,
-                    tint = colors.error,
-                    modifier = Modifier.size(20.dp),
-                )
+        // Status icon in a 32dp rounded container (prototype: surfaceContainer
+        // tile, semantic-colored glyph).
+        val sc = dev.gitfudge.musicworkbench.ui.theme.LocalStatusColors.current
+        androidx.compose.material3.Surface(
+            shape = dev.gitfudge.musicworkbench.ui.theme.LocalShapeScale.current.sm,
+            color = colors.surfaceContainer,
+            modifier = Modifier.size(32.dp),
+        ) {
+            Box(contentAlignment = Alignment.Center) {
+                when (entry.status) {
+                    DownloadStatus.PENDING -> Icon(
+                        imageVector = Icons.Rounded.MusicNote,
+                        contentDescription = null,
+                        tint = colors.onSurfaceVariant,
+                        modifier = Modifier.size(18.dp),
+                    )
+                    DownloadStatus.DOWNLOADING -> CircularProgressIndicator(
+                        modifier = Modifier.size(16.dp),
+                        strokeWidth = 2.dp,
+                        color = colors.secondary,
+                    )
+                    DownloadStatus.SAVED -> Icon(
+                        imageVector = Icons.Rounded.CheckCircle,
+                        contentDescription = null,
+                        tint = sc.ok,
+                        modifier = Modifier.size(18.dp),
+                    )
+                    DownloadStatus.NO_MATCH -> Icon(
+                        imageVector = Icons.Rounded.Warning,
+                        contentDescription = null,
+                        tint = sc.warn,
+                        modifier = Modifier.size(18.dp),
+                    )
+                    DownloadStatus.FAILED -> Icon(
+                        imageVector = Icons.Rounded.Warning,
+                        contentDescription = null,
+                        tint = sc.missing,
+                        modifier = Modifier.size(18.dp),
+                    )
+                }
             }
         }
 
@@ -218,8 +214,9 @@ private fun DownloadEntryRow(entry: DownloadEntry) {
                 text = statusLabel,
                 style = MaterialTheme.typography.labelSmall,
                 color = when (entry.status) {
-                    DownloadStatus.FAILED -> colors.error
-                    DownloadStatus.SAVED -> colors.primary
+                    DownloadStatus.FAILED -> sc.missing
+                    DownloadStatus.SAVED -> sc.ok
+                    DownloadStatus.NO_MATCH -> sc.warn
                     else -> colors.onSurfaceVariant
                 },
             )

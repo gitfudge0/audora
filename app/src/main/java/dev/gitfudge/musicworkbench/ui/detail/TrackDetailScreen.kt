@@ -24,35 +24,26 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material.icons.automirrored.rounded.ArrowForward
 import androidx.compose.material.icons.rounded.Check
+import androidx.compose.material.icons.rounded.Edit
 import androidx.compose.material.icons.rounded.MusicNote
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilledTonalButton
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
@@ -62,7 +53,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import coil.compose.AsyncImage
 import dev.gitfudge.musicworkbench.data.art.CoverArtCandidate
 import dev.gitfudge.musicworkbench.data.db.TrackEntity
 import dev.gitfudge.musicworkbench.data.lyrics.LrclibResult
@@ -70,8 +60,21 @@ import dev.gitfudge.musicworkbench.domain.LyricsStatus
 import dev.gitfudge.musicworkbench.domain.displayTitle
 import dev.gitfudge.musicworkbench.ui.common.AlbumArtPreviewDialog
 import dev.gitfudge.musicworkbench.domain.lyricsStatus
+import dev.gitfudge.musicworkbench.ui.components.AppPanel
+import dev.gitfudge.musicworkbench.ui.components.AppTextField
+import dev.gitfudge.musicworkbench.ui.components.AppTopBar
+import dev.gitfudge.musicworkbench.ui.components.ArtTile
+import dev.gitfudge.musicworkbench.ui.components.ArtTileHero
+import dev.gitfudge.musicworkbench.ui.components.ArtTileSize
+import dev.gitfudge.musicworkbench.ui.components.GhostButton
+import dev.gitfudge.musicworkbench.ui.components.Hairline
+import dev.gitfudge.musicworkbench.ui.components.OutlineButton
+import dev.gitfudge.musicworkbench.ui.components.PrimaryButton
+import dev.gitfudge.musicworkbench.ui.components.SecondaryButton
 import dev.gitfudge.musicworkbench.ui.library.previewTrack
+import dev.gitfudge.musicworkbench.ui.theme.AppTextStyles
 import dev.gitfudge.musicworkbench.ui.theme.LocalMotion
+import dev.gitfudge.musicworkbench.ui.theme.LocalShapeScale
 import dev.gitfudge.musicworkbench.ui.theme.LocalSpacing
 import dev.gitfudge.musicworkbench.ui.theme.LocalStatusColors
 import dev.gitfudge.musicworkbench.ui.theme.MusicWorkbenchTheme
@@ -92,12 +95,24 @@ fun TrackDetailScreen(
     val pendingArtUri by viewModel.pendingArtUri.collectAsStateWithLifecycle()
     val artSaveState by viewModel.artSaveState.collectAsStateWithLifecycle()
     val artFetchState by viewModel.artFetchState.collectAsStateWithLifecycle()
+    val manualLyrics by viewModel.manualLyrics.collectAsStateWithLifecycle()
 
     val snackbar = remember { SnackbarHostState() }
 
     LaunchedEffect(tagSaveState) {
         when (val s = tagSaveState) {
-            is DetailSaveState.Done -> { snackbar.showSnackbar("Tags saved", duration = SnackbarDuration.Short); viewModel.dismissTagSave() }
+            is DetailSaveState.Done -> {
+                viewModel.dismissTagSave()
+                val result = snackbar.showSnackbar(
+                    message = "Tags written",
+                    actionLabel = "Undo",
+                    duration = SnackbarDuration.Short,
+                )
+                if (result == androidx.compose.material3.SnackbarResult.ActionPerformed) {
+                    viewModel.undoTags()
+                    snackbar.showSnackbar("Reverted", duration = SnackbarDuration.Short)
+                }
+            }
             is DetailSaveState.Failed -> { snackbar.showSnackbar(s.message, duration = SnackbarDuration.Long); viewModel.dismissTagSave() }
             else -> {}
         }
@@ -142,9 +157,17 @@ fun TrackDetailScreen(
         onSetDiscNumber = viewModel::setDiscNumber,
         onSetYear = viewModel::setYear,
         onSetGenre = viewModel::setGenre,
+        onSetComposer = viewModel::setComposer,
+        onSetComment = viewModel::setComment,
+        onSetCompilation = viewModel::setCompilation,
         onFetchLyrics = viewModel::fetchLyrics,
         onSaveLyrics = viewModel::saveLyrics,
         onDismissLyrics = viewModel::dismissLyrics,
+        manualLyrics = manualLyrics,
+        onStartEditLyrics = viewModel::startEditLyrics,
+        onManualLyricsChange = viewModel::setManualLyrics,
+        onCancelEditLyrics = viewModel::cancelEditLyrics,
+        onSaveManualLyrics = viewModel::saveManualLyrics,
         onPickArt = { pickImage.launch(PickVisualMediaRequest(PickVisualMedia.ImageOnly)) },
         onSaveArt = viewModel::saveArt,
         onClearPendingArt = viewModel::clearPendingArt,
@@ -180,9 +203,17 @@ private fun TrackDetailContent(
     onSetDiscNumber: (String) -> Unit,
     onSetYear: (String) -> Unit,
     onSetGenre: (String) -> Unit,
+    onSetComposer: (String) -> Unit,
+    onSetComment: (String) -> Unit,
+    onSetCompilation: (Boolean) -> Unit,
     onFetchLyrics: () -> Unit,
     onSaveLyrics: () -> Unit,
     onDismissLyrics: () -> Unit,
+    manualLyrics: String?,
+    onStartEditLyrics: () -> Unit,
+    onManualLyricsChange: (String) -> Unit,
+    onCancelEditLyrics: () -> Unit,
+    onSaveManualLyrics: () -> Unit,
     onPickArt: () -> Unit,
     onSaveArt: () -> Unit,
     onClearPendingArt: () -> Unit,
@@ -201,14 +232,8 @@ private fun TrackDetailContent(
         containerColor = colors.background,
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = track?.displayTitle() ?: "Track",
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                },
+            AppTopBar(
+                title = track?.displayTitle() ?: "Track",
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = "Back")
@@ -219,22 +244,19 @@ private fun TrackDetailContent(
                         CircularProgressIndicator(
                             modifier = Modifier.size(24.dp).padding(end = spacing.sm),
                             strokeWidth = 2.dp,
-                            color = colors.primary,
+                            color = colors.secondary,
                         )
                     } else {
                         IconButton(onClick = onSaveTags, enabled = isDirty) {
                             Icon(
                                 Icons.Rounded.Check,
                                 contentDescription = "Save tags",
-                                tint = if (isDirty) colors.primary else colors.onSurfaceVariant,
+                                // Sodium when there's a write pending (design: state accent).
+                                tint = if (isDirty) colors.secondary else colors.onSurfaceVariant,
                             )
                         }
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = colors.background,
-                    titleContentColor = colors.onBackground,
-                ),
             )
         },
     ) { innerPadding ->
@@ -253,6 +275,9 @@ private fun TrackDetailContent(
                 .padding(horizontal = spacing.lg, vertical = spacing.md),
             verticalArrangement = Arrangement.spacedBy(spacing.md),
         ) {
+            // File metadata strip — hardware-style facts in mono, dot-separated.
+            FileMetaStrip(track)
+
             // ── Lyrics (top, expanded) ───────────────────────────────────────
             SectionLabel("Lyrics")
             LyricsSection(
@@ -262,6 +287,11 @@ private fun TrackDetailContent(
                 onFetch = onFetchLyrics,
                 onSave = onSaveLyrics,
                 onDismiss = onDismissLyrics,
+                manualLyrics = manualLyrics,
+                onStartEdit = onStartEditLyrics,
+                onManualChange = onManualLyricsChange,
+                onCancelEdit = onCancelEditLyrics,
+                onSaveManual = onSaveManualLyrics,
             )
 
             // ── Art ──────────────────────────────────────────────────────────
@@ -300,13 +330,40 @@ private fun TrackDetailContent(
             }
             TagField("Year", form.year, onSetYear, KeyboardType.Number)
 
+            // ── More tags ────────────────────────────────────────────────────
+            Spacer(Modifier.height(spacing.sm))
+            SectionLabel("More")
+            TagField("Composer", form.composer, onSetComposer, capitalization = KeyboardCapitalization.Words)
+            TagField("Comment", form.comment, onSetComment)
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { onSetCompilation(!form.compilation) }
+                    .padding(vertical = spacing.sm),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                Text(
+                    "Part of a compilation",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+                androidx.compose.material3.Switch(
+                    checked = form.compilation,
+                    onCheckedChange = onSetCompilation,
+                )
+            }
+
             // DESIGN.md motion: tween-only, 150-250ms ease-out. Default spring would bounce.
             AnimatedVisibility(
                 isDirty,
                 enter = expandVertically(animationSpec = motion.spec(motion.standard)),
                 exit = shrinkVertically(animationSpec = motion.spec(motion.fast)),
             ) {
-                ChangesCard(changes)
+                Column(verticalArrangement = Arrangement.spacedBy(spacing.md)) {
+                    SectionLabel("Pending changes")
+                    ChangesCard(changes, saving = savingTags, onWrite = onSaveTags)
+                }
             }
 
             Spacer(Modifier.height(spacing.xl))
@@ -338,58 +395,44 @@ private fun ArtSection(
 
     // Current art thumbnail — always shown when available
     if (currentThumb != null || track.hasEmbeddedArt) {
-        Surface(
-            shape = MaterialTheme.shapes.medium,
-            color = colors.surfaceContainer,
+        ArtTileHero(
+            model = currentThumb,
+            contentDescription = "Album art",
             modifier = Modifier.fillMaxWidth().height(200.dp),
-        ) {
-            AsyncImage(
-                model = currentThumb,
-                contentDescription = "Album art",
-                contentScale = ContentScale.Crop,
-                modifier = Modifier.fillMaxSize(),
-            )
-        }
+        )
     }
 
     // Action area: fetch UI replaces gallery controls when non-Idle
     when (artFetchState) {
         is ArtFetchState.Idle -> {
             if (pendingArtUri != null) {
-                Surface(
-                    shape = MaterialTheme.shapes.medium,
-                    color = colors.surfaceContainer,
+                ArtTileHero(
+                    model = pendingArtUri,
+                    contentDescription = "New art preview",
                     modifier = Modifier.fillMaxWidth().height(200.dp),
-                ) {
-                    AsyncImage(
-                        model = pendingArtUri,
-                        contentDescription = "New art preview",
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier.fillMaxSize(),
-                    )
-                }
+                )
                 Row(horizontalArrangement = Arrangement.spacedBy(spacing.md)) {
                     if (savingArt) {
                         CircularProgressIndicator(Modifier.size(24.dp).align(Alignment.CenterVertically), strokeWidth = 2.dp)
                     } else {
-                        Button(onClick = onSaveArt, modifier = Modifier.weight(1f)) {
+                        PrimaryButton(onClick = onSaveArt, modifier = Modifier.weight(1f)) {
                             Text("Save new art")
                         }
-                        OutlinedButton(onClick = onClearPendingArt, modifier = Modifier.weight(1f)) {
+                        OutlineButton(onClick = onClearPendingArt, modifier = Modifier.weight(1f)) {
                             Text("Cancel")
                         }
                     }
                 }
             } else {
                 Row(horizontalArrangement = Arrangement.spacedBy(spacing.md)) {
-                    OutlinedButton(onClick = onPickArt, modifier = Modifier.weight(1f)) {
+                    OutlineButton(onClick = onPickArt, modifier = Modifier.weight(1f)) {
                         Text(
                             "From gallery",
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
                         )
                     }
-                    FilledTonalButton(onClick = onFetchArt, modifier = Modifier.weight(1f)) {
+                    SecondaryButton(onClick = onFetchArt, modifier = Modifier.weight(1f)) {
                         Text(
                             "From web",
                             maxLines = 1,
@@ -453,7 +496,7 @@ private fun ArtSection(
                 style = MaterialTheme.typography.bodySmall,
                 color = colors.onSurfaceVariant,
             )
-            TextButton(onClick = onDismissFetchArt, modifier = Modifier.fillMaxWidth()) {
+            GhostButton(onClick = onDismissFetchArt, modifier = Modifier.fillMaxWidth()) {
                 Text("Dismiss")
             }
         }
@@ -464,7 +507,7 @@ private fun ArtSection(
                 style = MaterialTheme.typography.bodySmall,
                 color = colors.error,
             )
-            TextButton(onClick = onDismissFetchArt, modifier = Modifier.fillMaxWidth()) {
+            GhostButton(onClick = onDismissFetchArt, modifier = Modifier.fillMaxWidth()) {
                 Text("Dismiss")
             }
         }
@@ -489,30 +532,17 @@ private fun CandidateRow(
         )
         LazyRow(horizontalArrangement = Arrangement.spacedBy(spacing.sm)) {
             items(candidates, key = { it.mbid }) { candidate ->
-                CandidateThumbnail(candidate = candidate, onClick = { onSelect(candidate) })
+                ArtTile(
+                    model = candidate.thumbnailUrl,
+                    contentDescription = "${candidate.title} by ${candidate.artist}",
+                    size = ArtTileSize.Lg,
+                    modifier = Modifier.clickable { onSelect(candidate) },
+                )
             }
         }
-        TextButton(onClick = onDismiss, modifier = Modifier.fillMaxWidth()) {
+        GhostButton(onClick = onDismiss, modifier = Modifier.fillMaxWidth()) {
             Text("Cancel")
         }
-    }
-}
-
-@Composable
-private fun CandidateThumbnail(candidate: CoverArtCandidate, onClick: () -> Unit) {
-    Surface(
-        shape = MaterialTheme.shapes.small,
-        color = MaterialTheme.colorScheme.surfaceContainer,
-        modifier = Modifier
-            .size(80.dp)
-            .clickable(onClick = onClick),
-    ) {
-        AsyncImage(
-            model = candidate.thumbnailUrl,
-            contentDescription = "${candidate.title} by ${candidate.artist}",
-            contentScale = ContentScale.Crop,
-            modifier = Modifier.fillMaxSize(),
-        )
     }
 }
 
@@ -526,10 +556,53 @@ private fun LyricsSection(
     onFetch: () -> Unit,
     onSave: () -> Unit,
     onDismiss: () -> Unit,
+    manualLyrics: String?,
+    onStartEdit: () -> Unit,
+    onManualChange: (String) -> Unit,
+    onCancelEdit: () -> Unit,
+    onSaveManual: () -> Unit,
 ) {
     val spacing = LocalSpacing.current
     val colors = MaterialTheme.colorScheme
     val sc = LocalStatusColors.current
+
+    // Manual edit takes over the section when active.
+    if (manualLyrics != null) {
+        androidx.compose.material3.OutlinedTextField(
+            value = manualLyrics,
+            onValueChange = onManualChange,
+            modifier = Modifier.fillMaxWidth(),
+            textStyle = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace),
+            placeholder = { Text("Paste or type lyrics. Use [mm:ss.xx] line prefixes for synced.") },
+            minLines = 6,
+            maxLines = 16,
+            shape = androidx.compose.foundation.shape.RoundedCornerShape(8.dp),
+            colors = androidx.compose.material3.OutlinedTextFieldDefaults.colors(
+                focusedContainerColor = colors.surfaceVariant,
+                unfocusedContainerColor = colors.surfaceVariant,
+                focusedBorderColor = colors.secondary,
+                unfocusedBorderColor = androidx.compose.ui.graphics.Color.Transparent,
+            ),
+        )
+        Spacer(Modifier.height(spacing.sm))
+        Row(horizontalArrangement = Arrangement.spacedBy(spacing.sm)) {
+            if (saving) {
+                CircularProgressIndicator(
+                    Modifier.size(24.dp).align(Alignment.CenterVertically),
+                    strokeWidth = 2.dp,
+                    color = colors.secondary,
+                )
+            } else {
+                PrimaryButton(onClick = onSaveManual) {
+                    Icon(Icons.Rounded.Check, null, Modifier.size(18.dp))
+                    Spacer(Modifier.size(spacing.xs))
+                    Text("Save lyrics")
+                }
+                GhostButton(onClick = onCancelEdit) { Text("Cancel") }
+            }
+        }
+        return
+    }
 
     val currentStatus = track.lyricsStatus()
     val statusText = when (currentStatus) {
@@ -561,10 +634,17 @@ private fun LyricsSection(
                     color = colors.error,
                 )
             }
-            FilledTonalButton(onClick = onFetch, modifier = Modifier.fillMaxWidth()) {
-                Icon(Icons.Rounded.MusicNote, null, Modifier.size(18.dp))
-                Spacer(Modifier.size(spacing.xs))
-                Text("Fetch from LRCLIB")
+            Row(horizontalArrangement = Arrangement.spacedBy(spacing.sm)) {
+                SecondaryButton(onClick = onFetch, modifier = Modifier.weight(1f)) {
+                    Icon(Icons.Rounded.MusicNote, null, Modifier.size(18.dp))
+                    Spacer(Modifier.size(spacing.xs))
+                    Text("Fetch from LRCLIB")
+                }
+                GhostButton(onClick = onStartEdit) {
+                    Icon(Icons.Rounded.Edit, null, Modifier.size(18.dp))
+                    Spacer(Modifier.size(spacing.xs))
+                    Text("Edit")
+                }
             }
         }
 
@@ -606,11 +686,7 @@ private fun LyricsPreviewCard(
     val previewText = (if (isSynced) result.syncedLyrics else result.plainLyrics) ?: ""
     val previewLines = previewText.lines().take(6).joinToString("\n")
 
-    Surface(
-        shape = MaterialTheme.shapes.medium,
-        color = colors.surfaceContainer,
-        modifier = Modifier.fillMaxWidth(),
-    ) {
+    AppPanel(modifier = Modifier.fillMaxWidth()) {
         Column(
             modifier = Modifier.padding(spacing.lg),
             verticalArrangement = Arrangement.spacedBy(spacing.sm),
@@ -633,7 +709,7 @@ private fun LyricsPreviewCard(
                     modifier = Modifier.weight(1f).padding(start = spacing.md),
                 )
             }
-            HorizontalDivider(color = colors.outlineVariant)
+            Hairline()
             Text(
                 text = previewLines,
                 style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace),
@@ -649,8 +725,8 @@ private fun LyricsPreviewCard(
                         strokeWidth = 2.dp,
                     )
                 } else {
-                    Button(onClick = onSave, modifier = Modifier.weight(1f)) { Text("Save lyrics") }
-                    TextButton(onClick = onDismiss) { Text("Dismiss") }
+                    PrimaryButton(onClick = onSave, modifier = Modifier.weight(1f)) { Text("Save lyrics") }
+                    GhostButton(onClick = onDismiss) { Text("Dismiss") }
                 }
             }
         }
@@ -666,7 +742,7 @@ private fun SectionLabel(text: String) {
         style = MaterialTheme.typography.labelSmall,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
     )
-    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+    Hairline()
 }
 
 @Composable
@@ -678,10 +754,10 @@ private fun TagField(
     capitalization: KeyboardCapitalization = KeyboardCapitalization.None,
     modifier: Modifier = Modifier,
 ) {
-    OutlinedTextField(
+    AppTextField(
         value = value,
         onValueChange = onValueChange,
-        label = { Text(label) },
+        label = label,
         singleLine = true,
         keyboardOptions = KeyboardOptions(
             keyboardType = keyboardType,
@@ -692,37 +768,137 @@ private fun TagField(
     )
 }
 
+/**
+ * File metadata strip — `FLAC · 38.4 MB · 4:15 · 1600 × 1600`, mono, fog
+ * separators. Hardware-style facts before the workbench sections.
+ */
 @Composable
-private fun ChangesCard(changes: List<FieldChange>) {
+private fun FileMetaStrip(track: TrackEntity) {
+    val colors = MaterialTheme.colorScheme
+    val parts = buildList {
+        add(track.format.uppercase())
+        add(dev.gitfudge.musicworkbench.util.MediaFormat.size(track.sizeBytes))
+        track.durationMs?.let { add(dev.gitfudge.musicworkbench.util.MediaFormat.duration(it)) }
+        if (track.artWidth != null && track.artHeight != null) {
+            add("${track.artWidth} × ${track.artHeight}")
+        }
+    }
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(top = LocalSpacing.current.xs),
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        parts.forEachIndexed { i, part ->
+            if (i > 0) {
+                Text(
+                    "·",
+                    style = dev.gitfudge.musicworkbench.ui.theme.AppTextStyles.monoSmall,
+                    color = colors.onSurfaceVariant.copy(alpha = 0.5f),
+                )
+            }
+            Text(
+                part,
+                style = dev.gitfudge.musicworkbench.ui.theme.AppTextStyles.monoSmall,
+                color = colors.onSurfaceVariant,
+            )
+        }
+    }
+}
+
+
+@Composable
+private fun ChangesCard(
+    changes: List<FieldChange>,
+    saving: Boolean,
+    onWrite: () -> Unit,
+) {
+    val spacing = LocalSpacing.current
+    val colors = MaterialTheme.colorScheme
+
+    AppPanel(modifier = Modifier.fillMaxWidth()) {
+        Column(Modifier.padding(spacing.lg), verticalArrangement = Arrangement.spacedBy(spacing.md)) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(spacing.sm),
+            ) {
+                Icon(
+                    Icons.Rounded.Edit,
+                    contentDescription = null,
+                    tint = colors.secondary,
+                    modifier = Modifier.size(16.dp),
+                )
+                Text(
+                    "${changes.size} change${if (changes.size != 1) "s" else ""}",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = colors.onSurface,
+                )
+                Text(
+                    "— write to confirm",
+                    style = dev.gitfudge.musicworkbench.ui.theme.AppTextStyles.monoSmall,
+                    color = colors.onSurfaceVariant,
+                )
+            }
+            changes.forEach { change -> DiffRow(change) }
+            if (saving) {
+                CircularProgressIndicator(
+                    Modifier.size(24.dp),
+                    strokeWidth = 2.dp,
+                    color = colors.secondary,
+                )
+            } else {
+                PrimaryButton(onClick = onWrite, modifier = Modifier.fillMaxWidth()) {
+                    Icon(Icons.Rounded.Check, null, Modifier.size(18.dp))
+                    Spacer(Modifier.size(spacing.xs))
+                    Text("Write file")
+                }
+            }
+        }
+    }
+}
+
+/** The honest diff: uppercase field label, struck-through old, → new. */
+@Composable
+private fun DiffRow(change: FieldChange) {
     val spacing = LocalSpacing.current
     val colors = MaterialTheme.colorScheme
     val sc = LocalStatusColors.current
-
-    Surface(shape = MaterialTheme.shapes.medium, color = colors.surfaceContainer, modifier = Modifier.fillMaxWidth()) {
-        Column(Modifier.padding(spacing.lg), verticalArrangement = Arrangement.spacedBy(spacing.sm)) {
+    androidx.compose.material3.Surface(
+        shape = LocalShapeScale.current.sm,
+        color = colors.background,
+        border = androidx.compose.foundation.BorderStroke(1.dp, colors.outline),
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        Column(
+            Modifier.padding(horizontal = spacing.md, vertical = spacing.sm),
+            verticalArrangement = Arrangement.spacedBy(spacing.xs),
+        ) {
             Text(
-                "${changes.size} change${if (changes.size != 1) "s" else ""}",
-                style = MaterialTheme.typography.labelMedium,
+                change.label.uppercase(),
+                style = dev.gitfudge.musicworkbench.ui.theme.AppTextStyles.eyebrow,
                 color = colors.onSurfaceVariant,
             )
-            changes.forEach { change ->
-                Column {
-                    Text(change.label, style = MaterialTheme.typography.labelSmall, color = colors.onSurfaceVariant)
-                    if (change.old.isNotBlank()) {
-                        Text(
-                            "− ${change.old}",
-                            style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace),
-                            color = sc.missing,
-                        )
-                    }
-                    if (change.new.isNotBlank()) {
-                        Text(
-                            "+ ${change.new}",
-                            style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace),
-                            color = sc.ok,
-                        )
-                    }
-                }
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(spacing.sm),
+            ) {
+                Text(
+                    text = change.old.ifBlank { "—" },
+                    style = AppTextStyles.mono.copy(
+                        textDecoration = androidx.compose.ui.text.style.TextDecoration.LineThrough,
+                    ),
+                    color = sc.missing,
+                )
+                Icon(
+                    Icons.AutoMirrored.Rounded.ArrowForward,
+                    contentDescription = "to",
+                    tint = colors.onSurfaceVariant,
+                    modifier = Modifier.size(12.dp),
+                )
+                Text(
+                    text = change.new.ifBlank { "—" },
+                    style = AppTextStyles.mono.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold),
+                    color = sc.ok,
+                )
             }
         }
     }
@@ -730,7 +906,7 @@ private fun ChangesCard(changes: List<FieldChange>) {
 
 // ── Previews ──────────────────────────────────────────────────────────────────
 
-@Preview(name = "Detail · with lyrics preview", showBackground = true, backgroundColor = 0xFF14161A)
+@Preview(name = "Detail · with lyrics preview", showBackground = true)
 @Composable
 private fun DetailLyricsPreviewPreview() {
     MusicWorkbenchTheme {
@@ -756,7 +932,11 @@ private fun DetailLyricsPreviewPreview() {
             onSaveTags = {},
             onSetTitle = {}, onSetArtist = {}, onSetAlbum = {}, onSetAlbumArtist = {},
             onSetTrackNumber = {}, onSetDiscNumber = {}, onSetYear = {}, onSetGenre = {},
+            onSetComposer = {}, onSetComment = {}, onSetCompilation = {},
             onFetchLyrics = {}, onSaveLyrics = {}, onDismissLyrics = {},
+            manualLyrics = null,
+            onStartEditLyrics = {}, onManualLyricsChange = {},
+            onCancelEditLyrics = {}, onSaveManualLyrics = {},
             onPickArt = {}, onSaveArt = {}, onClearPendingArt = {},
             artFetchState = ArtFetchState.Idle,
             onFetchArt = {}, onSelectCandidate = {}, onDismissFetchArt = {},

@@ -1,34 +1,24 @@
 package dev.gitfudge.musicworkbench.ui.library
 
-import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.MusicNote
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Icon
-import androidx.compose.material3.ListItem
-import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import coil.compose.AsyncImage
 import dev.gitfudge.musicworkbench.data.db.TrackEntity
 import dev.gitfudge.musicworkbench.domain.artStatus
 import dev.gitfudge.musicworkbench.domain.displayArtist
@@ -38,26 +28,27 @@ import dev.gitfudge.musicworkbench.domain.tagStatus
 import dev.gitfudge.musicworkbench.ui.common.ArtStatusChip
 import dev.gitfudge.musicworkbench.ui.common.LyricsStatusChip
 import dev.gitfudge.musicworkbench.ui.common.TagStatusChip
+import dev.gitfudge.musicworkbench.ui.components.ArtTile
+import dev.gitfudge.musicworkbench.ui.components.ArtTileSize
+import dev.gitfudge.musicworkbench.ui.components.ListRow
 import dev.gitfudge.musicworkbench.ui.theme.MusicWorkbenchTheme
+import dev.gitfudge.musicworkbench.ui.theme.ThemeMode
 import java.io.File
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun TrackListItem(
     track: TrackEntity,
     lowResThresholdPx: Int,
-    onClick: () -> Unit,
+    onClick: (String) -> Unit,
     modifier: Modifier = Modifier,
     selected: Boolean = false,
     selectionMode: Boolean = false,
     isDownloadingLyrics: Boolean = false,
     isDownloadingArt: Boolean = false,
-    onLongClick: () -> Unit = {},
+    onLongClick: (String) -> Unit = {},
 ) {
     val colors = MaterialTheme.colorScheme
-    // DESIGN.md: selected row = full accentContainer fill + checkbox (banned: leading bar).
-    // primaryContainer is mapped to Palette.AccentContainer in the theme.
-    val containerColor = if (selected) colors.primaryContainer else colors.surface
+    // DESIGN.md: selected row = full primaryContainer fill + checkbox (no leading bar).
     val titleColor = if (selected) colors.onPrimaryContainer else colors.onSurface
     val supportingColor = if (selected) {
         colors.onPrimaryContainer.copy(alpha = 0.78f)
@@ -65,29 +56,32 @@ fun TrackListItem(
         colors.onSurfaceVariant
     }
 
-    ListItem(
-        modifier = modifier.combinedClickable(
-            onClick = onClick,
-            onLongClick = onLongClick,
-        ),
-        colors = ListItemDefaults.colors(containerColor = containerColor),
-        leadingContent = {
+    ListRow(
+        modifier = modifier,
+        onClick = { onClick(track.documentUri) },
+        onLongClick = { onLongClick(track.documentUri) },
+        selected = selected,
+        leading = {
             if (selectionMode) {
                 Checkbox(checked = selected, onCheckedChange = null)
             } else {
-                TrackThumbnail(track)
+                ArtTile(
+                    model = track.thumbnailPath?.let { File(it) },
+                    contentDescription = null,
+                    size = ArtTileSize.Sm,
+                )
             }
         },
-        headlineContent = {
+        headline = {
             Text(
                 text = track.displayTitle(),
-                style = MaterialTheme.typography.titleSmall,
+                style = MaterialTheme.typography.bodyLarge,
                 color = titleColor,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
         },
-        supportingContent = {
+        supporting = {
             Text(
                 text = buildString {
                     append(track.displayArtist().orEmpty().ifBlank { "Unknown artist" })
@@ -102,18 +96,20 @@ fun TrackListItem(
                 overflow = TextOverflow.Ellipsis,
             )
         },
-        trailingContent = {
+        trailing = {
             Column(
                 horizontalAlignment = Alignment.End,
                 verticalArrangement = Arrangement.spacedBy(4.dp),
             ) {
                 Surface(
                     shape = MaterialTheme.shapes.extraSmall,
-                    color = colors.surfaceContainerHigh,
+                    color = colors.surfaceContainer,
+                    border = androidx.compose.foundation.BorderStroke(1.dp, colors.outline),
                 ) {
                     Text(
-                        text = track.format.take(4),
-                        style = MaterialTheme.typography.labelSmall,
+                        text = track.format.take(4).uppercase(),
+                        style = dev.gitfudge.musicworkbench.ui.theme.AppTextStyles.monoSmall
+                            .copy(fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold),
                         color = colors.onSurfaceVariant,
                         modifier = Modifier.padding(horizontal = 5.dp, vertical = 2.dp),
                     )
@@ -134,35 +130,6 @@ fun TrackListItem(
             }
         },
     )
-}
-
-@Composable
-private fun TrackThumbnail(track: TrackEntity) {
-    val colors = MaterialTheme.colorScheme
-    Surface(
-        shape = MaterialTheme.shapes.small,
-        color = colors.surfaceContainer,
-        modifier = Modifier.size(48.dp),
-    ) {
-        val file = track.thumbnailPath?.let { File(it) }
-        if (file != null) {
-            AsyncImage(
-                model = file,
-                contentDescription = null,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier.fillMaxSize(),
-            )
-        } else {
-            Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
-                Icon(
-                    imageVector = Icons.Rounded.MusicNote,
-                    contentDescription = null,
-                    tint = colors.onSurfaceVariant,
-                    modifier = Modifier.size(22.dp),
-                )
-            }
-        }
-    }
 }
 
 @Composable
@@ -227,12 +194,16 @@ fun previewTrack(
     discNumber = 1,
     year = "2018",
     genre = "Ambient",
+    composer = null,
+    comment = null,
+    compilation = false,
     albumKey = "${(artist ?: "").lowercase()}|${(album ?: "").lowercase()}",
     albumLabel = album ?: "",
     hasEmbeddedArt = hasArt,
     artWidth = if (hasArt) 1000 else null,
     artHeight = if (hasArt) 1000 else null,
     thumbnailPath = null,
+    artScanPending = false,
     hasSidecarLrc = hasSynced,
     sidecarLrcSynced = hasSynced,
     coreTagsComplete = coreTagsComplete,
@@ -240,40 +211,36 @@ fun previewTrack(
     scannedAt = 0L,
 )
 
-@Preview(name = "TrackListItem · full", showBackground = true, backgroundColor = 0xFF14161A)
+@Preview(name = "TrackListItem · Light")
 @Composable
-private fun TrackListItemPreview() {
-    MusicWorkbenchTheme {
-        TrackListItem(
-            track = previewTrack(),
-            lowResThresholdPx = 600,
-            onClick = {},
-        )
-    }
+private fun TrackListItemLightPreview() = MusicWorkbenchTheme(themeMode = ThemeMode.Light) {
+    TrackListItem(track = previewTrack(), lowResThresholdPx = 600, onClick = {})
 }
 
-@Preview(name = "TrackListItem · selected", showBackground = true, backgroundColor = 0xFF14161A)
+@Preview(name = "TrackListItem · Dark")
 @Composable
-private fun TrackListItemSelectedPreview() {
-    MusicWorkbenchTheme {
-        TrackListItem(
-            track = previewTrack(),
-            lowResThresholdPx = 600,
-            onClick = {},
-            selected = true,
-            selectionMode = true,
-        )
-    }
+private fun TrackListItemDarkPreview() = MusicWorkbenchTheme(themeMode = ThemeMode.Dark) {
+    TrackListItem(track = previewTrack(), lowResThresholdPx = 600, onClick = {})
 }
 
-@Preview(name = "TrackListItem · warning", showBackground = true, backgroundColor = 0xFF14161A)
+@Preview(name = "TrackListItem · Selected")
 @Composable
-private fun TrackListItemWarningPreview() {
-    MusicWorkbenchTheme {
-        TrackListItem(
-            track = previewTrack(coreTagsComplete = false, artistUnknown = true),
-            lowResThresholdPx = 600,
-            onClick = {},
-        )
-    }
+private fun TrackListItemSelectedPreview() = MusicWorkbenchTheme(themeMode = ThemeMode.Dark) {
+    TrackListItem(
+        track = previewTrack(),
+        lowResThresholdPx = 600,
+        onClick = {},
+        selected = true,
+        selectionMode = true,
+    )
+}
+
+@Preview(name = "TrackListItem · Warning")
+@Composable
+private fun TrackListItemWarningPreview() = MusicWorkbenchTheme(themeMode = ThemeMode.Dark) {
+    TrackListItem(
+        track = previewTrack(coreTagsComplete = false, artistUnknown = true),
+        lowResThresholdPx = 600,
+        onClick = {},
+    )
 }

@@ -4,6 +4,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -15,11 +16,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -29,6 +27,8 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import dev.gitfudge.musicworkbench.R
 import dev.gitfudge.musicworkbench.data.art.CoverArtCandidate
+import dev.gitfudge.musicworkbench.ui.components.AppBottomSheet
+import dev.gitfudge.musicworkbench.ui.components.SecondaryButton
 import dev.gitfudge.musicworkbench.ui.theme.LocalSpacing
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -39,27 +39,25 @@ fun AlbumArtPickerSheet(
     onSkip: () -> Unit,
     downloadingCandidate: Boolean = false,
 ) {
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val spacing = LocalSpacing.current
     val colors = MaterialTheme.colorScheme
 
-    ModalBottomSheet(
+    AppBottomSheet(
         onDismissRequest = onSkip,
-        sheetState = sheetState,
-        containerColor = colors.surfaceContainerHigh,
+        title = stringResource(R.string.art_picker_title, state.albumName),
+        contentPadding = PaddingValues(horizontal = spacing.lg, vertical = spacing.md),
+        footer = {
+            Row(
+                modifier = Modifier.fillMaxWidth().navigationBarsPadding(),
+                horizontalArrangement = Arrangement.End,
+            ) {
+                SecondaryButton(onClick = onSkip) {
+                    Text(stringResource(R.string.art_picker_skip))
+                }
+            }
+        },
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .navigationBarsPadding()
-                .padding(horizontal = spacing.lg, vertical = spacing.md),
-            verticalArrangement = Arrangement.spacedBy(spacing.sm),
-        ) {
-            Text(
-                text = stringResource(R.string.art_picker_title, state.albumName),
-                style = MaterialTheme.typography.titleMedium,
-                color = colors.onSurface,
-            )
+        Column(verticalArrangement = Arrangement.spacedBy(spacing.sm)) {
             Text(
                 text = stringResource(
                     R.string.art_picker_subtitle,
@@ -77,7 +75,7 @@ fun AlbumArtPickerSheet(
             )
             LazyRow(
                 horizontalArrangement = Arrangement.spacedBy(spacing.sm),
-                contentPadding = androidx.compose.foundation.layout.PaddingValues(vertical = spacing.sm),
+                contentPadding = PaddingValues(vertical = spacing.sm),
             ) {
                 items(state.candidates, key = { it.mbid }) { candidate ->
                     CandidateThumbnail(
@@ -99,14 +97,6 @@ fun AlbumArtPickerSheet(
                         style = MaterialTheme.typography.bodySmall,
                         color = colors.onSurfaceVariant,
                     )
-                }
-            }
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.End,
-            ) {
-                TextButton(onClick = onSkip) {
-                    Text(stringResource(R.string.art_picker_skip))
                 }
             }
         }

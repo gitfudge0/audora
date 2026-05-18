@@ -39,8 +39,14 @@ data class TagFormState(
     val discNumber: String = "",
     val year: String = "",
     val genre: String = "",
+    val composer: String = "",
+    val comment: String = "",
+    val compilation: Boolean = false,
 ) {
-    fun toTagEdits() = TagEdits(title, artist, album, albumArtist, trackNumber, discNumber, year, genre)
+    fun toTagEdits() = TagEdits(
+        title, artist, album, albumArtist, trackNumber, discNumber, year, genre,
+        composer, comment, compilation,
+    )
 }
 
 data class FieldChange(val label: String, val old: String, val new: String)
@@ -103,6 +109,7 @@ class TrackDetailViewModel @Inject constructor(
     private val tagWriter: TagWriter,
     private val lrclibRepo: LrclibRepository,
     private val lrcWriter: LrcWriter,
+    private val lrcReader: dev.gitfudge.musicworkbench.data.lyrics.LrcReader,
     private val settings: SettingsRepository,
     private val coverArtRepo: CoverArtRepository,
 ) : ViewModel() {
@@ -137,6 +144,11 @@ class TrackDetailViewModel @Inject constructor(
             check("Disc #", o.discNumber, f.discNumber)
             check("Year", o.year, f.year)
             check("Genre", o.genre, f.genre)
+            check("Composer", o.composer, f.composer)
+            check("Comment", o.comment, f.comment)
+            if (o.compilation != f.compilation) {
+                add(FieldChange("Compilation", o.compilation.toString(), f.compilation.toString()))
+            }
         }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
@@ -163,6 +175,15 @@ class TrackDetailViewModel @Inject constructor(
     fun setDiscNumber(v: String) { _form.update { it.copy(discNumber = v) } }
     fun setYear(v: String) { _form.update { it.copy(year = v) } }
     fun setGenre(v: String) { _form.update { it.copy(genre = v) } }
+    fun setComposer(v: String) { _form.update { it.copy(composer = v) } }
+    fun setComment(v: String) { _form.update { it.copy(comment = v) } }
+    fun setCompilation(v: Boolean) { _form.update { it.copy(compilation = v) } }
+
+    /** Entity + form as they were immediately before the last tag write, for undo. */
+    private var preTagWriteEntity: TrackEntity? = null
+    private var preTagWriteForm: TagFormState? = null
+    private val _canUndoTags = MutableStateFlow(false)
+    val canUndoTags: StateFlow<Boolean> = _canUndoTags.asStateFlow()
 
     fun saveTags() {
         if (_tagSaveState.value is DetailSaveState.Saving) return
@@ -171,13 +192,40 @@ class TrackDetailViewModel @Inject constructor(
         viewModelScope.launch {
             _tagSaveState.value = DetailSaveState.Saving
             runCatching {
-                val newMod = tagWriter.write(documentUri.toUri(), t.displayName, form.toTagEdits())
+                val newMod = tagWriter.write(
+                    documentUri.toUri(), t.displayName, form.toTagEdits(),
+                    expectedLastModified = t.lastModified,
+                )
+                preTagWriteEntity = t
+                preTagWriteForm = _original.value
                 trackDao.upsertAll(listOf(buildUpdatedEntity(t, form, newMod)))
                 _original.value = form
             }.fold(
-                onSuccess = { _tagSaveState.value = DetailSaveState.Done },
+                onSuccess = {
+                    _canUndoTags.value = true
+                    _tagSaveState.value = DetailSaveState.Done
+                },
                 onFailure = { _tagSaveState.value = DetailSaveState.Failed(it.message ?: "Save failed") },
             )
+        }
+    }
+
+    /** The 30s undo: restore original file bytes and revert the DB row. */
+    fun undoTags() {
+        val prev = preTagWriteEntity ?: return
+        viewModelScope.launch {
+            runCatching {
+                val restoredMod = tagWriter.restoreLastWrite(documentUri.toUri())
+                trackDao.upsertAll(listOf(
+                    prev.copy(
+                        lastModified = restoredMod ?: prev.lastModified,
+                        scannedAt = System.currentTimeMillis(),
+                    ),
+                ))
+                preTagWriteForm?.let { f -> _original.value = f; _form.value = f }
+            }
+            _canUndoTags.value = false
+            preTagWriteEntity = null
         }
     }
 
@@ -235,7 +283,10 @@ class TrackDetailViewModel @Inject constructor(
                 val s = settings.settings.first()
                 var newMod = t.lastModified
                 if (s.embedLyricsInTags) {
-                    newMod = tagWriter.writeLyrics(docUri, t.displayName, lyricsText)
+                    newMod = tagWriter.writeLyrics(
+                        docUri, t.displayName, lyricsText,
+                        expectedLastModified = t.lastModified,
+                    )
                 }
 
                 trackDao.upsertAll(listOf(
@@ -256,6 +307,59 @@ class TrackDetailViewModel @Inject constructor(
 
     fun dismissLyrics() { _lyricsState.value = LyricsState.Idle }
     fun dismissLyricsSave() { _lyricsSaveState.value = DetailSaveState.Idle }
+
+    // ── Manual lyrics editing ─────────────────────────────────────────────────
+
+    /** null = not editing; non-null = the editable buffer. */
+    private val _manualLyrics = MutableStateFlow<String?>(null)
+    val manualLyrics: StateFlow<String?> = _manualLyrics.asStateFlow()
+
+    fun startEditLyrics() {
+        val t = track.value ?: return
+        viewModelScope.launch {
+            val existing = runCatching {
+                lrcReader.read(t.treeUri.toUri(), documentUri.toUri(), t.displayName)
+            }.getOrNull().orEmpty()
+            _manualLyrics.value = existing
+        }
+    }
+
+    fun setManualLyrics(text: String) { _manualLyrics.value = text }
+    fun cancelEditLyrics() { _manualLyrics.value = null }
+
+    fun saveManualLyrics() {
+        val text = _manualLyrics.value ?: return
+        if (_lyricsSaveState.value is DetailSaveState.Saving) return
+        val t = track.value ?: return
+        viewModelScope.launch {
+            _lyricsSaveState.value = DetailSaveState.Saving
+            runCatching {
+                val docUri = documentUri.toUri()
+                val synced = lrcReader.isSynced(text)
+                lrcWriter.write(t.treeUri.toUri(), docUri, t.displayName, text)
+                val s = settings.settings.first()
+                var newMod = t.lastModified
+                if (s.embedLyricsInTags) {
+                    newMod = tagWriter.writeLyrics(
+                        docUri, t.displayName, text,
+                        expectedLastModified = t.lastModified,
+                    )
+                }
+                trackDao.upsertAll(listOf(
+                    t.copy(
+                        hasSidecarLrc = text.isNotBlank(),
+                        sidecarLrcSynced = synced,
+                        lastModified = newMod,
+                        scannedAt = System.currentTimeMillis(),
+                    ),
+                ))
+                _manualLyrics.value = null
+            }.fold(
+                onSuccess = { _lyricsSaveState.value = DetailSaveState.Done },
+                onFailure = { _lyricsSaveState.value = DetailSaveState.Failed(it.message ?: "Save failed") },
+            )
+        }
+    }
 
     // ── Art ───────────────────────────────────────────────────────────────────
 
@@ -278,13 +382,17 @@ class TrackDetailViewModel @Inject constructor(
         viewModelScope.launch {
             _artSaveState.value = DetailSaveState.Saving
             runCatching {
-                val result = tagWriter.writeArt(documentUri.toUri(), t.displayName, artUri)
+                val result = tagWriter.writeArt(
+                    documentUri.toUri(), t.displayName, artUri,
+                    expectedLastModified = t.lastModified,
+                )
                 trackDao.upsertAll(listOf(
                     t.copy(
                         hasEmbeddedArt = true,
                         artWidth = result.artWidth,
                         artHeight = result.artHeight,
                         thumbnailPath = result.thumbnailPath,
+                        artScanPending = false,
                         lastModified = result.lastModified,
                         scannedAt = System.currentTimeMillis(),
                     ),
@@ -352,13 +460,17 @@ class TrackDetailViewModel @Inject constructor(
         viewModelScope.launch {
             _artSaveState.value = DetailSaveState.Saving
             runCatching {
-                val result = tagWriter.writeArtFromBytes(documentUri.toUri(), t.displayName, preview.bytes)
+                val result = tagWriter.writeArtFromBytes(
+                    documentUri.toUri(), t.displayName, preview.bytes,
+                    expectedLastModified = t.lastModified,
+                )
                 trackDao.upsertAll(listOf(
                     t.copy(
                         hasEmbeddedArt = true,
                         artWidth = result.artWidth,
                         artHeight = result.artHeight,
                         thumbnailPath = result.thumbnailPath,
+                        artScanPending = false,
                         lastModified = result.lastModified,
                         scannedAt = System.currentTimeMillis(),
                     ),
@@ -397,6 +509,9 @@ class TrackDetailViewModel @Inject constructor(
             discNumber = form.discNumber.trim().takeWhile { it.isDigit() }.toIntOrNull(),
             year = form.year.trim().ifEmpty { null },
             genre = form.genre.trim().ifEmpty { null },
+            composer = form.composer.trim().ifEmpty { null },
+            comment = form.comment.trim().ifEmpty { null },
+            compilation = form.compilation,
             albumKey = "$groupArtist$groupAlbum",
             albumLabel = album ?: t.parentPath.substringAfterLast('/').ifEmpty { "Unknown album" },
             artistUnknown = artistUnknown,
@@ -416,4 +531,7 @@ private fun TrackEntity.toFormState() = TagFormState(
     discNumber = discNumber?.toString() ?: "",
     year = year ?: "",
     genre = genre ?: "",
+    composer = composer ?: "",
+    comment = comment ?: "",
+    compilation = compilation,
 )

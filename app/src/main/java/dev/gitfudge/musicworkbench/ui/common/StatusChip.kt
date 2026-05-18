@@ -49,9 +49,11 @@ fun StatusChip(
     accessibilityLabel: String = label,
     compact: Boolean = false,
 ) {
+    // Hardware-style status tag: xs (4dp) corners, tinted wash background,
+    // solid status fg. Never a pill — pills are for chips/buttons.
     Surface(
-        shape = RoundedCornerShape(50),
-        color = color.copy(alpha = 0.16f),
+        shape = RoundedCornerShape(4.dp),
+        color = color.copy(alpha = 0.15f),
         contentColor = color,
         modifier = modifier.semantics { contentDescription = accessibilityLabel },
     ) {
@@ -60,7 +62,7 @@ fun StatusChip(
             Icon(
                 imageVector = icon,
                 contentDescription = null,
-                modifier = Modifier.padding(4.dp).size(12.dp),
+                modifier = Modifier.padding(horizontal = 5.dp, vertical = 3.dp).size(12.dp),
             )
         } else {
             Row(
@@ -75,8 +77,10 @@ fun StatusChip(
                 )
                 Text(
                     text = label,
-                    style = MaterialTheme.typography.labelSmall,
+                    style = MaterialTheme.typography.labelSmall.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.Medium),
                     color = color,
+                    maxLines = 1,
+                    softWrap = false,
                 )
             }
         }
@@ -89,6 +93,7 @@ fun StatusChip(
 fun ArtStatusChip(status: ArtStatus, modifier: Modifier = Modifier) {
     val sc = LocalStatusColors.current
     when (status) {
+        ArtStatus.PENDING -> StatusChip(Icons.Rounded.AccessTime, "Scanning art", sc.warn, modifier, compact = true)
         ArtStatus.OK -> StatusChip(Icons.Rounded.Check, "Art", sc.ok, modifier, compact = true)
         ArtStatus.LOW_RES -> StatusChip(Icons.Rounded.LowPriority, "Low-res art", sc.warn, modifier, compact = true)
         ArtStatus.NONE -> StatusChip(Icons.Rounded.ImageNotSupported, "No art", sc.missing, modifier, compact = true)
@@ -122,6 +127,7 @@ fun TagStatusChip(status: TagStatus, modifier: Modifier = Modifier) {
 fun AlbumArtStatusChip(status: AlbumArtStatus, modifier: Modifier = Modifier) {
     val sc = LocalStatusColors.current
     when (status) {
+        AlbumArtStatus.PENDING -> StatusChip(Icons.Rounded.AccessTime, "Scanning art", sc.warn, modifier)
         AlbumArtStatus.ALL_OK -> StatusChip(Icons.Rounded.Check, "Art", sc.ok, modifier)
         AlbumArtStatus.LOW_RES -> StatusChip(Icons.Rounded.LowPriority, "Low-res art", sc.warn, modifier)
         AlbumArtStatus.PARTIAL -> StatusChip(Icons.Rounded.ImageNotSupported, "Some art missing", sc.warn, modifier)

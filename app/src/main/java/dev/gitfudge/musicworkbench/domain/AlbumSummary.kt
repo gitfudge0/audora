@@ -24,6 +24,8 @@ data class AlbumSummary(
 )
 
 enum class AlbumArtStatus {
+    /** Artwork is still being scanned for one or more tracks. */
+    PENDING,
     /** All tracks have OK art. */
     ALL_OK,
     /** All tracks missing art. */

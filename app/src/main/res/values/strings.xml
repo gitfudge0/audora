@@ -2,6 +2,20 @@
 <resources>
     <string name="app_name">Music Workbench</string>
 
+    <!-- Walkthrough -->
+    <string name="walkthrough_p1_title">A workbench for your music</string>
+    <string name="walkthrough_p1_body">Clean up tags, lyrics, and album art for the music already on your device. Everything stays local — nothing is uploaded unless you ask for it.</string>
+    <string name="walkthrough_p2_title">See what needs work</string>
+    <string name="walkthrough_p2_body">Status dots flag missing or low-res art, absent lyrics, and incomplete tags. Filters narrow the library down to just the tracks with problems.</string>
+    <string name="walkthrough_p3_title">Fix many at once</string>
+    <string name="walkthrough_p3_body">Select multiple tracks or whole albums, then fetch lyrics and artwork or edit tags in bulk — no need to go file by file.</string>
+    <string name="walkthrough_p4_title">Your files, your call</string>
+    <string name="walkthrough_p4_body">Changes are written back to your files only when you confirm. Pick a folder next to grant access — you can change it anytime.</string>
+    <string name="walkthrough_skip">Skip</string>
+    <string name="walkthrough_next">Next</string>
+    <string name="walkthrough_get_started">Get started</string>
+    <string name="walkthrough_replay">Replay walkthrough</string>
+
     <!-- First run -->
     <string name="onboarding_title">Point it at your music</string>
     <string name="onboarding_body">Choose the folder where your tracks live. Nothing leaves your device until you ask it to fetch lyrics or artwork.</string>
@@ -20,7 +34,9 @@
     <string name="selection_count">%1$d selected</string>
     <string name="selection_fetch_lyrics">Fetch lyrics</string>
     <string name="selection_fetch_art">Fetch art</string>
+    <string name="selection_edit_tags">Edit tags</string>
     <string name="selection_clear">Clear selection</string>
+    <string name="selection_combine">Combine %1$d albums into one</string>
 
     <!-- Scan states -->
     <string name="scan_running">Scanning…</string>
@@ -35,6 +51,7 @@
     <string name="filter_no_lyrics">No lyrics</string>
     <string name="filter_incomplete_tags">Incomplete tags</string>
     <string name="filter_unknown_artist">Unknown artist</string>
+    <string name="filter_duplicates">Possible duplicates</string>
 
     <!-- Sort options -->
     <string name="sort_album">Album</string>
@@ -46,6 +63,12 @@
     <string name="library_empty_title">No tracks found</string>
     <string name="library_empty_body">Music Workbench scans for common audio formats. Check that the folder contains music files.</string>
     <string name="library_filter_empty_body">No tracks match this filter.</string>
+    <string name="library_importing_title">Importing your library</string>
+    <string name="library_importing_body">Your folder is selected. We’re building the first library snapshot before showing the full browser.</string>
+    <string name="library_importing_scanned">Scanned %1$d files</string>
+    <string name="library_importing_indexed">Indexed %1$d tracks so far</string>
+    <string name="library_importing_current_file">Current file: %1$s</string>
+    <string name="library_art_enrichment_running">Finishing artwork in background · %1$d remaining</string>
 
     <!-- Status dot content descriptions -->
     <string name="status_art_ok">Art OK</string>

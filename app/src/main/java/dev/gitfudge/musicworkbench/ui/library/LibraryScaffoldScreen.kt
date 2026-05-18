@@ -10,20 +10,20 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ArrowDropDown
 import androidx.compose.material.icons.rounded.Clear
@@ -33,19 +33,17 @@ import androidx.compose.material.icons.rounded.Folder
 import androidx.compose.material.icons.rounded.GraphicEq
 import androidx.compose.material.icons.rounded.Image
 import androidx.compose.material.icons.rounded.Refresh
+import androidx.compose.material.icons.rounded.Search
+import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material.icons.rounded.SwapHoriz
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
-import androidx.compose.material3.Button
-import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRow
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -54,10 +52,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -67,7 +62,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -75,12 +70,21 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.gitfudge.musicworkbench.R
 import dev.gitfudge.musicworkbench.data.db.TrackEntity
 import dev.gitfudge.musicworkbench.data.scan.ScanResult
-import dev.gitfudge.musicworkbench.ui.common.AlbumArtPreviewDialog
 import dev.gitfudge.musicworkbench.domain.LibraryFilter
 import dev.gitfudge.musicworkbench.domain.LibrarySort
+import dev.gitfudge.musicworkbench.domain.displayArtist
+import dev.gitfudge.musicworkbench.domain.displayTitle
+import dev.gitfudge.musicworkbench.ui.common.AlbumArtPreviewDialog
+import dev.gitfudge.musicworkbench.ui.components.AppFilterChip
+import dev.gitfudge.musicworkbench.ui.components.AppTopBar
+import dev.gitfudge.musicworkbench.ui.components.EmptyState
+import dev.gitfudge.musicworkbench.ui.components.ScopeItem
+import dev.gitfudge.musicworkbench.ui.components.ScopeToolbar
+import dev.gitfudge.musicworkbench.ui.components.PrimaryButton
 import dev.gitfudge.musicworkbench.ui.theme.LocalMotion
 import dev.gitfudge.musicworkbench.ui.theme.LocalSpacing
 import dev.gitfudge.musicworkbench.ui.theme.MusicWorkbenchTheme
+import dev.gitfudge.musicworkbench.ui.theme.ThemeMode
 
 @Composable
 fun LibraryScaffoldScreen(
@@ -89,18 +93,68 @@ fun LibraryScaffoldScreen(
     onTrackClick: (documentUri: String) -> Unit,
     onAlbumClick: (albumKey: String) -> Unit = {},
     onUnfiledClick: () -> Unit = {},
+    onOpenSettings: () -> Unit = {},
     viewModel: LibraryViewModel = hiltViewModel(),
 ) {
     val scanState by viewModel.scanState.collectAsStateWithLifecycle()
+    val libraryLoadState by viewModel.libraryLoadState.collectAsStateWithLifecycle()
+
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    when (val loadState = libraryLoadState) {
+        is LibraryLoadState.FirstImport -> LibraryImportingContent(
+            folderLabel = folderLabel,
+            onChangeFolder = onChangeFolder,
+            onOpenSettings = onOpenSettings,
+            progress = loadState,
+            scanState = scanState,
+            snackbarHostState = snackbarHostState,
+        )
+
+        LibraryLoadState.Ready -> {
+            ReadyLibraryScaffold(
+                folderLabel = folderLabel,
+                onChangeFolder = onChangeFolder,
+                onTrackClick = onTrackClick,
+                onAlbumClick = onAlbumClick,
+                onUnfiledClick = onUnfiledClick,
+                onOpenSettings = onOpenSettings,
+                viewModel = viewModel,
+                scanState = scanState,
+                snackbarHostState = snackbarHostState,
+            )
+        }
+    }
+}
+
+@Composable
+private fun ReadyLibraryScaffold(
+    folderLabel: String,
+    onChangeFolder: () -> Unit,
+    onTrackClick: (documentUri: String) -> Unit,
+    onAlbumClick: (albumKey: String) -> Unit,
+    onUnfiledClick: () -> Unit,
+    onOpenSettings: () -> Unit,
+    viewModel: LibraryViewModel,
+    scanState: ScanState,
+    snackbarHostState: SnackbarHostState,
+) {
+    val artEnrichmentState by viewModel.artEnrichmentState.collectAsStateWithLifecycle()
     val filter by viewModel.filter.collectAsStateWithLifecycle()
     val sort by viewModel.sort.collectAsStateWithLifecycle()
-    val tracks by viewModel.tracks.collectAsStateWithLifecycle()
-    val lowResPx by viewModel.lowResThresholdPx.collectAsStateWithLifecycle()
     val tab by viewModel.tab.collectAsStateWithLifecycle()
+    val tracks by viewModel.tracks.collectAsStateWithLifecycle()
+    val trackCount by viewModel.trackCount.collectAsStateWithLifecycle()
+    val lowResPx by viewModel.lowResThresholdPx.collectAsStateWithLifecycle()
     val albums by viewModel.albums.collectAsStateWithLifecycle()
     val unfiledCount by viewModel.unfiledCount.collectAsStateWithLifecycle()
     val selectedUris by viewModel.selectedUris.collectAsStateWithLifecycle()
+    val selectedAlbumKeys by viewModel.selectedAlbumKeys.collectAsStateWithLifecycle()
     val isSelecting by viewModel.isSelecting.collectAsStateWithLifecycle()
+    val bulkEditorOpen by viewModel.bulkEditorOpen.collectAsStateWithLifecycle()
+    val bulkEditorTracks by viewModel.bulkEditorTracks.collectAsStateWithLifecycle()
+    val bulkEditState by viewModel.bulkEditState.collectAsStateWithLifecycle()
+    val combineMode by viewModel.combineMode.collectAsStateWithLifecycle()
     val batchFetchState by viewModel.batchFetchState.collectAsStateWithLifecycle()
     val downloadingUris by viewModel.downloadingUris.collectAsStateWithLifecycle()
     val downloadEntries by viewModel.downloadEntries.collectAsStateWithLifecycle()
@@ -110,8 +164,7 @@ fun LibraryScaffoldScreen(
     val albumPicker by viewModel.albumPicker.collectAsStateWithLifecycle()
     val albumPreview by viewModel.albumPreview.collectAsStateWithLifecycle()
     val previewDownloading by viewModel.previewDownloading.collectAsStateWithLifecycle()
-
-    val snackbarHostState = remember { SnackbarHostState() }
+    val query by viewModel.query.collectAsStateWithLifecycle()
 
     LaunchedEffect(batchFetchState) {
         if (batchFetchState is BatchFetchState.Done) {
@@ -133,14 +186,28 @@ fun LibraryScaffoldScreen(
         }
     }
 
+    LaunchedEffect(bulkEditState) {
+        if (bulkEditState is BulkEditState.Done) {
+            val s = bulkEditState as BulkEditState.Done
+            snackbarHostState.showSnackbar(
+                "Updated ${s.ok} track${if (s.ok == 1) "" else "s"}" +
+                    if (s.failed > 0) " · Failed ${s.failed}" else "",
+            )
+            viewModel.dismissBulkEditResult()
+        }
+    }
+
     LibraryScaffoldContent(
         folderLabel = folderLabel,
         onChangeFolder = onChangeFolder,
+        onOpenSettings = onOpenSettings,
         onTrackClick = onTrackClick,
         scanState = scanState,
+        artEnrichmentState = artEnrichmentState,
         filter = filter,
         sort = sort,
         tracks = tracks,
+        trackCount = trackCount,
         lowResThresholdPx = lowResPx,
         onFilterChange = { viewModel.setFilter(it) },
         onSortChange = { viewModel.setSort(it) },
@@ -166,8 +233,48 @@ fun LibraryScaffoldScreen(
         onFetchArt = { viewModel.batchFetchArt() },
         onClearDownloads = { viewModel.clearDownloadEntries() },
         onClearArtDownloads = { viewModel.clearArtDownloadEntries() },
+        selectedAlbumKeys = selectedAlbumKeys,
+        onEnterAlbumSelection = { viewModel.enterSelectionWithAlbum(it) },
+        onToggleAlbumSelection = { viewModel.toggleAlbumSelection(it) },
+        onEditTags = { viewModel.openBulkEditor() },
+        onCombineAlbums = { viewModel.openCombineEditor() },
         snackbarHostState = snackbarHostState,
+        query = query,
+        onQueryChange = { viewModel.setQuery(it) },
     )
+
+    if (bulkEditorOpen) {
+        if (combineMode) {
+            val plan = remember(bulkEditorTracks) {
+                dev.gitfudge.musicworkbench.domain.buildCombinePlan(bulkEditorTracks)
+            }
+            dev.gitfudge.musicworkbench.ui.common.BulkTagEditorSheet(
+                tracks = bulkEditorTracks,
+                inFlight = bulkEditState is BulkEditState.Running,
+                onApply = { viewModel.applyBulkEdits(it) },
+                onDismiss = { viewModel.dismissBulkEditor() },
+                title = "Combine albums",
+                applyLabel = "Combine",
+                prefill = buildMap {
+                    if (plan.canonicalAlbum.isNotBlank()) {
+                        put(dev.gitfudge.musicworkbench.domain.BulkTagField.ALBUM, plan.canonicalAlbum)
+                    }
+                    put(
+                        dev.gitfudge.musicworkbench.domain.BulkTagField.ALBUM_ARTIST,
+                        plan.canonicalAlbumArtist,
+                    )
+                },
+                header = { CombineHeader(plan) },
+            )
+        } else {
+            dev.gitfudge.musicworkbench.ui.common.BulkTagEditorSheet(
+                tracks = bulkEditorTracks,
+                inFlight = bulkEditState is BulkEditState.Running,
+                onApply = { viewModel.applyBulkEdits(it) },
+                onDismiss = { viewModel.dismissBulkEditor() },
+            )
+        }
+    }
 
     albumPicker?.let { picker ->
         AlbumArtPickerSheet(
@@ -191,16 +298,138 @@ fun LibraryScaffoldScreen(
     }
 }
 
+@Composable
+private fun LibraryImportingContent(
+    folderLabel: String,
+    onChangeFolder: () -> Unit,
+    onOpenSettings: () -> Unit,
+    progress: LibraryLoadState.FirstImport,
+    scanState: ScanState,
+    snackbarHostState: SnackbarHostState,
+) {
+    val colors = MaterialTheme.colorScheme
+    val spacing = LocalSpacing.current
+
+    Scaffold(
+        containerColor = colors.background,
+        snackbarHost = { SnackbarHost(snackbarHostState) },
+        topBar = {
+            AppTopBar(
+                title = stringResource(R.string.library_title),
+                actions = {
+                    IconButton(onClick = onChangeFolder) {
+                        Icon(
+                            imageVector = Icons.Rounded.SwapHoriz,
+                            contentDescription = stringResource(R.string.library_change_folder),
+                            tint = colors.onSurfaceVariant,
+                        )
+                    }
+                    IconButton(onClick = onOpenSettings) {
+                        Icon(
+                            imageVector = Icons.Rounded.Settings,
+                            contentDescription = "Settings",
+                            tint = colors.onSurfaceVariant,
+                        )
+                    }
+                },
+            )
+        },
+    ) { innerPadding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding),
+        ) {
+            FolderStrip(
+                folderLabel = folderLabel,
+                modifier = Modifier.padding(horizontal = spacing.lg),
+            )
+
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = spacing.lg, vertical = spacing.md),
+                contentAlignment = Alignment.Center,
+            ) {
+                androidx.compose.material3.Surface(
+                    color = colors.surfaceContainerLow,
+                    shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp),
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Column(
+                        modifier = Modifier.padding(horizontal = spacing.lg, vertical = spacing.xl),
+                        verticalArrangement = Arrangement.spacedBy(spacing.md),
+                    ) {
+                        Text(
+                            text = stringResource(R.string.library_importing_title),
+                            style = MaterialTheme.typography.titleMedium,
+                            color = colors.onSurface,
+                        )
+                        Text(
+                            text = stringResource(R.string.library_importing_body),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = colors.onSurfaceVariant,
+                        )
+                        LinearProgressIndicator(
+                            modifier = Modifier.fillMaxWidth(),
+                            color = colors.primary,
+                            trackColor = colors.surfaceContainerHigh,
+                        )
+                        Text(
+                            text = stringResource(
+                                R.string.library_importing_scanned,
+                                progress.scannedCount,
+                            ),
+                            style = MaterialTheme.typography.labelLarge,
+                            color = colors.onSurface,
+                        )
+                        Text(
+                            text = stringResource(
+                                R.string.library_importing_indexed,
+                                progress.indexedCount,
+                            ),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = colors.onSurfaceVariant,
+                        )
+                        if (progress.currentLabel.isNotBlank()) {
+                            Text(
+                                text = stringResource(
+                                    R.string.library_importing_current_file,
+                                    progress.currentLabel,
+                                ),
+                                style = MaterialTheme.typography.labelSmall,
+                                color = colors.onSurfaceVariant,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                            )
+                        }
+                        if (scanState is ScanState.Failed) {
+                            Text(
+                                text = stringResource(R.string.scan_failed, scanState.cause),
+                                style = MaterialTheme.typography.labelSmall,
+                                color = colors.error,
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 private fun LibraryScaffoldContent(
     folderLabel: String,
     onChangeFolder: () -> Unit,
+    onOpenSettings: () -> Unit,
     onTrackClick: (documentUri: String) -> Unit,
     scanState: ScanState,
+    artEnrichmentState: ArtEnrichmentState,
     filter: LibraryFilter,
     sort: LibrarySort,
     tracks: List<TrackEntity>,
+    trackCount: Int,
     lowResThresholdPx: Int,
     onFilterChange: (LibraryFilter) -> Unit,
     onSortChange: (LibrarySort) -> Unit,
@@ -226,7 +455,14 @@ private fun LibraryScaffoldContent(
     onFetchArt: () -> Unit,
     onClearDownloads: () -> Unit,
     onClearArtDownloads: () -> Unit,
+    selectedAlbumKeys: Set<String> = emptySet(),
+    onEnterAlbumSelection: (String) -> Unit = {},
+    onToggleAlbumSelection: (String) -> Unit = {},
+    onEditTags: () -> Unit = {},
+    onCombineAlbums: () -> Unit = {},
     snackbarHostState: SnackbarHostState,
+    query: String = "",
+    onQueryChange: (String) -> Unit = {},
 ) {
     val spacing = LocalSpacing.current
     val colors = MaterialTheme.colorScheme
@@ -236,11 +472,15 @@ private fun LibraryScaffoldContent(
     val isDownloading = batchFetchState is BatchFetchState.Running
     val isArtDownloading = batchArtFetchState is BatchFetchState.Running
 
-    fun clickFor(track: TrackEntity): () -> Unit = {
-        if (isSelecting) onToggleSelection(track.documentUri) else onTrackClick(track.documentUri)
+    val onTrackRowClick = remember(isSelecting, onToggleSelection, onTrackClick) {
+        { documentUri: String ->
+            if (isSelecting) onToggleSelection(documentUri) else onTrackClick(documentUri)
+        }
     }
-    fun longClickFor(track: TrackEntity): () -> Unit = {
-        if (!isSelecting) onEnterSelection(track.documentUri)
+    val onTrackRowLongClick = remember(isSelecting, onEnterSelection) {
+        { documentUri: String ->
+            if (!isSelecting) onEnterSelection(documentUri)
+        }
     }
 
     if (showDownloadSheet) {
@@ -265,15 +505,9 @@ private fun LibraryScaffoldContent(
         containerColor = colors.background,
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = stringResource(R.string.library_title),
-                        style = MaterialTheme.typography.titleLarge,
-                    )
-                },
+            AppTopBar(
+                title = stringResource(R.string.library_title),
                 actions = {
-                    // Lyrics downloads button
                     if (downloadEntries.isNotEmpty() || isDownloading) {
                         IconButton(onClick = { showDownloadSheet = true }) {
                             BadgedBox(
@@ -291,7 +525,6 @@ private fun LibraryScaffoldContent(
                             }
                         }
                     }
-                    // Art downloads button
                     if (artDownloadEntries.isNotEmpty() || isArtDownloading) {
                         IconButton(onClick = { showArtDownloadSheet = true }) {
                             BadgedBox(
@@ -325,18 +558,20 @@ private fun LibraryScaffoldContent(
                             tint = colors.onSurfaceVariant,
                         )
                     }
+                    IconButton(onClick = onOpenSettings) {
+                        Icon(
+                            imageVector = Icons.Rounded.Settings,
+                            contentDescription = "Settings",
+                            tint = colors.onSurfaceVariant,
+                        )
+                    }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = colors.background,
-                    titleContentColor = colors.onBackground,
-                ),
             )
         },
         bottomBar = {
             val motion = LocalMotion.current
             AnimatedVisibility(
                 visible = isSelecting,
-                // DESIGN.md motion: 200ms ease-out, never bounce. Default spring is banned.
                 enter = slideInVertically(animationSpec = tween(motion.standard, easing = motion.easeOut)) { it },
                 exit = slideOutVertically(animationSpec = tween(motion.fast, easing = motion.easeOut)) { it },
             ) {
@@ -346,7 +581,12 @@ private fun LibraryScaffoldContent(
                     batchArtFetchState = batchArtFetchState,
                     onFetchLyrics = onFetchLyrics,
                     onFetchArt = onFetchArt,
+                    onEditTags = onEditTags,
                     onClearSelection = onClearSelection,
+                    combineEnabled = tab == dev.gitfudge.musicworkbench.domain.LibraryTab.ALBUMS &&
+                        selectedAlbumKeys.size >= 2,
+                    selectedAlbumCount = selectedAlbumKeys.size,
+                    onCombine = onCombineAlbums,
                 )
             }
         },
@@ -363,41 +603,51 @@ private fun LibraryScaffoldContent(
 
             ScanProgressRow(
                 scanState = scanState,
+                artEnrichmentState = artEnrichmentState,
                 modifier = Modifier.padding(horizontal = spacing.lg),
             )
 
-            // Scope first (Albums vs Tracks), then refinement (filters/sort) — but only
-            // for the Tracks tab. Filters don't apply to the Albums view and showing
-            // them there is IA drift.
-            TabRow(
-                selectedTabIndex = if (tab == dev.gitfudge.musicworkbench.domain.LibraryTab.ALBUMS) 0 else 1,
-                containerColor = colors.background,
-                contentColor = colors.onBackground,
+            LibrarySearchField(
+                query = query,
+                onQueryChange = onQueryChange,
+                modifier = Modifier.padding(horizontal = spacing.lg, vertical = spacing.sm),
+            )
+
+            // Scope first (Albums vs Tracks), then refinement (filters/sort),
+            // which applies to both scopes.
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = spacing.lg, vertical = spacing.sm),
+                contentAlignment = Alignment.CenterStart,
             ) {
-                Tab(
-                    selected = tab == dev.gitfudge.musicworkbench.domain.LibraryTab.ALBUMS,
-                    onClick = { onTabChange(dev.gitfudge.musicworkbench.domain.LibraryTab.ALBUMS) },
-                    text = { Text("Albums") },
-                )
-                Tab(
-                    selected = tab == dev.gitfudge.musicworkbench.domain.LibraryTab.TRACKS,
-                    onClick = { onTabChange(dev.gitfudge.musicworkbench.domain.LibraryTab.TRACKS) },
-                    text = { Text("Tracks") },
+                ScopeToolbar(
+                    items = listOf(
+                        ScopeItem("Albums", albums.size),
+                        ScopeItem("Tracks", trackCount),
+                    ),
+                    selectedIndex = if (tab == dev.gitfudge.musicworkbench.domain.LibraryTab.ALBUMS) 0 else 1,
+                    onSelected = { idx ->
+                        onTabChange(
+                            if (idx == 0) dev.gitfudge.musicworkbench.domain.LibraryTab.ALBUMS
+                            else dev.gitfudge.musicworkbench.domain.LibraryTab.TRACKS,
+                        )
+                    },
                 )
             }
 
-            if (tab == dev.gitfudge.musicworkbench.domain.LibraryTab.TRACKS) {
-                FilterSortBar(
-                    filter = filter,
-                    sort = sort,
-                    onFilterChange = onFilterChange,
-                    onSortChange = onSortChange,
-                )
-                HorizontalDivider(color = colors.outlineVariant)
-            }
+            FilterSortBar(
+                filter = filter,
+                sort = sort,
+                onFilterChange = onFilterChange,
+                onSortChange = onSortChange,
+                tab = tab,
+            )
+            HorizontalDivider(color = colors.outlineVariant)
 
             when {
-                tracks.isEmpty() && scanState is ScanState.Running -> {
+                tab == dev.gitfudge.musicworkbench.domain.LibraryTab.TRACKS &&
+                    tracks.isEmpty() && scanState is ScanState.Running -> {
                     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         CircularProgressIndicator(
                             color = colors.primary,
@@ -413,29 +663,84 @@ private fun LibraryScaffoldContent(
                     onUnfiledClick = onUnfiledClick,
                     onChangeFolder = onChangeFolder,
                     modifier = Modifier.fillMaxSize(),
+                    selectionMode = isSelecting,
+                    selectedAlbumKeys = selectedAlbumKeys,
+                    onEnterAlbumSelection = onEnterAlbumSelection,
+                    onToggleAlbumSelection = onToggleAlbumSelection,
                 )
 
-                tracks.isEmpty() -> EmptyState(
-                    isFiltered = filter != LibraryFilter.ALL,
-                    modifier = Modifier.fillMaxSize(),
-                )
+                tracks.isEmpty() -> {
+                    val filtered = filter != LibraryFilter.ALL
+                    EmptyState(
+                        icon = if (filtered) Icons.Rounded.FilterList else Icons.Rounded.GraphicEq,
+                        title = stringResource(R.string.library_empty_title),
+                        body = stringResource(
+                            if (filtered) R.string.library_filter_empty_body else R.string.library_empty_body,
+                        ),
+                        modifier = Modifier.fillMaxSize(),
+                    )
+                }
 
-                else -> LazyColumn(Modifier.fillMaxSize()) {
-                    items(tracks, key = { it.documentUri }) { track ->
-                        TrackListItem(
-                            track = track,
-                            lowResThresholdPx = lowResThresholdPx,
-                            onClick = clickFor(track),
-                            onLongClick = longClickFor(track),
-                            selected = track.documentUri in selectedUris,
-                            selectionMode = isSelecting,
-                            isDownloadingLyrics = track.documentUri in downloadingUris,
-                            isDownloadingArt = track.documentUri in downloadingArtUris,
-                        )
-                        HorizontalDivider(
-                            color = colors.outlineVariant,
-                            modifier = Modifier.padding(start = spacing.lg + 48.dp + spacing.md),
-                        )
+                else -> {
+                    val trackListState = rememberLazyListState()
+                    // Index key follows the active sort so jumps land in order.
+                    // RECENTLY_MODIFIED has no alphabetical axis, so no rail.
+                    val letterIndex = remember(tracks, sort) {
+                        if (sort == LibrarySort.RECENTLY_MODIFIED) {
+                            emptyMap()
+                        } else {
+                            buildMap {
+                                tracks.forEachIndexed { i, t ->
+                                    val label = when (sort) {
+                                        LibrarySort.ARTIST -> t.displayArtist().orEmpty()
+                                        LibrarySort.ALBUM -> t.albumLabel
+                                        else -> t.displayTitle()
+                                    }
+                                    putIfAbsent(
+                                        dev.gitfudge.musicworkbench.ui.components.sectionLetterOf(label),
+                                        i,
+                                    )
+                                }
+                            }
+                        }
+                    }
+                    val railVisible = letterIndex.isNotEmpty() && tracks.size >= 12
+                    Box(Modifier.fillMaxSize()) {
+                        LazyColumn(
+                            state = trackListState,
+                            modifier = Modifier.fillMaxSize(),
+                            contentPadding = if (railVisible) {
+                                PaddingValues(end = spacing.xl + spacing.sm)
+                            } else {
+                                PaddingValues()
+                            },
+                        ) {
+                            items(tracks, key = { it.documentUri }) { track ->
+                                TrackListItem(
+                                    track = track,
+                                    lowResThresholdPx = lowResThresholdPx,
+                                    onClick = onTrackRowClick,
+                                    onLongClick = onTrackRowLongClick,
+                                    selected = track.documentUri in selectedUris,
+                                    selectionMode = isSelecting,
+                                    isDownloadingLyrics = track.documentUri in downloadingUris,
+                                    isDownloadingArt = track.documentUri in downloadingArtUris,
+                                )
+                                HorizontalDivider(
+                                    color = colors.outlineVariant,
+                                    modifier = Modifier.padding(start = spacing.lg + 48.dp + spacing.md),
+                                )
+                            }
+                        }
+                        if (railVisible) {
+                            dev.gitfudge.musicworkbench.ui.components.AlphabetScroller(
+                                listState = trackListState,
+                                indexForLetter = { letterIndex[it] },
+                                modifier = Modifier
+                                    .align(Alignment.CenterEnd)
+                                    .fillMaxHeight(),
+                            )
+                        }
                     }
                 }
             }
@@ -450,13 +755,17 @@ private fun SelectionBar(
     batchArtFetchState: BatchFetchState,
     onFetchLyrics: () -> Unit,
     onFetchArt: () -> Unit,
+    onEditTags: () -> Unit,
     onClearSelection: () -> Unit,
+    combineEnabled: Boolean = false,
+    selectedAlbumCount: Int = 0,
+    onCombine: () -> Unit = {},
 ) {
     val colors = MaterialTheme.colorScheme
     val spacing = LocalSpacing.current
-    // DESIGN.md: batch action bar sits on `surfaceElevated` (== surfaceContainerHigh in the
-    // theme map) with a 1px outline hairline rather than a heavy shadow. No tonal elevation.
-    Surface(
+    // DESIGN.md: batch action bar sits on `surfaceContainerHigh` with a 1px outline
+    // hairline rather than a heavy shadow. No tonal elevation.
+    androidx.compose.material3.Surface(
         color = colors.surfaceContainerHigh,
         modifier = Modifier.fillMaxWidth(),
     ) {
@@ -469,67 +778,164 @@ private fun SelectionBar(
                     .padding(horizontal = spacing.lg, vertical = spacing.sm),
                 verticalArrangement = Arrangement.spacedBy(spacing.xs),
             ) {
-            // Top row: count + clear
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(
-                    text = stringResource(R.string.selection_count, selectedCount),
-                    style = MaterialTheme.typography.titleSmall,
-                    color = colors.onSurface,
-                    modifier = Modifier.weight(1f),
-                )
-                IconButton(onClick = onClearSelection) {
-                    Icon(
-                        imageVector = Icons.Rounded.Clear,
-                        contentDescription = stringResource(R.string.selection_clear),
-                        tint = colors.onSurfaceVariant,
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        text = stringResource(R.string.selection_count, selectedCount),
+                        style = dev.gitfudge.musicworkbench.ui.theme.AppTextStyles.mono
+                            .copy(fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold),
+                        color = colors.onSurface,
+                        modifier = Modifier.weight(1f),
                     )
-                }
-            }
-            // Bottom row: actions or progress
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(spacing.sm),
-            ) {
-                when {
-                    batchFetchState is BatchFetchState.Running -> {
-                        CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
-                        Text(
-                            text = "Lyrics ${batchFetchState.done}/${batchFetchState.total}",
-                            style = MaterialTheme.typography.labelMedium,
-                            color = colors.onSurfaceVariant,
+                    IconButton(onClick = onClearSelection) {
+                        Icon(
+                            imageVector = Icons.Rounded.Clear,
+                            contentDescription = stringResource(R.string.selection_clear),
+                            tint = colors.secondary,
                         )
                     }
-                    batchArtFetchState is BatchFetchState.Running -> {
-                        CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
-                        Text(
-                            text = "Art ${batchArtFetchState.done}/${batchArtFetchState.total}",
-                            style = MaterialTheme.typography.labelMedium,
-                            color = colors.onSurfaceVariant,
-                        )
+                }
+                val batchRunning = batchFetchState is BatchFetchState.Running ||
+                    batchArtFetchState is BatchFetchState.Running
+                if (combineEnabled && !batchRunning) {
+                    PrimaryButton(
+                        onClick = onCombine,
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        Text(stringResource(R.string.selection_combine, selectedAlbumCount))
                     }
-                    else -> {
-                        Button(
-                            onClick = onFetchLyrics,
-                            modifier = Modifier.weight(1f),
-                        ) {
-                            Text(stringResource(R.string.selection_fetch_lyrics))
+                }
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(spacing.sm),
+                ) {
+                    when {
+                        batchFetchState is BatchFetchState.Running -> {
+                            CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
+                            Text(
+                                text = "Lyrics ${batchFetchState.done}/${batchFetchState.total}",
+                                style = MaterialTheme.typography.labelMedium,
+                                color = colors.onSurfaceVariant,
+                            )
                         }
-                        Button(
-                            onClick = onFetchArt,
-                            modifier = Modifier.weight(1f),
-                        ) {
-                            Text(stringResource(R.string.selection_fetch_art))
+                        batchArtFetchState is BatchFetchState.Running -> {
+                            CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
+                            Text(
+                                text = "Art ${batchArtFetchState.done}/${batchArtFetchState.total}",
+                                style = MaterialTheme.typography.labelMedium,
+                                color = colors.onSurfaceVariant,
+                            )
+                        }
+                        else -> {
+                            dev.gitfudge.musicworkbench.ui.components.GhostButton(
+                                onClick = onEditTags,
+                                modifier = Modifier.weight(1f),
+                            ) {
+                                Text(stringResource(R.string.selection_edit_tags))
+                            }
+                            dev.gitfudge.musicworkbench.ui.components.GhostButton(
+                                onClick = onFetchLyrics,
+                                modifier = Modifier.weight(1f),
+                            ) {
+                                Text(stringResource(R.string.selection_fetch_lyrics))
+                            }
+                            PrimaryButton(
+                                onClick = onFetchArt,
+                                modifier = Modifier.weight(1f),
+                            ) {
+                                Text(stringResource(R.string.selection_fetch_art))
+                            }
                         }
                     }
                 }
-            }
             }
         }
     }
+}
+
+@Composable
+private fun CombineHeader(plan: dev.gitfudge.musicworkbench.domain.CombinePlan) {
+    val colors = MaterialTheme.colorScheme
+    val spacing = LocalSpacing.current
+    Column(verticalArrangement = Arrangement.spacedBy(spacing.xs)) {
+        Text(
+            text = "Combining ${plan.groups.size} albums",
+            style = MaterialTheme.typography.titleSmall,
+            color = colors.onSurface,
+        )
+        Text(
+            text = "These show up separately because:",
+            style = MaterialTheme.typography.bodySmall,
+            color = colors.onSurfaceVariant,
+        )
+        plan.reasons.forEach { reason ->
+            Text(
+                text = "• $reason",
+                style = MaterialTheme.typography.bodySmall,
+                color = colors.onSurfaceVariant,
+            )
+        }
+        plan.groups.forEach { g ->
+            Text(
+                text = "— ${g.albumText} · ${g.albumArtist ?: g.artistSample ?: "no album artist"} · " +
+                    "${g.trackCount} track${if (g.trackCount == 1) "" else "s"}",
+                style = MaterialTheme.typography.labelSmall,
+                color = colors.onSurfaceVariant,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+        }
+        Text(
+            text = "Pick the canonical Album and Album artist below — writing them to " +
+                "every track collapses these into one album. Adjust or add fields as needed.",
+            style = MaterialTheme.typography.bodySmall,
+            color = colors.onSurfaceVariant,
+            modifier = Modifier.padding(top = spacing.xs),
+        )
+    }
+}
+
+@Composable
+private fun LibrarySearchField(
+    query: String,
+    onQueryChange: (String) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val colors = MaterialTheme.colorScheme
+    androidx.compose.material3.OutlinedTextField(
+        value = query,
+        onValueChange = onQueryChange,
+        modifier = modifier.fillMaxWidth(),
+        singleLine = true,
+        textStyle = MaterialTheme.typography.bodyMedium,
+        placeholder = {
+            Text("Search title, artist, album", style = MaterialTheme.typography.bodyMedium)
+        },
+        leadingIcon = {
+            Icon(
+                Icons.Rounded.Search,
+                contentDescription = null,
+                modifier = Modifier.size(18.dp),
+            )
+        },
+        trailingIcon = if (query.isNotEmpty()) {
+            {
+                IconButton(onClick = { onQueryChange("") }) {
+                    Icon(Icons.Rounded.Clear, contentDescription = "Clear search", modifier = Modifier.size(18.dp))
+                }
+            }
+        } else null,
+        shape = androidx.compose.foundation.shape.RoundedCornerShape(8.dp),
+        colors = androidx.compose.material3.OutlinedTextFieldDefaults.colors(
+            focusedContainerColor = colors.surfaceVariant,
+            unfocusedContainerColor = colors.surfaceVariant,
+            focusedBorderColor = colors.secondary,
+            unfocusedBorderColor = androidx.compose.ui.graphics.Color.Transparent,
+        ),
+    )
 }
 
 @Composable
@@ -537,40 +943,43 @@ private fun FolderStrip(folderLabel: String, modifier: Modifier = Modifier) {
     val spacing = LocalSpacing.current
     val colors = MaterialTheme.colorScheme
 
-    Surface(
-        shape = RoundedCornerShape(12.dp),
-        color = colors.surfaceContainer,
-        modifier = modifier.fillMaxWidth(),
+    // Calm reminder of scope — a single inline strip, not a card. Eyebrow
+    // label + mono path so it reads like equipment chrome.
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(vertical = spacing.xs),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(spacing.sm),
     ) {
-        Row(
-            modifier = Modifier.padding(horizontal = spacing.lg, vertical = spacing.md),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(spacing.md),
-        ) {
-            Icon(
-                imageVector = Icons.Rounded.Folder,
-                contentDescription = null,
-                tint = colors.primary,
-                modifier = Modifier.size(20.dp),
-            )
-            Column {
-                Text(
-                    text = stringResource(R.string.library_folder_label),
-                    style = MaterialTheme.typography.labelMedium,
-                    color = colors.onSurfaceVariant,
-                )
-                Text(
-                    text = folderLabel,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = colors.onSurface,
-                )
-            }
-        }
+        val faint = colors.onSurfaceVariant.copy(alpha = 0.7f)
+        Icon(
+            imageVector = Icons.Rounded.Folder,
+            contentDescription = null,
+            tint = faint,
+            modifier = Modifier.size(14.dp),
+        )
+        Text(
+            text = stringResource(R.string.library_folder_label).uppercase(),
+            style = dev.gitfudge.musicworkbench.ui.theme.AppTextStyles.eyebrow,
+            color = faint,
+        )
+        Text(
+            text = folderLabel,
+            style = dev.gitfudge.musicworkbench.ui.theme.AppTextStyles.mono,
+            color = colors.onSurfaceVariant,
+            maxLines = 1,
+            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+        )
     }
 }
 
 @Composable
-private fun ScanProgressRow(scanState: ScanState, modifier: Modifier = Modifier) {
+private fun ScanProgressRow(
+    scanState: ScanState,
+    artEnrichmentState: ArtEnrichmentState,
+    modifier: Modifier = Modifier,
+) {
     val spacing = LocalSpacing.current
     when (scanState) {
         is ScanState.Idle -> {}
@@ -593,17 +1002,18 @@ private fun ScanProgressRow(scanState: ScanState, modifier: Modifier = Modifier)
             )
         }
 
-        is ScanState.Done -> Text(
-            text = stringResource(
-                R.string.scan_done,
-                scanState.result.scanned,
-                scanState.result.upserted,
-                scanState.result.removed,
-            ),
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = modifier.padding(vertical = spacing.xs),
-        )
+        is ScanState.Done -> when (artEnrichmentState) {
+            ArtEnrichmentState.Idle -> {}
+            is ArtEnrichmentState.Running -> Text(
+                text = stringResource(
+                    R.string.library_art_enrichment_running,
+                    artEnrichmentState.remaining,
+                ),
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = modifier.padding(vertical = spacing.xs),
+            )
+        }
 
         is ScanState.Failed -> Text(
             text = stringResource(R.string.scan_failed, scanState.cause),
@@ -614,12 +1024,14 @@ private fun ScanProgressRow(scanState: ScanState, modifier: Modifier = Modifier)
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun FilterSortBar(
     filter: LibraryFilter,
     sort: LibrarySort,
     onFilterChange: (LibraryFilter) -> Unit,
     onSortChange: (LibrarySort) -> Unit,
+    tab: dev.gitfudge.musicworkbench.domain.LibraryTab,
 ) {
     val spacing = LocalSpacing.current
     var showSortMenu by remember { mutableStateOf(false) }
@@ -632,11 +1044,15 @@ private fun FilterSortBar(
         horizontalArrangement = Arrangement.spacedBy(spacing.sm),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        LibraryFilter.entries.forEach { f ->
-            FilterChip(
+        // "Possible duplicates" is an album-level refinement; hide it on Tracks.
+        LibraryFilter.entries.filter {
+            it != LibraryFilter.DUPLICATES ||
+                tab == dev.gitfudge.musicworkbench.domain.LibraryTab.ALBUMS
+        }.forEach { f ->
+            AppFilterChip(
                 selected = filter == f,
                 onClick = { onFilterChange(f) },
-                label = { Text(stringResource(f.labelRes())) },
+                label = stringResource(f.labelRes()),
             )
         }
 
@@ -649,6 +1065,7 @@ private fun FilterSortBar(
                 },
                 colors = AssistChipDefaults.assistChipColors(
                     containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                    labelColor = MaterialTheme.colorScheme.onSurface,
                 ),
             )
             DropdownMenu(
@@ -673,41 +1090,6 @@ private fun FilterSortBar(
     }
 }
 
-@Composable
-private fun EmptyState(isFiltered: Boolean, modifier: Modifier = Modifier) {
-    val spacing = LocalSpacing.current
-    val colors = MaterialTheme.colorScheme
-
-    Column(
-        modifier = modifier.padding(horizontal = spacing.xl),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center,
-    ) {
-        Icon(
-            imageVector = if (isFiltered) Icons.Rounded.FilterList else Icons.Rounded.GraphicEq,
-            contentDescription = null,
-            tint = colors.onSurfaceVariant,
-            modifier = Modifier.size(48.dp),
-        )
-        Spacer(Modifier.height(spacing.lg))
-        Text(
-            text = stringResource(R.string.library_empty_title),
-            style = MaterialTheme.typography.titleMedium,
-            color = colors.onBackground,
-        )
-        Spacer(Modifier.height(spacing.sm))
-        Text(
-            text = stringResource(
-                if (isFiltered) R.string.library_filter_empty_body else R.string.library_empty_body,
-            ),
-            style = MaterialTheme.typography.bodyMedium,
-            color = colors.onSurfaceVariant,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.widthIn(max = 340.dp),
-        )
-    }
-}
-
 @StringRes
 private fun LibraryFilter.labelRes(): Int = when (this) {
     LibraryFilter.ALL -> R.string.filter_all
@@ -716,6 +1098,7 @@ private fun LibraryFilter.labelRes(): Int = when (this) {
     LibraryFilter.NO_LYRICS -> R.string.filter_no_lyrics
     LibraryFilter.INCOMPLETE_TAGS -> R.string.filter_incomplete_tags
     LibraryFilter.UNKNOWN_ARTIST -> R.string.filter_unknown_artist
+    LibraryFilter.DUPLICATES -> R.string.filter_duplicates
 }
 
 @StringRes
@@ -728,135 +1111,46 @@ private fun LibrarySort.labelRes(): Int = when (this) {
 
 // ── Previews ────────────────────────────────────────────────────────────────
 
-@Preview(name = "Library · scan pending", showBackground = true, backgroundColor = 0xFF14161A)
 @Composable
-private fun LibraryScanPendingPreview() {
-    MusicWorkbenchTheme {
+private fun previewScaffold(
+    themeMode: ThemeMode,
+    scanState: ScanState = ScanState.Done(ScanResult(scanned = 248, upserted = 3, removed = 0, failed = 0)),
+    filter: LibraryFilter = LibraryFilter.ALL,
+    tracks: List<TrackEntity> = previewTracks(),
+    tab: dev.gitfudge.musicworkbench.domain.LibraryTab = dev.gitfudge.musicworkbench.domain.LibraryTab.TRACKS,
+    isSelecting: Boolean = false,
+    selectedUris: Set<String> = emptySet(),
+) {
+    MusicWorkbenchTheme(themeMode = themeMode) {
         LibraryScaffoldContent(
             folderLabel = "Qobuz Downloads",
             onChangeFolder = {},
+            onOpenSettings = {},
             onTrackClick = {},
-            scanState = ScanState.Running(42, "nils_frahm_all_melody.flac"),
-            filter = LibraryFilter.ALL,
-            sort = LibrarySort.ALBUM,
-            tracks = emptyList(),
-            lowResThresholdPx = 600,
-            onFilterChange = {},
-            onSortChange = {},
-            onRescan = {},
-            tab = dev.gitfudge.musicworkbench.domain.LibraryTab.TRACKS,
-            albums = emptyList(),
-            unfiledCount = 0,
-            onTabChange = {},
-            onAlbumClick = {},
-            onUnfiledClick = {},
-
-            selectedUris = emptySet(),
-            isSelecting = false,
-            batchFetchState = BatchFetchState.Idle,
-            downloadingUris = emptySet(),
-            downloadEntries = emptyList(),
-            batchArtFetchState = BatchFetchState.Idle,
-            downloadingArtUris = emptySet(),
-            artDownloadEntries = emptyList(),
-
-            onEnterSelection = {},
-            onToggleSelection = {},
-            onClearSelection = {},
-            onFetchLyrics = {},
-            onFetchArt = {},
-            onClearDownloads = {},
-            onClearArtDownloads = {},
-            snackbarHostState = remember { SnackbarHostState() },
-        )
-    }
-}
-
-@Preview(name = "Library · track list", showBackground = true, backgroundColor = 0xFF14161A)
-@Composable
-private fun LibraryTrackListPreview() {
-    MusicWorkbenchTheme {
-        LibraryScaffoldContent(
-            folderLabel = "Qobuz Downloads",
-            onChangeFolder = {},
-            onTrackClick = {},
-            scanState = ScanState.Done(ScanResult(scanned = 248, upserted = 3, removed = 0, failed = 0)),
-            filter = LibraryFilter.ALL,
-            sort = LibrarySort.ALBUM,
-            tracks = listOf(
-                previewTrack("Song Without End", "Nils Frahm", "All Melody", "FLAC"),
-                previewTrack("Says", "Nils Frahm", "All Melody", "FLAC", hasSynced = false),
-                previewTrack("track_07", null, null, "MP3", hasArt = false, hasSynced = false),
-                previewTrack("Opus 23", "Dustin O'Halloran", "Lumiere", "FLAC", hasSynced = true),
-            ),
-            lowResThresholdPx = 600,
-            onFilterChange = {},
-            onSortChange = {},
-            onRescan = {},
-            tab = dev.gitfudge.musicworkbench.domain.LibraryTab.TRACKS,
-            albums = emptyList(),
-            unfiledCount = 0,
-            onTabChange = {},
-            onAlbumClick = {},
-            onUnfiledClick = {},
-
-            selectedUris = emptySet(),
-            isSelecting = false,
-            batchFetchState = BatchFetchState.Idle,
-            downloadingUris = emptySet(),
-            downloadEntries = emptyList(),
-            batchArtFetchState = BatchFetchState.Idle,
-            downloadingArtUris = emptySet(),
-            artDownloadEntries = emptyList(),
-
-            onEnterSelection = {},
-            onToggleSelection = {},
-            onClearSelection = {},
-            onFetchLyrics = {},
-            onFetchArt = {},
-            onClearDownloads = {},
-            onClearArtDownloads = {},
-            snackbarHostState = remember { SnackbarHostState() },
-        )
-    }
-}
-
-@Preview(name = "Library · selection mode", showBackground = true, backgroundColor = 0xFF14161A)
-@Composable
-private fun LibrarySelectionPreview() {
-    val tracks = listOf(
-        previewTrack("Song Without End", "Nils Frahm", "All Melody", "FLAC"),
-        previewTrack("Says", "Nils Frahm", "All Melody", "FLAC", hasSynced = false),
-    )
-    MusicWorkbenchTheme {
-        LibraryScaffoldContent(
-            folderLabel = "Qobuz Downloads",
-            onChangeFolder = {},
-            onTrackClick = {},
-            scanState = ScanState.Done(ScanResult(scanned = 248, upserted = 0, removed = 0, failed = 0)),
-            filter = LibraryFilter.ALL,
+            scanState = scanState,
+            artEnrichmentState = ArtEnrichmentState.Idle,
+            filter = filter,
             sort = LibrarySort.ALBUM,
             tracks = tracks,
+            trackCount = tracks.size,
             lowResThresholdPx = 600,
             onFilterChange = {},
             onSortChange = {},
             onRescan = {},
-            tab = dev.gitfudge.musicworkbench.domain.LibraryTab.TRACKS,
+            tab = tab,
             albums = emptyList(),
-            unfiledCount = 0,
+            unfiledCount = 2,
             onTabChange = {},
             onAlbumClick = {},
             onUnfiledClick = {},
-
-            selectedUris = setOf(tracks[0].documentUri),
-            isSelecting = true,
+            selectedUris = selectedUris,
+            isSelecting = isSelecting,
             batchFetchState = BatchFetchState.Idle,
             downloadingUris = emptySet(),
             downloadEntries = emptyList(),
             batchArtFetchState = BatchFetchState.Idle,
             downloadingArtUris = emptySet(),
             artDownloadEntries = emptyList(),
-
             onEnterSelection = {},
             onToggleSelection = {},
             onClearSelection = {},
@@ -869,46 +1163,40 @@ private fun LibrarySelectionPreview() {
     }
 }
 
-@Preview(name = "Library · empty (filtered)", showBackground = true, backgroundColor = 0xFF14161A)
-@Composable
-private fun LibraryFilteredEmptyPreview() {
-    MusicWorkbenchTheme {
-        LibraryScaffoldContent(
-            folderLabel = "Qobuz Downloads",
-            onChangeFolder = {},
-            onTrackClick = {},
-            scanState = ScanState.Done(ScanResult(scanned = 248, upserted = 0, removed = 0, failed = 0)),
-            filter = LibraryFilter.MISSING_ART,
-            sort = LibrarySort.ALBUM,
-            tracks = emptyList(),
-            lowResThresholdPx = 600,
-            onFilterChange = {},
-            onSortChange = {},
-            onRescan = {},
-            tab = dev.gitfudge.musicworkbench.domain.LibraryTab.TRACKS,
-            albums = emptyList(),
-            unfiledCount = 0,
-            onTabChange = {},
-            onAlbumClick = {},
-            onUnfiledClick = {},
+private fun previewTracks(): List<TrackEntity> = listOf(
+    previewTrack("Song Without End", "Nils Frahm", "All Melody", "FLAC"),
+    previewTrack("Says", "Nils Frahm", "All Melody", "FLAC", hasSynced = false),
+    previewTrack("track_07", null, null, "MP3", hasArt = false, hasSynced = false),
+    previewTrack("Opus 23", "Dustin O'Halloran", "Lumiere", "FLAC", hasSynced = true),
+)
 
-            selectedUris = emptySet(),
-            isSelecting = false,
-            batchFetchState = BatchFetchState.Idle,
-            downloadingUris = emptySet(),
-            downloadEntries = emptyList(),
-            batchArtFetchState = BatchFetchState.Idle,
-            downloadingArtUris = emptySet(),
-            artDownloadEntries = emptyList(),
+@Preview(name = "Library · Light") @Composable
+private fun LibraryLightPreview() = previewScaffold(ThemeMode.Light)
 
-            onEnterSelection = {},
-            onToggleSelection = {},
-            onClearSelection = {},
-            onFetchLyrics = {},
-            onFetchArt = {},
-            onClearDownloads = {},
-            onClearArtDownloads = {},
-            snackbarHostState = remember { SnackbarHostState() },
-        )
-    }
+@Preview(name = "Library · Dark") @Composable
+private fun LibraryDarkPreview() = previewScaffold(ThemeMode.Dark)
+
+@Preview(name = "Library · scan pending · Dark") @Composable
+private fun LibraryScanPendingPreview() = previewScaffold(
+    themeMode = ThemeMode.Dark,
+    scanState = ScanState.Running(42, "nils_frahm_all_melody.flac"),
+    tracks = emptyList(),
+)
+
+@Preview(name = "Library · selection · Light") @Composable
+private fun LibrarySelectionPreview() {
+    val tracks = previewTracks()
+    previewScaffold(
+        themeMode = ThemeMode.Light,
+        tracks = tracks,
+        isSelecting = true,
+        selectedUris = setOf(tracks[0].documentUri),
+    )
 }
+
+@Preview(name = "Library · empty (filtered) · Dark") @Composable
+private fun LibraryFilteredEmptyPreview() = previewScaffold(
+    themeMode = ThemeMode.Dark,
+    filter = LibraryFilter.MISSING_ART,
+    tracks = emptyList(),
+)

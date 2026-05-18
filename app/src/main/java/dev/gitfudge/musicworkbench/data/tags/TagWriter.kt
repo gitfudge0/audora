@@ -26,6 +26,9 @@ data class TagEdits(
     val discNumber: String,
     val year: String,
     val genre: String,
+    val composer: String = "",
+    val comment: String = "",
+    val compilation: Boolean = false,
 )
 
 data class ArtWriteResult(
@@ -38,11 +41,17 @@ data class ArtWriteResult(
 @Singleton
 class TagWriter @Inject constructor(
     @ApplicationContext private val context: Context,
+    private val safety: WriteSafetyManager,
 ) {
     /** Edit text tags only. Returns new lastModified. */
-    suspend fun write(docUri: Uri, displayName: String, edits: TagEdits): Long =
+    suspend fun write(
+        docUri: Uri,
+        displayName: String,
+        edits: TagEdits,
+        expectedLastModified: Long = 0L,
+    ): Long =
         withContext(Dispatchers.IO) {
-            editInPlace(docUri, displayName) { tag ->
+            editInPlace(docUri, displayName, expectedLastModified) { tag ->
                 fun set(key: FieldKey, value: String) {
                     if (value.isBlank()) tag.deleteField(key) else tag.setField(key, value.trim())
                 }
@@ -54,24 +63,41 @@ class TagWriter @Inject constructor(
                 set(FieldKey.DISC_NO, edits.discNumber)
                 set(FieldKey.YEAR, edits.year)
                 set(FieldKey.GENRE, edits.genre)
+                set(FieldKey.COMPOSER, edits.composer)
+                set(FieldKey.COMMENT, edits.comment)
+                if (edits.compilation) {
+                    tag.setField(FieldKey.IS_COMPILATION, "1")
+                } else {
+                    tag.deleteField(FieldKey.IS_COMPILATION)
+                }
             }
         }
 
     /** Embed plain or LRC lyrics into the LYRICS tag. Returns new lastModified. */
-    suspend fun writeLyrics(docUri: Uri, displayName: String, lyricsText: String): Long =
+    suspend fun writeLyrics(
+        docUri: Uri,
+        displayName: String,
+        lyricsText: String,
+        expectedLastModified: Long = 0L,
+    ): Long =
         withContext(Dispatchers.IO) {
-            editInPlace(docUri, displayName) { tag ->
+            editInPlace(docUri, displayName, expectedLastModified) { tag ->
                 if (lyricsText.isBlank()) tag.deleteField(FieldKey.LYRICS)
                 else tag.setField(FieldKey.LYRICS, lyricsText)
             }
         }
 
     /** Replace embedded album art. Returns dimensions + new lastModified + thumbnail path. */
-    suspend fun writeArt(docUri: Uri, displayName: String, imageUri: Uri): ArtWriteResult =
+    suspend fun writeArt(
+        docUri: Uri,
+        displayName: String,
+        imageUri: Uri,
+        expectedLastModified: Long = 0L,
+    ): ArtWriteResult =
         withContext(Dispatchers.IO) {
             val artBytes = scaleToJpeg(imageUri, maxPx = 1000)
 
-            editInPlace(docUri, displayName) { tag ->
+            editInPlace(docUri, displayName, expectedLastModified) { tag ->
                 val artwork = AndroidArtwork().apply {
                     binaryData = artBytes
                     mimeType = "image/jpeg"
@@ -102,10 +128,11 @@ class TagWriter @Inject constructor(
         docUri: Uri,
         displayName: String,
         imageBytes: ByteArray,
+        expectedLastModified: Long = 0L,
     ): ArtWriteResult = withContext(Dispatchers.IO) {
         val artBytes = scaleToJpegFromBytes(imageBytes, maxPx = 1000)
 
-        editInPlace(docUri, displayName) { tag ->
+        editInPlace(docUri, displayName, expectedLastModified) { tag ->
             val artwork = AndroidArtwork().apply {
                 binaryData = artBytes
                 mimeType = "image/jpeg"
@@ -129,11 +156,24 @@ class TagWriter @Inject constructor(
 
     // ── Helpers ────────────────────────────────────────────────────────────
 
+    /**
+     * Restore the most recent pre-write backup of [docUri] (the undo).
+     * Returns the new lastModified, or null if there was nothing to restore.
+     */
+    suspend fun restoreLastWrite(docUri: Uri): Long? = withContext(Dispatchers.IO) {
+        val backup = safety.latestBackup(docUri) ?: return@withContext null
+        if (safety.restore(docUri, backup)) queryLastModified(docUri) else null
+    }
+
     private fun editInPlace(
         docUri: Uri,
         displayName: String,
+        expectedLastModified: Long,
         block: (org.jaudiotagger.tag.Tag) -> Unit,
     ): Long {
+        // 1. Refuse if the file changed out-of-band since we scanned it.
+        safety.assertUnchanged(docUri, displayName, expectedLastModified)
+
         val ext = displayName.substringAfterLast('.', "mp3").lowercase()
         val tmp = File(context.cacheDir, "tagwrite_${System.currentTimeMillis()}.$ext")
         try {
@@ -143,6 +183,8 @@ class TagWriter @Inject constructor(
             val audioFile = AudioFileIO.read(tmp)
             block(audioFile.tagOrCreateAndSetDefault)
             AudioFileIO.write(audioFile)
+            // 2. Snapshot the original before the destructive truncate-write.
+            safety.backup(docUri, displayName)
             context.contentResolver.openOutputStream(docUri, "wt")!!.use { out ->
                 tmp.inputStream().use { it.copyTo(out) }
             }

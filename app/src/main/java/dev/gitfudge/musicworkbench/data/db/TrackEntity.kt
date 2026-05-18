@@ -14,6 +14,9 @@ import androidx.room.PrimaryKey
         Index(value = ["documentUri"], unique = true),
         Index(value = ["albumKey"]),
         Index(value = ["treeUri"]),
+        Index(value = ["treeUri", "albumKey"]),
+        Index(value = ["treeUri", "artScanPending"]),
+        Index(value = ["treeUri", "lastModified"]),
     ],
 )
 data class TrackEntity(
@@ -34,6 +37,9 @@ data class TrackEntity(
     val discNumber: Int?,
     val year: String?,
     val genre: String?,
+    val composer: String?,
+    val comment: String?,
+    val compilation: Boolean,
 
     /** Grouping key: album artist + album, falls back to folder. */
     val albumKey: String,
@@ -43,6 +49,7 @@ data class TrackEntity(
     val artWidth: Int?,
     val artHeight: Int?,
     val thumbnailPath: String?,
+    val artScanPending: Boolean,
 
     val hasSidecarLrc: Boolean,
     val sidecarLrcSynced: Boolean,

@@ -1,62 +1,70 @@
 package dev.gitfudge.musicworkbench.ui.album
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Album
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.Edit
 import androidx.compose.material.icons.rounded.Image
 import androidx.compose.material.icons.rounded.Lyrics
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import coil.compose.AsyncImage
 import dev.gitfudge.musicworkbench.data.db.TrackEntity
+import dev.gitfudge.musicworkbench.domain.artStatus
+import dev.gitfudge.musicworkbench.domain.lyricsStatus
+import dev.gitfudge.musicworkbench.domain.tagStatus
 import dev.gitfudge.musicworkbench.ui.common.AlbumArtPreviewDialog
 import dev.gitfudge.musicworkbench.ui.common.AlbumArtStatusChip
 import dev.gitfudge.musicworkbench.ui.common.AlbumLyricsStatusChip
 import dev.gitfudge.musicworkbench.ui.common.AlbumTagStatusChip
+import dev.gitfudge.musicworkbench.ui.common.ArtStatusChip
+import dev.gitfudge.musicworkbench.ui.common.LyricsStatusChip
+import dev.gitfudge.musicworkbench.ui.common.TagStatusChip
+import dev.gitfudge.musicworkbench.ui.components.AppBottomSheet
+import dev.gitfudge.musicworkbench.ui.components.AppTopBar
+import dev.gitfudge.musicworkbench.ui.components.ArtTileHero
+import dev.gitfudge.musicworkbench.ui.components.GhostButton
+import dev.gitfudge.musicworkbench.ui.components.ListRow
+import dev.gitfudge.musicworkbench.ui.components.PrimaryButton
+import dev.gitfudge.musicworkbench.ui.components.SecondaryButton
 import dev.gitfudge.musicworkbench.ui.library.AlbumArtPickerSheet
 import dev.gitfudge.musicworkbench.ui.library.AlbumPickerState
 import dev.gitfudge.musicworkbench.ui.theme.LocalSpacing
 import java.io.File
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun AlbumDetailScreen(
     onBack: () -> Unit,
@@ -70,13 +78,15 @@ fun AlbumDetailScreen(
     val artDownloading by viewModel.artDownloading.collectAsStateWithLifecycle()
     val lyricsBatch by viewModel.lyricsBatch.collectAsStateWithLifecycle()
     val spacing = LocalSpacing.current
+    val colors = MaterialTheme.colorScheme
 
     Scaffold(
+        containerColor = colors.background,
         topBar = {
-            TopAppBar(
+            AppTopBar(
                 // Constant title; the album name lives in the hero, so duplicating it
                 // here just creates two title areas competing for attention.
-                title = { Text("Album") },
+                title = "Album",
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = "Back")
@@ -96,7 +106,7 @@ fun AlbumDetailScreen(
                 Text(
                     text = "Album not found",
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    color = colors.onSurfaceVariant,
                 )
             }
             return@Scaffold
@@ -128,11 +138,12 @@ fun AlbumDetailScreen(
                     mixedArtist = state.mixedArtist,
                     onTapCover = { viewModel.startHeroArt() },
                 )
-                Row(
+                FlowRow(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = spacing.lg, vertical = spacing.sm),
                     horizontalArrangement = Arrangement.spacedBy(spacing.xs),
+                    verticalArrangement = Arrangement.spacedBy(spacing.xs),
                 ) {
                     AlbumArtStatusChip(state.artStatus)
                     AlbumLyricsStatusChip(state.lyricsStatus)
@@ -152,7 +163,7 @@ fun AlbumDetailScreen(
                         Text(
                             text = "Disc $disc",
                             style = MaterialTheme.typography.labelMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            color = colors.onSurfaceVariant,
                             modifier = Modifier.padding(
                                 horizontal = spacing.lg,
                                 vertical = spacing.sm,
@@ -163,6 +174,7 @@ fun AlbumDetailScreen(
                 items(items, key = { it.documentUri }) { track ->
                     AlbumTrackRow(
                         track = track,
+                        lowResThresholdPx = state.lowResThresholdPx,
                         onClick = { onTrackClick(track.documentUri) },
                     )
                 }
@@ -247,43 +259,30 @@ private fun AlbumHero(
     val spacing = LocalSpacing.current
     val colors = MaterialTheme.colorScheme
 
-    Row(
+    // Vertical hero: the cover is the master, sized aggressively, square (no
+    // radius enforced by ArtTileHero shape override), then the text block.
+    Column(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = spacing.lg, vertical = spacing.md),
-        horizontalArrangement = Arrangement.spacedBy(spacing.md),
-        verticalAlignment = Alignment.CenterVertically,
+        verticalArrangement = Arrangement.spacedBy(spacing.sm),
     ) {
-        Surface(
-            shape = MaterialTheme.shapes.medium,
-            color = colors.surfaceContainer,
+        ArtTileHero(
+            model = coverThumbnailPath?.let { File(it) },
+            contentDescription = "Album cover",
+            shape = androidx.compose.foundation.shape.RoundedCornerShape(4.dp),
             modifier = Modifier
-                .size(112.dp)
+                .size(120.dp)
                 .clickable(onClick = onTapCover),
-        ) {
-            val file = coverThumbnailPath?.let { File(it) }
-            if (file != null) {
-                AsyncImage(
-                    model = file,
-                    contentDescription = "Album cover",
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier.fillMaxSize(),
-                )
-            } else {
-                Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
-                    Icon(
-                        imageVector = Icons.Rounded.Album,
-                        contentDescription = null,
-                        tint = colors.onSurfaceVariant,
-                        modifier = Modifier.size(40.dp),
-                    )
-                }
-            }
-        }
-        Column(
-            modifier = Modifier.weight(1f),
-            verticalArrangement = Arrangement.spacedBy(spacing.hairline + 1.dp),
-        ) {
+        )
+        Column(verticalArrangement = Arrangement.spacedBy(spacing.xs)) {
+            Text(
+                text = "ALBUM · ${artist.uppercase()}",
+                style = dev.gitfudge.musicworkbench.ui.theme.AppTextStyles.eyebrow,
+                color = colors.onSurfaceVariant,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
             Text(
                 text = title,
                 style = MaterialTheme.typography.titleLarge,
@@ -305,7 +304,7 @@ private fun AlbumHero(
                     year?.let { append(" · $it") }
                     if (mixedArtist) append(" · Mixed")
                 },
-                style = MaterialTheme.typography.labelSmall,
+                style = dev.gitfudge.musicworkbench.ui.theme.AppTextStyles.mono,
                 color = colors.onSurfaceVariant,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
@@ -341,7 +340,7 @@ private fun ActionPill(
     modifier: Modifier = Modifier,
 ) {
     val spacing = LocalSpacing.current
-    FilledTonalButton(
+    SecondaryButton(
         onClick = onClick,
         modifier = modifier,
         contentPadding = PaddingValues(horizontal = spacing.sm, vertical = spacing.xs),
@@ -361,25 +360,22 @@ private fun ActionPill(
 @Composable
 private fun AlbumTrackRow(
     track: TrackEntity,
+    lowResThresholdPx: Int,
     onClick: () -> Unit,
 ) {
     val spacing = LocalSpacing.current
     val colors = MaterialTheme.colorScheme
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick)
-            .padding(horizontal = spacing.lg, vertical = spacing.sm),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(spacing.md),
-    ) {
-        Text(
-            text = track.trackNumber?.toString()?.padStart(2, '0') ?: "—",
-            style = MaterialTheme.typography.labelMedium,
-            color = colors.onSurfaceVariant,
-            modifier = Modifier.size(width = 28.dp, height = 20.dp),
-        )
-        Column(modifier = Modifier.weight(1f)) {
+    ListRow(
+        onClick = onClick,
+        leading = {
+            Text(
+                text = track.trackNumber?.toString()?.padStart(2, '0') ?: "—",
+                style = MaterialTheme.typography.labelMedium,
+                color = colors.onSurfaceVariant,
+                modifier = Modifier.size(width = 28.dp, height = 20.dp),
+            )
+        },
+        headline = {
             Text(
                 text = track.title?.takeIf(String::isNotBlank) ?: track.displayName,
                 style = MaterialTheme.typography.bodyLarge,
@@ -387,23 +383,51 @@ private fun AlbumTrackRow(
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
-            val sub = track.artist?.takeIf(String::isNotBlank)
-            if (sub != null) {
+        },
+        supporting = track.artist?.takeIf(String::isNotBlank)?.let {
+            {
                 Text(
-                    text = sub,
+                    text = it,
                     style = MaterialTheme.typography.bodySmall,
                     color = colors.onSurfaceVariant,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
             }
-        }
-        Text(
-            text = track.format.take(4),
-            style = MaterialTheme.typography.labelSmall,
-            color = colors.onSurfaceVariant,
-        )
-    }
+        },
+        trailing = {
+            Column(
+                horizontalAlignment = Alignment.End,
+                verticalArrangement = Arrangement.spacedBy(spacing.xs),
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(spacing.sm),
+                ) {
+                    Text(
+                        text = track.format.take(4).uppercase(),
+                        style = dev.gitfudge.musicworkbench.ui.theme.AppTextStyles.monoSmall,
+                        color = colors.onSurfaceVariant,
+                    )
+                    track.durationMs?.let { ms ->
+                        val total = ms / 1000
+                        Text(
+                            text = "%d:%02d".format(total / 60, total % 60),
+                            style = dev.gitfudge.musicworkbench.ui.theme.AppTextStyles.mono,
+                            color = colors.onSurfaceVariant,
+                        )
+                    }
+                }
+                Row(horizontalArrangement = Arrangement.spacedBy(spacing.xs)) {
+                    ArtStatusChip(track.artStatus(lowResThresholdPx))
+                    TagStatusChip(track.tagStatus())
+                    LyricsStatusChip(track.lyricsStatus())
+                }
+            }
+        },
+        contentPaddingHorizontal = spacing.lg,
+        contentPaddingVertical = spacing.sm,
+    )
 }
 
 @Composable
@@ -509,30 +533,33 @@ private fun LyricsBatchReviewSheet(
     onCommit: () -> Unit,
     onDismiss: () -> Unit,
 ) {
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val spacing = LocalSpacing.current
     val colors = MaterialTheme.colorScheme
     val acceptedCount = review.items.count { it.accept }
 
-    ModalBottomSheet(
+    AppBottomSheet(
         onDismissRequest = onDismiss,
-        sheetState = sheetState,
-        // DESIGN.md: bottom sheets sit on surfaceElevated with the outline hairline,
-        // not on surface.
-        containerColor = colors.surfaceContainerHigh,
+        title = "Review lyrics",
+        footer = {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(spacing.sm),
+            ) {
+                GhostButton(onClick = onDismiss, modifier = Modifier.weight(1f)) { Text("Cancel") }
+                PrimaryButton(
+                    onClick = onCommit,
+                    enabled = acceptedCount > 0,
+                    modifier = Modifier.weight(1f),
+                ) { Text("Save $acceptedCount") }
+            }
+        },
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .navigationBarsPadding()
-                .padding(horizontal = spacing.lg, vertical = spacing.md),
+                .fillMaxHeight(0.7f),
             verticalArrangement = Arrangement.spacedBy(spacing.sm),
         ) {
-            Text(
-                text = "Review lyrics",
-                style = MaterialTheme.typography.titleMedium,
-                color = colors.onSurface,
-            )
             val summary = buildString {
                 append("Found ${review.items.size}")
                 if (review.noMatchCount > 0) append(" · No match ${review.noMatchCount}")
@@ -541,7 +568,9 @@ private fun LyricsBatchReviewSheet(
             Text(summary, style = MaterialTheme.typography.bodySmall, color = colors.onSurfaceVariant)
 
             LazyColumn(
-                modifier = Modifier.fillMaxWidth().weight(1f, fill = false),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f, fill = true),
                 verticalArrangement = Arrangement.spacedBy(spacing.xs),
             ) {
                 items(review.items, key = { it.documentUri }) { item ->
@@ -571,20 +600,6 @@ private fun LyricsBatchReviewSheet(
                             )
                         }
                     }
-                }
-            }
-
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(top = spacing.sm),
-                horizontalArrangement = Arrangement.spacedBy(spacing.sm),
-            ) {
-                TextButton(onClick = onDismiss, modifier = Modifier.weight(1f)) { Text("Cancel") }
-                FilledTonalButton(
-                    onClick = onCommit,
-                    enabled = acceptedCount > 0,
-                    modifier = Modifier.weight(1f),
-                ) {
-                    Text("Save $acceptedCount")
                 }
             }
         }

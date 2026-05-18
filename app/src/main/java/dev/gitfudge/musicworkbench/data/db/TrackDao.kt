@@ -14,17 +14,29 @@ interface TrackDao {
     @RawQuery(observedEntities = [TrackEntity::class])
     fun observeFiltered(query: SupportSQLiteQuery): Flow<List<TrackEntity>>
 
+    @RawQuery(observedEntities = [TrackEntity::class])
+    fun observeFilteredCount(query: SupportSQLiteQuery): Flow<Int>
+
     @Query("SELECT * FROM tracks WHERE documentUri = :uri LIMIT 1")
     fun observeTrack(uri: String): Flow<TrackEntity?>
 
     @Query("SELECT COUNT(*) FROM tracks WHERE treeUri = :treeUri")
     fun observeCount(treeUri: String): Flow<Int>
 
+    @Query("SELECT COUNT(*) FROM tracks WHERE treeUri = :treeUri AND artScanPending = 1")
+    fun observePendingArtCount(treeUri: String): Flow<Int>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsertAll(tracks: List<TrackEntity>)
 
     @Query("SELECT documentUri, lastModified, sizeBytes FROM tracks WHERE treeUri = :treeUri")
     suspend fun signatures(treeUri: String): List<TrackSignature>
+
+    @Query("SELECT * FROM tracks WHERE documentUri IN (:uris)")
+    suspend fun getByDocumentUris(uris: List<String>): List<TrackEntity>
+
+    @Query("SELECT documentUri FROM tracks WHERE treeUri = :treeUri AND albumKey IN (:albumKeys)")
+    suspend fun documentUrisForAlbums(treeUri: String, albumKeys: List<String>): List<String>
 
     @Query("DELETE FROM tracks WHERE documentUri IN (:uris)")
     suspend fun deleteByUris(uris: List<String>)
@@ -44,6 +56,13 @@ interface TrackDao {
     )
     suspend fun getTracksNeedingArt(treeUri: String, lowResThresholdPx: Int): List<TrackEntity>
 
+    @Query(
+        """SELECT * FROM tracks
+           WHERE treeUri = :treeUri AND artScanPending = 1
+           ORDER BY albumLabel COLLATE NOCASE ASC, displayName COLLATE NOCASE ASC""",
+    )
+    suspend fun getPendingArtScanTracks(treeUri: String): List<TrackEntity>
+
     // ── Album aggregation ─────────────────────────────────────────────────────
 
     /**
@@ -59,6 +78,7 @@ interface TrackDao {
               MIN(COALESCE(NULLIF(albumArtist, ''), NULLIF(artist, ''), 'Unknown artist')) AS firstArtist,
               MIN(year)                                           AS year,
               MAX(thumbnailPath)                                  AS coverThumbnailPath,
+              SUM(CASE WHEN artScanPending = 1 THEN 1 ELSE 0 END) AS pendingArt,
 
               SUM(CASE WHEN hasEmbeddedArt = 1 THEN 1 ELSE 0 END) AS withArt,
               SUM(CASE WHEN hasEmbeddedArt = 1
@@ -112,6 +132,7 @@ data class AlbumRow(
     val firstArtist: String,
     val year: String?,
     val coverThumbnailPath: String?,
+    val pendingArt: Int,
     val withArt: Int,
     val lowResArt: Int,
     val withLyrics: Int,
