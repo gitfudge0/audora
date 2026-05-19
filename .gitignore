@@ -17,6 +17,12 @@ local.properties
 *.dex
 captures/
 
+# Signing
+*.jks
+*.keystore
+*.jks.base64
+*.keystore.base64
+
 # OS
 .DS_Store
 Thumbs.db

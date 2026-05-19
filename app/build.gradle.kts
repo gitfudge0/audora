@@ -13,6 +13,8 @@ android {
     namespace = "dev.gitfudge.audora"
     compileSdk = 36
 
+    val releaseKeystoreFile = System.getenv("ANDROID_KEYSTORE_FILE")
+
     defaultConfig {
         applicationId = "dev.gitfudge.audora"
         minSdk = 26
@@ -23,6 +25,27 @@ android {
         vectorDrawables { useSupportLibrary = true }
     }
 
+    signingConfigs {
+        if (releaseKeystoreFile != null) {
+            val requiredSigningEnv = listOf(
+                "ANDROID_KEYSTORE_PASSWORD",
+                "ANDROID_KEY_ALIAS",
+                "ANDROID_KEY_PASSWORD",
+            )
+            val missingSigningEnv = requiredSigningEnv.filter { System.getenv(it).isNullOrBlank() }
+            require(missingSigningEnv.isEmpty()) {
+                "Missing release signing environment variables: ${missingSigningEnv.joinToString()}"
+            }
+
+            create("release") {
+                storeFile = file(releaseKeystoreFile)
+                storePassword = System.getenv("ANDROID_KEYSTORE_PASSWORD")
+                keyAlias = System.getenv("ANDROID_KEY_ALIAS")
+                keyPassword = System.getenv("ANDROID_KEY_PASSWORD")
+            }
+        }
+    }
+
     buildTypes {
         debug {
             applicationIdSuffix = ".debug"
@@ -31,6 +54,7 @@ android {
         release {
             isMinifyEnabled = true
             isShrinkResources = true
+            signingConfig = signingConfigs.findByName("release")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",
