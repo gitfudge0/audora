@@ -21,5 +21,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "MusicWorkbench"
+rootProject.name = "Audora"
 include(":app")

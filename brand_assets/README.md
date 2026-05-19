@@ -1,0 +1,101 @@
+# Audora Brand Asset Library v2
+
+This package contains the updated Audora logo system after the final mark and wordmark direction.
+
+## Included
+
+- SVG masters for marks, horizontal logos, tagline lockups, app icons, and favicon.
+- PNG exports for marks, logos, app icons, favicons, and Play Store icons.
+- Android vector drawables, adaptive icon XML, and launcher fallback PNGs.
+- Brand guidelines, color tokens, Android notes, and preview sheet.
+
+## File list
+
+- `android/README_ANDROID.md`
+- `android/drawable/ic_audora_mark.xml`
+- `android/drawable/ic_audora_mark_ivory.xml`
+- `android/drawable/ic_launcher_foreground.xml`
+- `android/drawable/ic_launcher_foreground_dark.xml`
+- `android/mipmap-anydpi-v26/ic_launcher.xml`
+- `android/mipmap-anydpi-v26/ic_launcher_dark.xml`
+- `android/mipmap/mipmap-hdpi/ic_launcher.png`
+- `android/mipmap/mipmap-hdpi/ic_launcher_dark.png`
+- `android/mipmap/mipmap-mdpi/ic_launcher.png`
+- `android/mipmap/mipmap-mdpi/ic_launcher_dark.png`
+- `android/mipmap/mipmap-xhdpi/ic_launcher.png`
+- `android/mipmap/mipmap-xhdpi/ic_launcher_dark.png`
+- `android/mipmap/mipmap-xxhdpi/ic_launcher.png`
+- `android/mipmap/mipmap-xxhdpi/ic_launcher_dark.png`
+- `android/mipmap/mipmap-xxxhdpi/ic_launcher.png`
+- `android/mipmap/mipmap-xxxhdpi/ic_launcher_dark.png`
+- `android/play-store/audora-play-store-icon-512.png`
+- `android/play-store/audora-play-store-icon-light-512.png`
+- `android/values/colors.xml`
+- `brand-guidelines/audora-colors.json`
+- `brand-guidelines/audora-logo-usage.md`
+- `png/app-icon/dark/audora-app-icon-dark-1024.png`
+- `png/app-icon/dark/audora-app-icon-dark-144.png`
+- `png/app-icon/dark/audora-app-icon-dark-192.png`
+- `png/app-icon/dark/audora-app-icon-dark-256.png`
+- `png/app-icon/dark/audora-app-icon-dark-48.png`
+- `png/app-icon/dark/audora-app-icon-dark-512.png`
+- `png/app-icon/dark/audora-app-icon-dark-72.png`
+- `png/app-icon/dark/audora-app-icon-dark-96.png`
+- `png/app-icon/light/audora-app-icon-light-1024.png`
+- `png/app-icon/light/audora-app-icon-light-144.png`
+- `png/app-icon/light/audora-app-icon-light-192.png`
+- `png/app-icon/light/audora-app-icon-light-256.png`
+- `png/app-icon/light/audora-app-icon-light-48.png`
+- `png/app-icon/light/audora-app-icon-light-512.png`
+- `png/app-icon/light/audora-app-icon-light-72.png`
+- `png/app-icon/light/audora-app-icon-light-96.png`
+- `png/favicon/favicon-16.png`
+- `png/favicon/favicon-180.png`
+- `png/favicon/favicon-192.png`
+- `png/favicon/favicon-32.png`
+- `png/favicon/favicon-48.png`
+- `png/favicon/favicon-512.png`
+- `png/favicon/favicon-64.png`
+- `png/favicon/favicon-96.png`
+- `png/favicon/favicon.ico`
+- `png/logo/audora-logo-horizontal-black-1600.png`
+- `png/logo/audora-logo-horizontal-black-2400.png`
+- `png/logo/audora-logo-horizontal-black-800.png`
+- `png/logo/audora-logo-horizontal-ivory-1600.png`
+- `png/logo/audora-logo-horizontal-ivory-2400.png`
+- `png/logo/audora-logo-horizontal-ivory-800.png`
+- `png/logo/audora-logo-horizontal-white-1600.png`
+- `png/logo/audora-logo-horizontal-white-2400.png`
+- `png/logo/audora-logo-horizontal-white-800.png`
+- `png/logo/audora-logo-with-tagline-black-2400.png`
+- `png/logo/audora-logo-with-tagline-white-2400.png`
+- `png/mark/audora-mark-black-1024.png`
+- `png/mark/audora-mark-black-128.png`
+- `png/mark/audora-mark-black-256.png`
+- `png/mark/audora-mark-black-512.png`
+- `png/mark/audora-mark-graphite-1024.png`
+- `png/mark/audora-mark-graphite-128.png`
+- `png/mark/audora-mark-graphite-256.png`
+- `png/mark/audora-mark-graphite-512.png`
+- `png/mark/audora-mark-ivory-1024.png`
+- `png/mark/audora-mark-ivory-128.png`
+- `png/mark/audora-mark-ivory-256.png`
+- `png/mark/audora-mark-ivory-512.png`
+- `png/mark/audora-mark-white-1024.png`
+- `png/mark/audora-mark-white-128.png`
+- `png/mark/audora-mark-white-256.png`
+- `png/mark/audora-mark-white-512.png`
+- `preview/audora-brand-sheet.png`
+- `preview/index.html`
+- `svg/audora-app-icon-dark.svg`
+- `svg/audora-app-icon-light.svg`
+- `svg/audora-favicon.svg`
+- `svg/audora-logo-horizontal-black.svg`
+- `svg/audora-logo-horizontal-ivory.svg`
+- `svg/audora-logo-horizontal-white.svg`
+- `svg/audora-logo-with-tagline-black.svg`
+- `svg/audora-logo-with-tagline-white.svg`
+- `svg/audora-mark-black.svg`
+- `svg/audora-mark-graphite.svg`
+- `svg/audora-mark-ivory.svg`
+- `svg/audora-mark-white.svg`

@@ -10,11 +10,11 @@ plugins {
 }
 
 android {
-    namespace = "dev.gitfudge.musicworkbench"
+    namespace = "dev.gitfudge.audora"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "dev.gitfudge.musicworkbench"
+        applicationId = "dev.gitfudge.audora"
         minSdk = 26
         targetSdk = 36
         versionCode = 1

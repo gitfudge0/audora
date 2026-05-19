@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1680 500" role="img" aria-label="Audora logo">
+  <title>Audora</title>
+  <g transform="translate(60 55) scale(0.37)">
+    <path d="M 258 134
+H 766
+C 820 134 864 178 864 232
+V 734
+C 864 789 821 832 766 832
+H 258
+C 203 832 160 789 160 734
+V 232
+C 160 178 204 134 258 134
+Z
+M 246 832
+L 410 362
+C 431 300 457 232 512 232
+C 548 232 569 296 587 360
+L 779 832
+Z
+M 512 682
+m -104 0
+a 104 104 0 1 0 208 0
+a 104 104 0 1 0 -208 0
+Z
+M 512 682
+m -22 0
+a 22 22 0 1 0 44 0
+a 22 22 0 1 0 -44 0
+Z" fill="#161616" fill-rule="evenodd"/>
+  </g>
+  <text x="520" y="302" fill="#161616" font-family="Inter Display, Inter, Manrope, Avenir Next, Helvetica Neue, Arial, sans-serif" font-size="230" font-weight="600" letter-spacing="-8">Audora</text>
+  
+</svg>

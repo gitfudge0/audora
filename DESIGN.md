@@ -11,10 +11,10 @@ vocabulary; the brand never asserts itself with hue.
 Two modes, one system. Default follows OS preference; user can override in
 Settings.
 
-**Light** — a quiet workbench in daylight. Cool-tinted off-white surface,
+**Light** — a quiet workspace in daylight. Cool-tinted off-white surface,
 ink-black accent, hairline borders. Calm, precise, paper-like.
 
-**Dark** — the same workbench at night. Cool near-black surface, bone-white
+**Dark** — the same workspace at night. Cool near-black surface, bone-white
 accent, the same hairlines. Not a "dim mode" of light, not a streaming-app
 black; an intentional second instrument with the same vocabulary.
 
@@ -210,7 +210,7 @@ gets a card; the library is a list, not a card grid.
 ## Source of truth
 
 This file is the spec. The Compose implementation lives in
-`app/src/main/java/dev/gitfudge/musicworkbench/ui/theme/` (tokens) and
+`app/src/main/java/dev/gitfudge/audora/ui/theme/` (tokens) and
 `ui/components/` (components). If a screen needs a color, a shape, a text
 style, or a UI element not listed here, the spec gets updated first and the
 implementation second.

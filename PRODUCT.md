@@ -23,7 +23,7 @@ or lost file.
 
 ## Product Purpose
 
-A local-music workbench for three jobs: (1) find and download synced `.lrc`
+A local-music workspace for three jobs: (1) find and download synced `.lrc`
 lyrics next to each track, (2) edit metadata so libraries read cleanly in any
 player, (3) detect missing or low-quality album art and replace it with
 high-resolution covers. It exists because phone music players only consume
@@ -61,7 +61,7 @@ playful, not loud, not "magical".
    health. Treat it as hero imagery, not a thumbnail.
 4. **Batch is a first-class verb.** Cleanup is repetitive. Anything you can do
    to one track you can do to a selection or a whole album.
-5. **Disappear into the task.** This is a workbench, not a destination. Speed,
+5. **Disappear into the task.** This is a workspace, not a destination. Speed,
    legibility, and trust beat decoration every time.
 
 ## Accessibility & Inclusion

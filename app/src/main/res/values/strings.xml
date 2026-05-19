@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Music Workbench</string>
+    <string name="app_name">Audora</string>
 
     <!-- Walkthrough -->
-    <string name="walkthrough_p1_title">A workbench for your music</string>
+    <string name="walkthrough_p1_title">A workspace for your music</string>
     <string name="walkthrough_p1_body">Clean up tags, lyrics, and album art for the music already on your device. Everything stays local — nothing is uploaded unless you ask for it.</string>
     <string name="walkthrough_p2_title">See what needs work</string>
     <string name="walkthrough_p2_body">Status dots flag missing or low-res art, absent lyrics, and incomplete tags. Filters narrow the library down to just the tracks with problems.</string>
@@ -61,7 +61,7 @@
 
     <!-- Empty states -->
     <string name="library_empty_title">No tracks found</string>
-    <string name="library_empty_body">Music Workbench scans for common audio formats. Check that the folder contains music files.</string>
+    <string name="library_empty_body">Audora scans for common audio formats. Check that the folder contains music files.</string>
     <string name="library_filter_empty_body">No tracks match this filter.</string>
     <string name="library_importing_title">Importing your library</string>
     <string name="library_importing_body">Your folder is selected. We’re building the first library snapshot before showing the full browser.</string>
@@ -83,7 +83,7 @@
 
     <!-- Generic -->
     <string name="action_retry">Retry</string>
-    <string name="cd_app_logo">Music Workbench logo</string>
+    <string name="cd_app_logo">Audora logo</string>
 
     <!-- Downloads sheet -->
     <string name="downloads_title">Lyrics downloads</string>

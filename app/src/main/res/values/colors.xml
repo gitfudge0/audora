@@ -1,7 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Mirrors DESIGN.md background + accent for window/splash/launcher. -->
-    <color name="bg">#14161A</color>
-    <color name="accent">#E0A35B</color>
-    <color name="ic_launcher_bg">#1B1E23</color>
+    <color name="audora_black">#161616</color>
+    <color name="audora_graphite">#2B2A28</color>
+    <color name="audora_ivory">#F7F4EC</color>
+    <color name="audora_white">#FFFFFF</color>
+
+    <!-- Window and splash colors follow the Audora monochrome brand system. -->
+    <color name="bg">#161616</color>
+    <color name="accent">#F7F4EC</color>
+    <color name="ic_launcher_bg">#F7F4EC</color>
 </resources>
