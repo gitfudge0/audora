@@ -10,10 +10,8 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -22,7 +20,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ArrowDropDown
@@ -72,8 +69,6 @@ import dev.gitfudge.audora.data.db.TrackEntity
 import dev.gitfudge.audora.data.scan.ScanResult
 import dev.gitfudge.audora.domain.LibraryFilter
 import dev.gitfudge.audora.domain.LibrarySort
-import dev.gitfudge.audora.domain.displayArtist
-import dev.gitfudge.audora.domain.displayTitle
 import dev.gitfudge.audora.ui.common.AlbumArtPreviewDialog
 import dev.gitfudge.audora.ui.components.AppFilterChip
 import dev.gitfudge.audora.ui.components.AppTopBar
@@ -613,13 +608,15 @@ private fun LibraryScaffoldContent(
                 modifier = Modifier.padding(horizontal = spacing.lg, vertical = spacing.sm),
             )
 
-            // Scope first (Albums vs Tracks), then refinement (filters/sort),
-            // which applies to both scopes.
-            Box(
+            // Scope (Albums vs Tracks) and sort share one line so the active
+            // ordering is evident next to the scope it applies to. Filters sit
+            // below as a separate refinement row.
+            Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = spacing.lg, vertical = spacing.sm),
-                contentAlignment = Alignment.CenterStart,
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
             ) {
                 ScopeToolbar(
                     items = listOf(
@@ -634,13 +631,12 @@ private fun LibraryScaffoldContent(
                         )
                     },
                 )
+                SortChip(sort = sort, onSortChange = onSortChange)
             }
 
-            FilterSortBar(
+            FilterBar(
                 filter = filter,
-                sort = sort,
                 onFilterChange = onFilterChange,
-                onSortChange = onSortChange,
                 tab = tab,
             )
             HorizontalDivider(color = colors.outlineVariant)
@@ -682,63 +678,23 @@ private fun LibraryScaffoldContent(
                 }
 
                 else -> {
-                    val trackListState = rememberLazyListState()
-                    // Index key follows the active sort so jumps land in order.
-                    // RECENTLY_MODIFIED has no alphabetical axis, so no rail.
-                    val letterIndex = remember(tracks, sort) {
-                        if (sort == LibrarySort.RECENTLY_MODIFIED) {
-                            emptyMap()
-                        } else {
-                            buildMap {
-                                tracks.forEachIndexed { i, t ->
-                                    val label = when (sort) {
-                                        LibrarySort.ARTIST -> t.displayArtist().orEmpty()
-                                        LibrarySort.ALBUM -> t.albumLabel
-                                        else -> t.displayTitle()
-                                    }
-                                    putIfAbsent(
-                                        dev.gitfudge.audora.ui.components.sectionLetterOf(label),
-                                        i,
-                                    )
-                                }
-                            }
-                        }
-                    }
-                    val railVisible = letterIndex.isNotEmpty() && tracks.size >= 12
-                    Box(Modifier.fillMaxSize()) {
-                        LazyColumn(
-                            state = trackListState,
-                            modifier = Modifier.fillMaxSize(),
-                            contentPadding = if (railVisible) {
-                                PaddingValues(end = spacing.xl + spacing.sm)
-                            } else {
-                                PaddingValues()
-                            },
-                        ) {
-                            items(tracks, key = { it.documentUri }) { track ->
-                                TrackListItem(
-                                    track = track,
-                                    lowResThresholdPx = lowResThresholdPx,
-                                    onClick = onTrackRowClick,
-                                    onLongClick = onTrackRowLongClick,
-                                    selected = track.documentUri in selectedUris,
-                                    selectionMode = isSelecting,
-                                    isDownloadingLyrics = track.documentUri in downloadingUris,
-                                    isDownloadingArt = track.documentUri in downloadingArtUris,
-                                )
-                                HorizontalDivider(
-                                    color = colors.outlineVariant,
-                                    modifier = Modifier.padding(start = spacing.lg + 48.dp + spacing.md),
-                                )
-                            }
-                        }
-                        if (railVisible) {
-                            dev.gitfudge.audora.ui.components.AlphabetScroller(
-                                listState = trackListState,
-                                indexForLetter = { letterIndex[it] },
-                                modifier = Modifier
-                                    .align(Alignment.CenterEnd)
-                                    .fillMaxHeight(),
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize(),
+                    ) {
+                        items(tracks, key = { it.documentUri }) { track ->
+                            TrackListItem(
+                                track = track,
+                                lowResThresholdPx = lowResThresholdPx,
+                                onClick = onTrackRowClick,
+                                onLongClick = onTrackRowLongClick,
+                                selected = track.documentUri in selectedUris,
+                                selectionMode = isSelecting,
+                                isDownloadingLyrics = track.documentUri in downloadingUris,
+                                isDownloadingArt = track.documentUri in downloadingArtUris,
+                            )
+                            HorizontalDivider(
+                                color = colors.outlineVariant,
+                                modifier = Modifier.padding(start = spacing.lg + 48.dp + spacing.md),
                             )
                         }
                     }
@@ -1026,15 +982,12 @@ private fun ScanProgressRow(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun FilterSortBar(
+private fun FilterBar(
     filter: LibraryFilter,
-    sort: LibrarySort,
     onFilterChange: (LibraryFilter) -> Unit,
-    onSortChange: (LibrarySort) -> Unit,
     tab: dev.gitfudge.audora.domain.LibraryTab,
 ) {
     val spacing = LocalSpacing.current
-    var showSortMenu by remember { mutableStateOf(false) }
 
     Row(
         modifier = Modifier
@@ -1055,36 +1008,48 @@ private fun FilterSortBar(
                 label = stringResource(f.labelRes()),
             )
         }
+    }
+}
 
-        Box {
-            AssistChip(
-                onClick = { showSortMenu = true },
-                label = { Text(stringResource(sort.labelRes())) },
-                trailingIcon = {
-                    Icon(Icons.Rounded.ArrowDropDown, null, Modifier.size(18.dp))
-                },
-                colors = AssistChipDefaults.assistChipColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceContainer,
-                    labelColor = MaterialTheme.colorScheme.onSurface,
-                ),
-            )
-            DropdownMenu(
-                expanded = showSortMenu,
-                onDismissRequest = { showSortMenu = false },
-            ) {
-                LibrarySort.entries.forEach { s ->
-                    DropdownMenuItem(
-                        text = { Text(stringResource(s.labelRes())) },
-                        onClick = { onSortChange(s); showSortMenu = false },
-                        leadingIcon = if (s == sort) ({
-                            Icon(
-                                Icons.Rounded.FilterList,
-                                contentDescription = null,
-                                modifier = Modifier.size(18.dp),
-                            )
-                        }) else null,
-                    )
-                }
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun SortChip(
+    sort: LibrarySort,
+    onSortChange: (LibrarySort) -> Unit,
+) {
+    var showSortMenu by remember { mutableStateOf(false) }
+
+    Box {
+        AssistChip(
+            onClick = { showSortMenu = true },
+            label = { Text(stringResource(sort.labelRes())) },
+            leadingIcon = {
+                Icon(Icons.Rounded.FilterList, null, Modifier.size(18.dp))
+            },
+            trailingIcon = {
+                Icon(Icons.Rounded.ArrowDropDown, null, Modifier.size(18.dp))
+            },
+            colors = AssistChipDefaults.assistChipColors(
+                containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                labelColor = MaterialTheme.colorScheme.onSurface,
+            ),
+        )
+        DropdownMenu(
+            expanded = showSortMenu,
+            onDismissRequest = { showSortMenu = false },
+        ) {
+            LibrarySort.entries.forEach { s ->
+                DropdownMenuItem(
+                    text = { Text(stringResource(s.labelRes())) },
+                    onClick = { onSortChange(s); showSortMenu = false },
+                    leadingIcon = if (s == sort) ({
+                        Icon(
+                            Icons.Rounded.FilterList,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp),
+                        )
+                    }) else null,
+                )
             }
         }
     }
