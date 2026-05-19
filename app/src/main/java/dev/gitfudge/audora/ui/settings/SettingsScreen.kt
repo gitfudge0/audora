@@ -169,12 +169,11 @@ private fun SettingsContent(
                         rowContentDescription = "Opens GitHub Issues in browser",
                         onClick = { open("https://github.com/gitfudge0/audora/issues/new/choose") },
                     )
-                    Hairline()
-                    SettingsNavRow(
-                        label = "Ask a question or start a discussion",
-                        external = true,
-                        rowContentDescription = "Opens GitHub Discussions in browser",
-                        onClick = { open("https://github.com/gitfudge0/audora/discussions") },
+                    Text(
+                        text = "An open feedback page for non-devs is in the works.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = colors.onSurfaceVariant,
+                        modifier = Modifier.padding(spacing.lg),
                     )
                 }
             }
