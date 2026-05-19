@@ -1,0 +1,67 @@
+name: Feature request
+description: Propose an improvement, workflow, file format, or cleanup capability for Audora.
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Good feature requests explain the library-cleanup job, not only the UI control. Tell us what problem Audora should help solve.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What are you trying to clean up, fix, review, or understand?
+      placeholder: I have albums split across duplicate groups because...
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: What should Audora do?
+      placeholder: Add a review screen that...
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Folder access / scanning
+        - Metadata editing
+        - Lyrics
+        - Cover art
+        - Album organization
+        - Bulk cleanup
+        - Search / filtering / sorting
+        - Safety / backup / undo
+        - UI / accessibility
+        - Build / distribution
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Are there existing tools or workarounds you use today?
+
+  - type: textarea
+    id: examples
+    attributes:
+      label: Examples or references
+      description: Screenshots, workflows, mockups, or app/tool references are useful. Avoid uploading copyrighted music files.
+
+  - type: checkboxes
+    id: principles
+    attributes:
+      label: Product fit
+      options:
+        - label: This preserves Audora's local-first model.
+        - label: This can be previewed before committing file changes.
+        - label: This helps batch cleanup, not only one-off editing.

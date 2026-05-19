@@ -1,0 +1,104 @@
+name: Bug report
+description: Report something in Audora that is broken or behaving incorrectly.
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug. Audora writes to local music files, so clear reproduction details matter.
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: What happened?
+      placeholder: Audora crashed when saving album art for a FLAC album...
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: List the exact steps that trigger the issue.
+      placeholder: |
+        1. Open Audora
+        2. Select a folder with ...
+        3. Tap ...
+        4. See ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      description: What should Audora have done instead?
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+      description: What did Audora do?
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Folder access / scanning
+        - Metadata editing
+        - Lyrics lookup or saving
+        - Cover art lookup or writing
+        - Album grouping / duplicates
+        - Bulk actions
+        - Settings / theme
+        - Build / installation
+        - Other
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Audora version
+      placeholder: 0.1.0
+    validations:
+      required: true
+
+  - type: input
+    id: android
+    attributes:
+      label: Android version and device
+      placeholder: Android 14, Pixel 7
+    validations:
+      required: true
+
+  - type: textarea
+    id: file_context
+    attributes:
+      label: File context
+      description: Include relevant audio format, storage location, and whether the files are on internal storage, SD card, or a synced folder. Do not attach copyrighted music files.
+      placeholder: FLAC album on internal storage, sidecar .lrc files already present...
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs or screenshots
+      description: Attach screenshots, crash logs, or `adb logcat` output if available.
+      render: text
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Checklist
+      options:
+        - label: I have checked the latest release for this issue.
+          required: true
+        - label: I have a backup of any music files involved in write operations.
+          required: false
