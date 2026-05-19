@@ -169,6 +169,12 @@ private fun SettingsContent(
                         rowContentDescription = "Opens GitHub Issues in browser",
                         onClick = { open("https://github.com/gitfudge0/audora/issues/new/choose") },
                     )
+                    Text(
+                        text = "An open feedback page for non-devs is in the works.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = colors.onSurfaceVariant,
+                        modifier = Modifier.padding(spacing.lg),
+                    )
                 }
             }
 
