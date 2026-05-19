@@ -167,14 +167,7 @@ private fun SettingsContent(
                         label = "Report a bug or request a feature",
                         external = true,
                         rowContentDescription = "Opens GitHub Issues in browser",
-                        onClick = { open("https://github.com/gitfudge0/audora/issues/new/choose") },
-                    )
-                    Hairline()
-                    SettingsNavRow(
-                        label = "Ask a question or start a discussion",
-                        external = true,
-                        rowContentDescription = "Opens GitHub Discussions in browser",
-                        onClick = { open("https://github.com/gitfudge0/audora/discussions") },
+                        onClick = { open("https://github.com/gitfudge0/audora/issues") },
                     )
                 }
             }
