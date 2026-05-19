@@ -224,7 +224,7 @@ class LibraryViewModel @Inject constructor(
     private val _filter = MutableStateFlow(LibraryFilter.ALL)
     val filter: StateFlow<LibraryFilter> = _filter.asStateFlow()
 
-    private val _sort = MutableStateFlow(LibrarySort.ALBUM)
+    private val _sort = MutableStateFlow(LibrarySort.TITLE)
     val sort: StateFlow<LibrarySort> = _sort.asStateFlow()
 
     /** Free-text search across title / artist / album. Empty = no filter. */

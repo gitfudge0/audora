@@ -55,7 +55,7 @@
 
     <!-- Sort options -->
     <string name="sort_album">Album</string>
-    <string name="sort_title">Title</string>
+    <string name="sort_title">Name</string>
     <string name="sort_artist">Artist</string>
     <string name="sort_recently_modified">Recently modified</string>
 

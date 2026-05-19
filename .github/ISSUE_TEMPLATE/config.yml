@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Ask a question or start a conversation
+    url: https://github.com/gitfudge0/audora/discussions
+    about: Use GitHub Discussions for open-ended questions, ideas, and community threads.
+  - name: Download the latest build
+    url: https://github.com/gitfudge0/audora/releases
+    about: Get the latest APK or Android App Bundle from GitHub Releases.

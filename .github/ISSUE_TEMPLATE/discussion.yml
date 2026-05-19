@@ -1,0 +1,50 @@
+name: Discussion
+description: Start a design, workflow, compatibility, or roadmap conversation.
+title: "[Discussion]: "
+labels: ["discussion"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this for open-ended product and technical conversations. If GitHub Discussions are enabled, the Discussions tab is usually a better place for questions and longer threads.
+
+  - type: dropdown
+    id: topic
+    attributes:
+      label: Topic
+      options:
+        - Library cleanup workflow
+        - Metadata behavior
+        - Lyrics behavior
+        - Cover art behavior
+        - File format compatibility
+        - Android storage behavior
+        - UI / design direction
+        - Roadmap
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Context
+      description: What should people know before responding?
+      placeholder: I manage a large local FLAC library and...
+    validations:
+      required: true
+
+  - type: textarea
+    id: question
+    attributes:
+      label: Question or proposal
+      description: What would you like to discuss?
+    validations:
+      required: true
+
+  - type: textarea
+    id: tradeoffs
+    attributes:
+      label: Tradeoffs
+      description: What constraints, risks, or edge cases should be considered?
+      placeholder: This may affect SAF permissions, write safety, or batch preview...
