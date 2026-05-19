@@ -167,7 +167,7 @@ private fun SettingsContent(
                         label = "Report a bug or request a feature",
                         external = true,
                         rowContentDescription = "Opens GitHub Issues in browser",
-                        onClick = { open("https://github.com/gitfudge0/audora/issues") },
+                        onClick = { open("https://github.com/gitfudge0/audora/issues/new/choose") },
                     )
                 }
             }
