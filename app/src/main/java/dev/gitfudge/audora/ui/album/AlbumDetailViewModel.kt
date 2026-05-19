@@ -18,6 +18,7 @@ import dev.gitfudge.audora.domain.AlbumArtStatus
 import dev.gitfudge.audora.domain.AlbumLyricsStatus
 import dev.gitfudge.audora.domain.AlbumTagStatus
 import dev.gitfudge.audora.domain.BulkTagField
+import dev.gitfudge.audora.ui.library.DownloadStatus
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -60,7 +61,8 @@ sealed interface AlbumArtFlowState {
     data object Searching : AlbumArtFlowState
     data class Picker(val candidates: List<CoverArtCandidate>) : AlbumArtFlowState
     data class Preview(val candidate: CoverArtCandidate, val bytes: ByteArray) : AlbumArtFlowState
-    data class Writing(val done: Int, val total: Int) : AlbumArtFlowState
+    data class Writing(val items: List<BatchItem>) : AlbumArtFlowState
+    data class Done(val saved: Int, val failed: Int) : AlbumArtFlowState
     data class NoMatch(val message: String) : AlbumArtFlowState
 }
 
@@ -76,6 +78,13 @@ data class LyricsReviewItem(
     val accept: Boolean,
 )
 
+/** A track in a per-item batch (lyrics or art), with its live status. */
+data class BatchItem(
+    val documentUri: String,
+    val title: String,
+    val status: DownloadStatus,
+)
+
 sealed interface LyricsBatchPhase {
     data object Idle : LyricsBatchPhase
     data class Options(
@@ -83,13 +92,13 @@ sealed interface LyricsBatchPhase {
         val withExisting: Int,
         val replaceExisting: Boolean,
     ) : LyricsBatchPhase
-    data class Fetching(val done: Int, val total: Int) : LyricsBatchPhase
+    data class Fetching(val items: List<BatchItem>) : LyricsBatchPhase
     data class Review(
         val items: List<LyricsReviewItem>,
         val noMatchCount: Int,
         val failedCount: Int,
     ) : LyricsBatchPhase
-    data class Writing(val done: Int, val total: Int) : LyricsBatchPhase
+    data class Writing(val items: List<BatchItem>) : LyricsBatchPhase
     data class Done(val saved: Int, val skipped: Int, val noMatch: Int, val failed: Int) : LyricsBatchPhase
 }
 
@@ -212,30 +221,52 @@ class AlbumDetailViewModel @Inject constructor(
         val preview = _artFlow.value as? AlbumArtFlowState.Preview ?: return
         val tracks = ui.value?.tracks ?: return
         viewModelScope.launch {
-            _artFlow.value = AlbumArtFlowState.Writing(0, tracks.size)
-            var done = 0
-            tracks.forEach { track ->
-                runCatching {
-                    val res = tagWriter.writeArtFromBytes(
-                        track.documentUri.toUri(), track.displayName, preview.bytes,
-                        expectedLastModified = track.lastModified,
-                    )
-                    trackDao.upsertAll(listOf(
-                        track.copy(
-                            hasEmbeddedArt = true,
-                            artWidth = res.artWidth,
-                            artHeight = res.artHeight,
-                            thumbnailPath = res.thumbnailPath,
-                            artScanPending = false,
-                            lastModified = res.lastModified,
-                            scannedAt = System.currentTimeMillis(),
-                        ),
-                    ))
+            val saved = java.util.concurrent.atomic.AtomicInteger(0)
+            val failed = java.util.concurrent.atomic.AtomicInteger(0)
+            _artFlow.value = AlbumArtFlowState.Writing(
+                tracks.map { BatchItem(it.documentUri, it.title ?: it.displayName, DownloadStatus.PENDING) },
+            )
+
+            fun setStatus(uri: String, status: DownloadStatus) {
+                _artFlow.update { current ->
+                    (current as? AlbumArtFlowState.Writing)?.let { w ->
+                        w.copy(items = w.items.map { if (it.documentUri == uri) it.copy(status = status) else it })
+                    } ?: current
                 }
-                done++
-                _artFlow.value = AlbumArtFlowState.Writing(done, tracks.size)
             }
-            _artFlow.value = AlbumArtFlowState.Idle
+
+            kotlinx.coroutines.coroutineScope {
+                tracks.map { track ->
+                    async(kotlinx.coroutines.Dispatchers.IO) {
+                        setStatus(track.documentUri, DownloadStatus.DOWNLOADING)
+                        runCatching {
+                            val res = tagWriter.writeArtFromBytes(
+                                track.documentUri.toUri(), track.displayName, preview.bytes,
+                                expectedLastModified = track.lastModified,
+                            )
+                            trackDao.upsertAll(listOf(
+                                track.copy(
+                                    hasEmbeddedArt = true,
+                                    artWidth = res.artWidth,
+                                    artHeight = res.artHeight,
+                                    thumbnailPath = res.thumbnailPath,
+                                    artScanPending = false,
+                                    lastModified = res.lastModified,
+                                    scannedAt = System.currentTimeMillis(),
+                                ),
+                            ))
+                        }.onSuccess {
+                            saved.incrementAndGet()
+                            setStatus(track.documentUri, DownloadStatus.SAVED)
+                        }.onFailure {
+                            failed.incrementAndGet()
+                            setStatus(track.documentUri, DownloadStatus.FAILED)
+                        }
+                    }
+                }.awaitAll()
+            }
+
+            _artFlow.value = AlbumArtFlowState.Done(saved = saved.get(), failed = failed.get())
         }
     }
 
@@ -282,16 +313,27 @@ class AlbumDetailViewModel @Inject constructor(
             return
         }
         viewModelScope.launch {
-            val total = targets.size
-            val done = java.util.concurrent.atomic.AtomicInteger(0)
             val noMatch = java.util.concurrent.atomic.AtomicInteger(0)
             val failed = java.util.concurrent.atomic.AtomicInteger(0)
             val reviewItems = java.util.concurrent.ConcurrentLinkedQueue<LyricsReviewItem>()
-            _lyricsBatch.value = LyricsBatchPhase.Fetching(0, total)
+            _lyricsBatch.value = LyricsBatchPhase.Fetching(
+                targets.map {
+                    BatchItem(it.documentUri, it.title ?: it.displayName, DownloadStatus.PENDING)
+                },
+            )
+
+            fun setStatus(uri: String, status: DownloadStatus) {
+                _lyricsBatch.update { current ->
+                    (current as? LyricsBatchPhase.Fetching)?.let { f ->
+                        f.copy(items = f.items.map { if (it.documentUri == uri) it.copy(status = status) else it })
+                    } ?: current
+                }
+            }
 
             kotlinx.coroutines.coroutineScope {
                 targets.map { track ->
                     async(kotlinx.coroutines.Dispatchers.IO) {
+                        setStatus(track.documentUri, DownloadStatus.DOWNLOADING)
                         runCatching {
                             val result = lrclibRepo.fetch(
                                 title = track.title ?: track.displayName.substringBeforeLast('.'),
@@ -303,6 +345,7 @@ class AlbumDetailViewModel @Inject constructor(
                                 ?: result?.plainLyrics?.takeIf { it.isNotBlank() }
                             if (result == null || result.instrumental || text == null) {
                                 noMatch.incrementAndGet()
+                                setStatus(track.documentUri, DownloadStatus.NO_MATCH)
                             } else {
                                 reviewItems += LyricsReviewItem(
                                     documentUri = track.documentUri,
@@ -313,10 +356,12 @@ class AlbumDetailViewModel @Inject constructor(
                                     isSynced = !result.syncedLyrics.isNullOrBlank(),
                                     accept = true,
                                 )
+                                setStatus(track.documentUri, DownloadStatus.SAVED)
                             }
-                        }.onFailure { failed.incrementAndGet() }
-                        val d = done.incrementAndGet()
-                        _lyricsBatch.value = LyricsBatchPhase.Fetching(d, total)
+                        }.onFailure {
+                            failed.incrementAndGet()
+                            setStatus(track.documentUri, DownloadStatus.FAILED)
+                        }
                     }
                 }.awaitAll()
             }
@@ -346,41 +391,65 @@ class AlbumDetailViewModel @Inject constructor(
         val skipped = review.items.size - accepted.size
         viewModelScope.launch {
             val s = settings.settings.first()
-            var done = 0
-            var saved = 0
-            var failed = review.failedCount
-            _lyricsBatch.value = LyricsBatchPhase.Writing(0, accepted.size)
-            accepted.forEach { item ->
-                val track = byUri[item.documentUri] ?: return@forEach
-                runCatching {
-                    val treeUri = track.treeUri.toUri()
-                    val docUri = track.documentUri.toUri()
-                    lrcWriter.write(treeUri, docUri, track.displayName, item.fullText)
-                    var newMod = track.lastModified
-                    if (s.embedLyricsInTags) {
-                        newMod = tagWriter.writeLyrics(
-                            docUri, track.displayName, item.fullText,
-                            expectedLastModified = track.lastModified,
-                        )
-                    }
-                    trackDao.upsertAll(listOf(
-                        track.copy(
-                            hasSidecarLrc = true,
-                            sidecarLrcSynced = item.isSynced,
-                            lastModified = newMod,
-                            scannedAt = System.currentTimeMillis(),
-                        ),
-                    ))
-                    saved++
-                }.onFailure { failed++ }
-                done++
-                _lyricsBatch.value = LyricsBatchPhase.Writing(done, accepted.size)
+            val saved = java.util.concurrent.atomic.AtomicInteger(0)
+            val failed = java.util.concurrent.atomic.AtomicInteger(review.failedCount)
+            _lyricsBatch.value = LyricsBatchPhase.Writing(
+                accepted.map { BatchItem(it.documentUri, it.title, DownloadStatus.PENDING) },
+            )
+
+            fun setStatus(uri: String, status: DownloadStatus) {
+                _lyricsBatch.update { current ->
+                    (current as? LyricsBatchPhase.Writing)?.let { w ->
+                        w.copy(items = w.items.map { if (it.documentUri == uri) it.copy(status = status) else it })
+                    } ?: current
+                }
             }
+
+            kotlinx.coroutines.coroutineScope {
+                accepted.map { item ->
+                    async(kotlinx.coroutines.Dispatchers.IO) {
+                        val track = byUri[item.documentUri]
+                        if (track == null) {
+                            failed.incrementAndGet()
+                            setStatus(item.documentUri, DownloadStatus.FAILED)
+                            return@async
+                        }
+                        setStatus(item.documentUri, DownloadStatus.DOWNLOADING)
+                        runCatching {
+                            val treeUri = track.treeUri.toUri()
+                            val docUri = track.documentUri.toUri()
+                            lrcWriter.write(treeUri, docUri, track.displayName, item.fullText)
+                            var newMod = track.lastModified
+                            if (s.embedLyricsInTags) {
+                                newMod = tagWriter.writeLyrics(
+                                    docUri, track.displayName, item.fullText,
+                                    expectedLastModified = track.lastModified,
+                                )
+                            }
+                            trackDao.upsertAll(listOf(
+                                track.copy(
+                                    hasSidecarLrc = true,
+                                    sidecarLrcSynced = item.isSynced,
+                                    lastModified = newMod,
+                                    scannedAt = System.currentTimeMillis(),
+                                ),
+                            ))
+                        }.onSuccess {
+                            saved.incrementAndGet()
+                            setStatus(item.documentUri, DownloadStatus.SAVED)
+                        }.onFailure {
+                            failed.incrementAndGet()
+                            setStatus(item.documentUri, DownloadStatus.FAILED)
+                        }
+                    }
+                }.awaitAll()
+            }
+
             _lyricsBatch.value = LyricsBatchPhase.Done(
-                saved = saved,
+                saved = saved.get(),
                 skipped = skipped,
                 noMatch = review.noMatchCount,
-                failed = failed,
+                failed = failed.get(),
             )
         }
     }

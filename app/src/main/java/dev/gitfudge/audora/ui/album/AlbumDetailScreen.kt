@@ -24,7 +24,9 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.TextButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.rounded.Edit
+import androidx.compose.material.icons.rounded.Warning
 import androidx.compose.material.icons.rounded.Image
 import androidx.compose.material.icons.rounded.Lyrics
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -32,7 +34,9 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -61,6 +65,7 @@ import dev.gitfudge.audora.ui.components.PrimaryButton
 import dev.gitfudge.audora.ui.components.SecondaryButton
 import dev.gitfudge.audora.ui.library.AlbumArtPickerSheet
 import dev.gitfudge.audora.ui.library.AlbumPickerState
+import dev.gitfudge.audora.ui.library.DownloadStatus
 import dev.gitfudge.audora.ui.theme.LocalSpacing
 import java.io.File
 
@@ -195,8 +200,14 @@ fun AlbumDetailScreen(
 
         when (val af = artFlow) {
             AlbumArtFlowState.Idle -> Unit
-            AlbumArtFlowState.Searching -> ProgressDialog("Searching for cover art…")
-            is AlbumArtFlowState.NoMatch -> InfoDialog(af.message) { viewModel.dismissArtFlow() }
+            AlbumArtFlowState.Searching -> ArtBatchSheet(
+                state = af,
+                onDismiss = { viewModel.dismissArtFlow() },
+            )
+            is AlbumArtFlowState.NoMatch -> ArtBatchSheet(
+                state = af,
+                onDismiss = { viewModel.dismissArtFlow() },
+            )
             is AlbumArtFlowState.Picker -> AlbumArtPickerSheet(
                 state = AlbumPickerState(
                     albumName = state.albumLabel,
@@ -219,29 +230,25 @@ fun AlbumDetailScreen(
                 onBack = { viewModel.backToPicker() },
                 subtitle = "${state.trackCount} ${if (state.trackCount == 1) "track" else "tracks"}",
             )
-            is AlbumArtFlowState.Writing -> ProgressDialog("Saving art… ${af.done}/${af.total}")
+            is AlbumArtFlowState.Writing -> ArtBatchSheet(
+                state = af,
+                onDismiss = { viewModel.dismissArtFlow() },
+            )
+            is AlbumArtFlowState.Done -> ArtBatchSheet(
+                state = af,
+                onDismiss = { viewModel.dismissArtFlow() },
+            )
         }
 
-        when (val lb = lyricsBatch) {
-            LyricsBatchPhase.Idle -> Unit
-            is LyricsBatchPhase.Options -> LyricsOptionsDialog(
-                options = lb,
+        if (lyricsBatch !is LyricsBatchPhase.Idle) {
+            LyricsBatchSheet(
+                phase = lyricsBatch,
                 onToggleReplace = { viewModel.setReplaceExisting(it) },
-                onConfirm = { viewModel.confirmLyricsOptions() },
+                onConfirmOptions = { viewModel.confirmLyricsOptions() },
+                onToggleReviewItem = { viewModel.toggleReviewItem(it) },
+                onCommitReview = { viewModel.commitLyricsReview() },
                 onDismiss = { viewModel.dismissLyricsBatch() },
             )
-            is LyricsBatchPhase.Fetching -> ProgressDialog("Fetching lyrics… ${lb.done}/${lb.total}")
-            is LyricsBatchPhase.Writing -> ProgressDialog("Saving lyrics… ${lb.done}/${lb.total}")
-            is LyricsBatchPhase.Review -> LyricsBatchReviewSheet(
-                review = lb,
-                onToggle = { viewModel.toggleReviewItem(it) },
-                onCommit = { viewModel.commitLyricsReview() },
-                onDismiss = { viewModel.dismissLyricsBatch() },
-            )
-            is LyricsBatchPhase.Done -> InfoDialog(
-                "Saved ${lb.saved} · Skipped ${lb.skipped} · No match ${lb.noMatch}" +
-                    if (lb.failed > 0) " · Failed ${lb.failed}" else "",
-            ) { viewModel.dismissLyricsBatch() }
         }
     }
 }
@@ -444,164 +451,405 @@ private fun ProgressDialog(message: String) {
     )
 }
 
-@Composable
-private fun InfoDialog(message: String, onDismiss: () -> Unit) {
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        confirmButton = { TextButton(onClick = onDismiss) { Text("OK") } },
-        text = { Text(message) },
-    )
-}
-
-@Composable
-private fun LyricsOptionsDialog(
-    options: LyricsBatchPhase.Options,
-    onToggleReplace: (Boolean) -> Unit,
-    onConfirm: () -> Unit,
-    onDismiss: () -> Unit,
-) {
-    val spacing = LocalSpacing.current
-    val colors = MaterialTheme.colorScheme
-    val pending = if (options.replaceExisting) options.total else options.total - options.withExisting
-
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text("Fetch lyrics") },
-        text = {
-            Column(verticalArrangement = Arrangement.spacedBy(spacing.sm)) {
-                Text(
-                    text = buildString {
-                        append("${options.total} ${if (options.total == 1) "track" else "tracks"} in this album.")
-                        if (options.withExisting > 0) {
-                            append(" ${options.withExisting} already ${if (options.withExisting == 1) "has" else "have"} lyrics.")
-                        }
-                    },
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = colors.onSurface,
-                )
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable(enabled = options.withExisting > 0) {
-                            onToggleReplace(!options.replaceExisting)
-                        }
-                        .padding(vertical = spacing.xs),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(spacing.sm),
-                ) {
-                    Checkbox(
-                        checked = options.replaceExisting,
-                        onCheckedChange = onToggleReplace,
-                        enabled = options.withExisting > 0,
-                    )
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = "Replace existing lyrics",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = if (options.withExisting > 0) colors.onSurface else colors.onSurfaceVariant,
-                        )
-                        Text(
-                            text = if (options.withExisting > 0) {
-                                "Re-download and overwrite for the ${options.withExisting} ${if (options.withExisting == 1) "track" else "tracks"} that already have lyrics."
-                            } else {
-                                "No tracks already have lyrics."
-                            },
-                            style = MaterialTheme.typography.bodySmall,
-                            color = colors.onSurfaceVariant,
-                        )
-                    }
-                }
-                Text(
-                    text = "Will fetch for $pending ${if (pending == 1) "track" else "tracks"}.",
-                    style = MaterialTheme.typography.labelMedium,
-                    color = colors.primary,
-                )
-            }
-        },
-        confirmButton = {
-            TextButton(onClick = onConfirm, enabled = pending > 0) { Text("Fetch") }
-        },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel") } },
-    )
-}
-
+/**
+ * Single bottom sheet that drives the whole album lyrics batch flow —
+ * options → fetching → review → saving → done — instead of a chain of
+ * popups. Mirrors the downloads sheet: persistent surface, in-sheet
+ * progress, dismissible only when no work is in flight.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun LyricsBatchReviewSheet(
-    review: LyricsBatchPhase.Review,
-    onToggle: (String) -> Unit,
-    onCommit: () -> Unit,
+private fun LyricsBatchSheet(
+    phase: LyricsBatchPhase,
+    onToggleReplace: (Boolean) -> Unit,
+    onConfirmOptions: () -> Unit,
+    onToggleReviewItem: (String) -> Unit,
+    onCommitReview: () -> Unit,
     onDismiss: () -> Unit,
 ) {
     val spacing = LocalSpacing.current
     val colors = MaterialTheme.colorScheme
-    val acceptedCount = review.items.count { it.accept }
+
+    // While fetching/saving the flow must not be swiped or tapped away.
+    val inFlight = phase is LyricsBatchPhase.Fetching || phase is LyricsBatchPhase.Writing
+    val sheetState = rememberModalBottomSheetState(
+        skipPartiallyExpanded = true,
+        confirmValueChange = { it != SheetValue.Hidden || !inFlight },
+    )
 
     AppBottomSheet(
-        onDismissRequest = onDismiss,
-        title = "Review lyrics",
+        onDismissRequest = { if (!inFlight) onDismiss() },
+        sheetState = sheetState,
+        title = "Lyrics",
         footer = {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(spacing.sm),
-            ) {
-                GhostButton(onClick = onDismiss, modifier = Modifier.weight(1f)) { Text("Cancel") }
-                PrimaryButton(
-                    onClick = onCommit,
-                    enabled = acceptedCount > 0,
-                    modifier = Modifier.weight(1f),
-                ) { Text("Save $acceptedCount") }
+            when (phase) {
+                is LyricsBatchPhase.Options -> {
+                    val pending = if (phase.replaceExisting) phase.total else phase.total - phase.withExisting
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(spacing.sm),
+                    ) {
+                        GhostButton(onClick = onDismiss, modifier = Modifier.weight(1f)) { Text("Cancel") }
+                        PrimaryButton(
+                            onClick = onConfirmOptions,
+                            enabled = pending > 0,
+                            modifier = Modifier.weight(1f),
+                        ) { Text("Fetch $pending") }
+                    }
+                }
+                is LyricsBatchPhase.Review -> {
+                    val acceptedCount = phase.items.count { it.accept }
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(spacing.sm),
+                    ) {
+                        GhostButton(onClick = onDismiss, modifier = Modifier.weight(1f)) { Text("Cancel") }
+                        PrimaryButton(
+                            onClick = onCommitReview,
+                            enabled = acceptedCount > 0,
+                            modifier = Modifier.weight(1f),
+                        ) { Text("Save $acceptedCount") }
+                    }
+                }
+                is LyricsBatchPhase.Done -> {
+                    PrimaryButton(onClick = onDismiss, modifier = Modifier.fillMaxWidth()) { Text("Done") }
+                }
+                else -> Unit
             }
         },
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .fillMaxHeight(0.7f),
-            verticalArrangement = Arrangement.spacedBy(spacing.sm),
-        ) {
-            val summary = buildString {
-                append("Found ${review.items.size}")
-                if (review.noMatchCount > 0) append(" · No match ${review.noMatchCount}")
-                if (review.failedCount > 0) append(" · Failed ${review.failedCount}")
-            }
-            Text(summary, style = MaterialTheme.typography.bodySmall, color = colors.onSurfaceVariant)
-
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f, fill = true),
-                verticalArrangement = Arrangement.spacedBy(spacing.xs),
-            ) {
-                items(review.items, key = { it.documentUri }) { item ->
+        when (phase) {
+            is LyricsBatchPhase.Options -> {
+                val pending =
+                    if (phase.replaceExisting) phase.total else phase.total - phase.withExisting
+                Column(verticalArrangement = Arrangement.spacedBy(spacing.sm)) {
+                    Text(
+                        text = buildString {
+                            append("${phase.total} ${if (phase.total == 1) "track" else "tracks"} in this album.")
+                            if (phase.withExisting > 0) {
+                                append(" ${phase.withExisting} already ${if (phase.withExisting == 1) "has" else "have"} lyrics.")
+                            }
+                        },
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = colors.onSurface,
+                    )
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable { onToggle(item.documentUri) }
+                            .clickable(enabled = phase.withExisting > 0) {
+                                onToggleReplace(!phase.replaceExisting)
+                            }
                             .padding(vertical = spacing.xs),
-                        verticalAlignment = Alignment.Top,
+                        verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(spacing.sm),
                     ) {
-                        Checkbox(checked = item.accept, onCheckedChange = { onToggle(item.documentUri) })
+                        Checkbox(
+                            checked = phase.replaceExisting,
+                            onCheckedChange = onToggleReplace,
+                            enabled = phase.withExisting > 0,
+                        )
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
-                                text = item.title + if (item.isSynced) "  (synced)" else "",
+                                text = "Replace existing lyrics",
                                 style = MaterialTheme.typography.bodyMedium,
-                                color = colors.onSurface,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
+                                color = if (phase.withExisting > 0) colors.onSurface else colors.onSurfaceVariant,
                             )
                             Text(
-                                text = item.previewText,
+                                text = if (phase.withExisting > 0) {
+                                    "Re-download and overwrite for the ${phase.withExisting} ${if (phase.withExisting == 1) "track" else "tracks"} that already have lyrics."
+                                } else {
+                                    "No tracks already have lyrics."
+                                },
                                 style = MaterialTheme.typography.bodySmall,
                                 color = colors.onSurfaceVariant,
-                                maxLines = 3,
-                                overflow = TextOverflow.Ellipsis,
                             )
+                        }
+                    }
+                    Text(
+                        text = "Will fetch for $pending ${if (pending == 1) "track" else "tracks"}.",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = colors.primary,
+                    )
+                }
+            }
+
+            is LyricsBatchPhase.Fetching ->
+                BatchItemList(
+                    "Fetching lyrics", phase.items, Icons.Rounded.Lyrics,
+                    activeLabel = "Fetching…", doneLabel = "Lyrics found",
+                )
+
+            is LyricsBatchPhase.Writing ->
+                BatchItemList(
+                    "Saving lyrics", phase.items, Icons.Rounded.Lyrics,
+                    activeLabel = "Saving…", doneLabel = "Lyrics saved",
+                )
+
+            is LyricsBatchPhase.Review -> {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .fillMaxHeight(0.7f),
+                    verticalArrangement = Arrangement.spacedBy(spacing.sm),
+                ) {
+                    val summary = buildString {
+                        append("Found ${phase.items.size}")
+                        if (phase.noMatchCount > 0) append(" · No match ${phase.noMatchCount}")
+                        if (phase.failedCount > 0) append(" · Failed ${phase.failedCount}")
+                    }
+                    Text(summary, style = MaterialTheme.typography.bodySmall, color = colors.onSurfaceVariant)
+
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f, fill = true),
+                        verticalArrangement = Arrangement.spacedBy(spacing.xs),
+                    ) {
+                        items(phase.items, key = { it.documentUri }) { item ->
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable { onToggleReviewItem(item.documentUri) }
+                                    .padding(vertical = spacing.xs),
+                                verticalAlignment = Alignment.Top,
+                                horizontalArrangement = Arrangement.spacedBy(spacing.sm),
+                            ) {
+                                Checkbox(
+                                    checked = item.accept,
+                                    onCheckedChange = { onToggleReviewItem(item.documentUri) },
+                                )
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(
+                                        text = item.title + if (item.isSynced) "  (synced)" else "",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = colors.onSurface,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis,
+                                    )
+                                    Text(
+                                        text = item.previewText,
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = colors.onSurfaceVariant,
+                                        maxLines = 3,
+                                        overflow = TextOverflow.Ellipsis,
+                                    )
+                                }
+                            }
                         }
                     }
                 }
             }
+
+            is LyricsBatchPhase.Done -> {
+                Column(verticalArrangement = Arrangement.spacedBy(spacing.xs)) {
+                    Text(
+                        text = "Saved ${phase.saved} · Skipped ${phase.skipped} · No match ${phase.noMatch}" +
+                            if (phase.failed > 0) " · Failed ${phase.failed}" else "",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = colors.onSurface,
+                    )
+                }
+            }
+
+            LyricsBatchPhase.Idle -> Unit
+        }
+    }
+}
+
+@Composable
+private fun BatchItemList(
+    label: String,
+    items: List<BatchItem>,
+    pendingIcon: androidx.compose.ui.graphics.vector.ImageVector,
+    activeLabel: String,
+    doneLabel: String,
+) {
+    val spacing = LocalSpacing.current
+    val colors = MaterialTheme.colorScheme
+    val finished = items.count {
+        it.status == DownloadStatus.SAVED ||
+            it.status == DownloadStatus.NO_MATCH ||
+            it.status == DownloadStatus.FAILED
+    }
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .fillMaxHeight(0.7f),
+        verticalArrangement = Arrangement.spacedBy(spacing.sm),
+    ) {
+        Text(
+            text = "$label… $finished/${items.size}",
+            style = MaterialTheme.typography.bodyMedium,
+            color = colors.onSurface,
+        )
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f, fill = true),
+            verticalArrangement = Arrangement.spacedBy(spacing.xs),
+        ) {
+            items(items, key = { it.documentUri }) { item ->
+                BatchItemRow(item, pendingIcon, activeLabel, doneLabel)
+            }
+        }
+    }
+}
+
+@Composable
+private fun BatchItemRow(
+    item: BatchItem,
+    pendingIcon: androidx.compose.ui.graphics.vector.ImageVector,
+    activeLabel: String,
+    doneLabel: String,
+) {
+    val spacing = LocalSpacing.current
+    val colors = MaterialTheme.colorScheme
+    val sc = dev.gitfudge.audora.ui.theme.LocalStatusColors.current
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = spacing.xs),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(spacing.md),
+    ) {
+        androidx.compose.material3.Surface(
+            shape = dev.gitfudge.audora.ui.theme.LocalShapeScale.current.sm,
+            color = colors.surfaceContainer,
+            modifier = Modifier.size(32.dp),
+        ) {
+            Box(contentAlignment = Alignment.Center) {
+                when (item.status) {
+                    DownloadStatus.PENDING -> Icon(
+                        imageVector = pendingIcon,
+                        contentDescription = null,
+                        tint = colors.onSurfaceVariant,
+                        modifier = Modifier.size(18.dp),
+                    )
+                    DownloadStatus.DOWNLOADING -> CircularProgressIndicator(
+                        modifier = Modifier.size(16.dp),
+                        strokeWidth = 2.dp,
+                        color = colors.secondary,
+                    )
+                    DownloadStatus.SAVED -> Icon(
+                        imageVector = Icons.Rounded.CheckCircle,
+                        contentDescription = null,
+                        tint = sc.ok,
+                        modifier = Modifier.size(18.dp),
+                    )
+                    DownloadStatus.NO_MATCH -> Icon(
+                        imageVector = Icons.Rounded.Warning,
+                        contentDescription = null,
+                        tint = sc.warn,
+                        modifier = Modifier.size(18.dp),
+                    )
+                    DownloadStatus.FAILED -> Icon(
+                        imageVector = Icons.Rounded.Warning,
+                        contentDescription = null,
+                        tint = sc.missing,
+                        modifier = Modifier.size(18.dp),
+                    )
+                }
+            }
+        }
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = item.title,
+                style = MaterialTheme.typography.bodyMedium,
+                color = colors.onSurface,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+            val (label, tint) = when (item.status) {
+                DownloadStatus.PENDING -> "Queued" to colors.onSurfaceVariant
+                DownloadStatus.DOWNLOADING -> activeLabel to colors.onSurfaceVariant
+                DownloadStatus.SAVED -> doneLabel to sc.ok
+                DownloadStatus.NO_MATCH -> "No match" to sc.warn
+                DownloadStatus.FAILED -> "Failed" to sc.missing
+            }
+            Text(
+                text = label,
+                style = MaterialTheme.typography.labelSmall,
+                color = tint,
+            )
+        }
+    }
+}
+
+/**
+ * Single bottom sheet for the album cover-art write flow — per-track
+ * progress while embedding, then a result summary — matching the lyrics
+ * batch sheet. Non-dismissible while writing is in flight.
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ArtBatchSheet(
+    state: AlbumArtFlowState,
+    onDismiss: () -> Unit,
+) {
+    val spacing = LocalSpacing.current
+    val colors = MaterialTheme.colorScheme
+
+    val inFlight = state is AlbumArtFlowState.Writing
+    val sheetState = rememberModalBottomSheetState(
+        skipPartiallyExpanded = true,
+        confirmValueChange = { it != SheetValue.Hidden || !inFlight },
+    )
+
+    AppBottomSheet(
+        onDismissRequest = { if (!inFlight) onDismiss() },
+        sheetState = sheetState,
+        title = "Cover art",
+        footer = {
+            when (state) {
+                is AlbumArtFlowState.Done ->
+                    PrimaryButton(onClick = onDismiss, modifier = Modifier.fillMaxWidth()) { Text("Done") }
+                is AlbumArtFlowState.NoMatch ->
+                    PrimaryButton(onClick = onDismiss, modifier = Modifier.fillMaxWidth()) { Text("OK") }
+                else -> Unit
+            }
+        },
+    ) {
+        when (state) {
+            AlbumArtFlowState.Searching -> Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = spacing.md),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(spacing.md),
+            ) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(20.dp),
+                    strokeWidth = 2.dp,
+                    color = colors.secondary,
+                )
+                Text(
+                    text = "Searching for cover art…",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = colors.onSurface,
+                )
+            }
+            is AlbumArtFlowState.NoMatch -> Text(
+                text = state.message,
+                style = MaterialTheme.typography.bodyMedium,
+                color = colors.onSurface,
+            )
+            is AlbumArtFlowState.Writing ->
+                BatchItemList(
+                    label = "Saving cover art",
+                    items = state.items,
+                    pendingIcon = Icons.Rounded.Image,
+                    activeLabel = "Saving…",
+                    doneLabel = "Cover saved",
+                )
+            is AlbumArtFlowState.Done -> Text(
+                text = "Saved ${state.saved}" +
+                    if (state.failed > 0) " · Failed ${state.failed}" else "",
+                style = MaterialTheme.typography.bodyMedium,
+                color = colors.onSurface,
+            )
+            else -> Unit
         }
     }
 }
