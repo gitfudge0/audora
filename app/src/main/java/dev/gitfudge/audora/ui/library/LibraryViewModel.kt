@@ -17,6 +17,7 @@ import dev.gitfudge.audora.data.scan.MediaScanner
 import dev.gitfudge.audora.data.scan.ScanResult
 import dev.gitfudge.audora.data.settings.SettingsRepository
 import dev.gitfudge.audora.data.tags.BulkTagApplier
+import dev.gitfudge.audora.data.tags.FileSignature
 import dev.gitfudge.audora.data.tags.TagWriter
 import dev.gitfudge.audora.domain.BulkTagEdits
 import dev.gitfudge.audora.domain.AlbumArtStatus
@@ -501,17 +502,21 @@ class LibraryViewModel @Inject constructor(
 
                         lrcWriter.write(treeUri, docUri, track.displayName, lyricsText)
                         var newMod = track.lastModified
+                        var newSize = track.sizeBytes
                         if (s.embedLyricsInTags) {
-                            newMod = tagWriter.writeLyrics(
+                            val sig = tagWriter.writeLyrics(
                                 docUri, track.displayName, lyricsText,
-                                expectedLastModified = track.lastModified,
+                                expected = FileSignature(track.lastModified, track.sizeBytes),
                             )
+                            newMod = sig.lastModified
+                            newSize = sig.sizeOr(track.sizeBytes)
                         }
                         trackDao.upsertAll(listOf(
                             track.copy(
                                 hasSidecarLrc = true,
                                 sidecarLrcSynced = isSynced,
                                 lastModified = newMod,
+                                sizeBytes = newSize,
                                 scannedAt = System.currentTimeMillis(),
                             ),
                         ))
@@ -717,7 +722,7 @@ class LibraryViewModel @Inject constructor(
                         val docUri = track.documentUri.toUri()
                         val result = tagWriter.writeArtFromBytes(
                             docUri, track.displayName, imageBytes,
-                            expectedLastModified = track.lastModified,
+                            expected = FileSignature(track.lastModified, track.sizeBytes),
                         )
                         trackDao.upsertAll(listOf(
                             track.copy(
@@ -727,6 +732,7 @@ class LibraryViewModel @Inject constructor(
                                 thumbnailPath = result.thumbnailPath,
                                 artScanPending = false,
                                 lastModified = result.lastModified,
+                                sizeBytes = if (result.sizeBytes > 0L) result.sizeBytes else track.sizeBytes,
                                 scannedAt = System.currentTimeMillis(),
                             ),
                         ))

@@ -14,6 +14,7 @@ import dev.gitfudge.audora.data.lyrics.LrcWriter
 import dev.gitfudge.audora.data.lyrics.LrclibRepository
 import dev.gitfudge.audora.data.lyrics.LrclibResult
 import dev.gitfudge.audora.data.settings.SettingsRepository
+import dev.gitfudge.audora.data.tags.FileSignature
 import dev.gitfudge.audora.data.tags.TagEdits
 import dev.gitfudge.audora.data.tags.TagWriter
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -192,13 +193,13 @@ class TrackDetailViewModel @Inject constructor(
         viewModelScope.launch {
             _tagSaveState.value = DetailSaveState.Saving
             runCatching {
-                val newMod = tagWriter.write(
+                val sig = tagWriter.write(
                     documentUri.toUri(), t.displayName, form.toTagEdits(),
-                    expectedLastModified = t.lastModified,
+                    expected = FileSignature(t.lastModified, t.sizeBytes),
                 )
                 preTagWriteEntity = t
                 preTagWriteForm = _original.value
-                trackDao.upsertAll(listOf(buildUpdatedEntity(t, form, newMod)))
+                trackDao.upsertAll(listOf(buildUpdatedEntity(t, form, sig)))
                 _original.value = form
             }.fold(
                 onSuccess = {
@@ -215,10 +216,11 @@ class TrackDetailViewModel @Inject constructor(
         val prev = preTagWriteEntity ?: return
         viewModelScope.launch {
             runCatching {
-                val restoredMod = tagWriter.restoreLastWrite(documentUri.toUri())
+                val restored = tagWriter.restoreLastWrite(documentUri.toUri())
                 trackDao.upsertAll(listOf(
                     prev.copy(
-                        lastModified = restoredMod ?: prev.lastModified,
+                        lastModified = restored?.lastModified ?: prev.lastModified,
+                        sizeBytes = restored?.sizeOr(prev.sizeBytes) ?: prev.sizeBytes,
                         scannedAt = System.currentTimeMillis(),
                     ),
                 ))
@@ -282,11 +284,14 @@ class TrackDetailViewModel @Inject constructor(
 
                 val s = settings.settings.first()
                 var newMod = t.lastModified
+                var newSize = t.sizeBytes
                 if (s.embedLyricsInTags) {
-                    newMod = tagWriter.writeLyrics(
+                    val sig = tagWriter.writeLyrics(
                         docUri, t.displayName, lyricsText,
-                        expectedLastModified = t.lastModified,
+                        expected = FileSignature(t.lastModified, t.sizeBytes),
                     )
+                    newMod = sig.lastModified
+                    newSize = sig.sizeOr(t.sizeBytes)
                 }
 
                 trackDao.upsertAll(listOf(
@@ -294,6 +299,7 @@ class TrackDetailViewModel @Inject constructor(
                         hasSidecarLrc = true,
                         sidecarLrcSynced = state.isSynced,
                         lastModified = newMod,
+                        sizeBytes = newSize,
                         scannedAt = System.currentTimeMillis(),
                     ),
                 ))
@@ -339,17 +345,21 @@ class TrackDetailViewModel @Inject constructor(
                 lrcWriter.write(t.treeUri.toUri(), docUri, t.displayName, text)
                 val s = settings.settings.first()
                 var newMod = t.lastModified
+                var newSize = t.sizeBytes
                 if (s.embedLyricsInTags) {
-                    newMod = tagWriter.writeLyrics(
+                    val sig = tagWriter.writeLyrics(
                         docUri, t.displayName, text,
-                        expectedLastModified = t.lastModified,
+                        expected = FileSignature(t.lastModified, t.sizeBytes),
                     )
+                    newMod = sig.lastModified
+                    newSize = sig.sizeOr(t.sizeBytes)
                 }
                 trackDao.upsertAll(listOf(
                     t.copy(
                         hasSidecarLrc = text.isNotBlank(),
                         sidecarLrcSynced = synced,
                         lastModified = newMod,
+                        sizeBytes = newSize,
                         scannedAt = System.currentTimeMillis(),
                     ),
                 ))
@@ -384,7 +394,7 @@ class TrackDetailViewModel @Inject constructor(
             runCatching {
                 val result = tagWriter.writeArt(
                     documentUri.toUri(), t.displayName, artUri,
-                    expectedLastModified = t.lastModified,
+                    expected = FileSignature(t.lastModified, t.sizeBytes),
                 )
                 trackDao.upsertAll(listOf(
                     t.copy(
@@ -394,6 +404,7 @@ class TrackDetailViewModel @Inject constructor(
                         thumbnailPath = result.thumbnailPath,
                         artScanPending = false,
                         lastModified = result.lastModified,
+                        sizeBytes = if (result.sizeBytes > 0L) result.sizeBytes else t.sizeBytes,
                         scannedAt = System.currentTimeMillis(),
                     ),
                 ))
@@ -462,7 +473,7 @@ class TrackDetailViewModel @Inject constructor(
             runCatching {
                 val result = tagWriter.writeArtFromBytes(
                     documentUri.toUri(), t.displayName, preview.bytes,
-                    expectedLastModified = t.lastModified,
+                    expected = FileSignature(t.lastModified, t.sizeBytes),
                 )
                 trackDao.upsertAll(listOf(
                     t.copy(
@@ -472,6 +483,7 @@ class TrackDetailViewModel @Inject constructor(
                         thumbnailPath = result.thumbnailPath,
                         artScanPending = false,
                         lastModified = result.lastModified,
+                        sizeBytes = if (result.sizeBytes > 0L) result.sizeBytes else t.sizeBytes,
                         scannedAt = System.currentTimeMillis(),
                     ),
                 ))
@@ -491,7 +503,11 @@ class TrackDetailViewModel @Inject constructor(
 
     // ── Shared helpers ────────────────────────────────────────────────────────
 
-    private fun buildUpdatedEntity(t: TrackEntity, form: TagFormState, newMod: Long): TrackEntity {
+    private fun buildUpdatedEntity(
+        t: TrackEntity,
+        form: TagFormState,
+        sig: FileSignature,
+    ): TrackEntity {
         val title = form.title.trim().ifEmpty { null }
         val artist = form.artist.trim().ifEmpty { null }
         val album = form.album.trim().ifEmpty { null }
@@ -516,7 +532,8 @@ class TrackDetailViewModel @Inject constructor(
             albumLabel = album ?: t.parentPath.substringAfterLast('/').ifEmpty { "Unknown album" },
             artistUnknown = artistUnknown,
             coreTagsComplete = !title.isNullOrBlank() && !artist.isNullOrBlank() && !album.isNullOrBlank(),
-            lastModified = newMod,
+            lastModified = sig.lastModified,
+            sizeBytes = if (sig.sizeBytes > 0L) sig.sizeBytes else t.sizeBytes,
             scannedAt = System.currentTimeMillis(),
         )
     }

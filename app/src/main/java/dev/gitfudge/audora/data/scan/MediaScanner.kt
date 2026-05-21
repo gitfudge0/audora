@@ -9,6 +9,7 @@ import androidx.core.net.toUri
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dev.gitfudge.audora.data.db.TrackDao
 import dev.gitfudge.audora.data.db.TrackEntity
+import dev.gitfudge.audora.data.tags.WriteSafetyManager
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -41,6 +42,7 @@ private val SYNCED_LRC = Regex("""\[\d{1,2}:\d{2}""")
 class MediaScanner @Inject constructor(
     @ApplicationContext private val context: Context,
     private val trackDao: TrackDao,
+    private val safety: WriteSafetyManager,
 ) {
     private companion object {
         const val PROGRESS_EMIT_EVERY_FILES = 25
@@ -295,6 +297,15 @@ class MediaScanner @Inject constructor(
         lastModified: Long,
         lrcDocId: String?,
     ): TrackEntity {
+        // Persist the mtime via the same single-doc cursor that
+        // WriteSafetyManager.assertUnchanged uses. Some SAF providers return
+        // a slightly different value through the children cursor used by
+        // listChildren, and that mismatch would silently break the stale
+        // check on the very next write. Fall back to the children-cursor
+        // value only if the single-doc query has no answer.
+        val persistedLastModified = safety.queryLastModified(docUri)
+            ?.takeIf { it > 0L }
+            ?: lastModified
         val mmr = MediaMetadataRetriever()
         try {
             mmr.setDataSource(context, docUri)
@@ -335,7 +346,7 @@ class MediaScanner @Inject constructor(
                 parentPath = parentPath,
                 format = name.substringAfterLast('.', "").uppercase().ifEmpty { "?" },
                 sizeBytes = size,
-                lastModified = lastModified,
+                lastModified = persistedLastModified,
                 durationMs = durationMs,
                 title = title,
                 artist = artist,

@@ -4,7 +4,6 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
-import android.provider.DocumentsContract
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -33,6 +32,7 @@ data class TagEdits(
 
 data class ArtWriteResult(
     val lastModified: Long,
+    val sizeBytes: Long,
     val artWidth: Int?,
     val artHeight: Int?,
     val thumbnailPath: String?,
@@ -43,15 +43,15 @@ class TagWriter @Inject constructor(
     @ApplicationContext private val context: Context,
     private val safety: WriteSafetyManager,
 ) {
-    /** Edit text tags only. Returns new lastModified. */
+    /** Edit text tags only. Returns the post-write signature (mtime + size). */
     suspend fun write(
         docUri: Uri,
         displayName: String,
         edits: TagEdits,
-        expectedLastModified: Long = 0L,
-    ): Long =
+        expected: FileSignature = FileSignature.NONE,
+    ): FileSignature =
         withContext(Dispatchers.IO) {
-            editInPlace(docUri, displayName, expectedLastModified) { tag ->
+            editInPlace(docUri, displayName, expected) { tag ->
                 fun set(key: FieldKey, value: String) {
                     if (value.isBlank()) tag.deleteField(key) else tag.setField(key, value.trim())
                 }
@@ -73,31 +73,31 @@ class TagWriter @Inject constructor(
             }
         }
 
-    /** Embed plain or LRC lyrics into the LYRICS tag. Returns new lastModified. */
+    /** Embed plain or LRC lyrics into the LYRICS tag. Returns post-write signature. */
     suspend fun writeLyrics(
         docUri: Uri,
         displayName: String,
         lyricsText: String,
-        expectedLastModified: Long = 0L,
-    ): Long =
+        expected: FileSignature = FileSignature.NONE,
+    ): FileSignature =
         withContext(Dispatchers.IO) {
-            editInPlace(docUri, displayName, expectedLastModified) { tag ->
+            editInPlace(docUri, displayName, expected) { tag ->
                 if (lyricsText.isBlank()) tag.deleteField(FieldKey.LYRICS)
                 else tag.setField(FieldKey.LYRICS, lyricsText)
             }
         }
 
-    /** Replace embedded album art. Returns dimensions + new lastModified + thumbnail path. */
+    /** Replace embedded album art. Returns dimensions + new signature + thumbnail path. */
     suspend fun writeArt(
         docUri: Uri,
         displayName: String,
         imageUri: Uri,
-        expectedLastModified: Long = 0L,
+        expected: FileSignature = FileSignature.NONE,
     ): ArtWriteResult =
         withContext(Dispatchers.IO) {
             val artBytes = scaleToJpeg(imageUri, maxPx = 1000)
 
-            editInPlace(docUri, displayName, expectedLastModified) { tag ->
+            val sig = editInPlace(docUri, displayName, expected) { tag ->
                 val artwork = AndroidArtwork().apply {
                     binaryData = artBytes
                     mimeType = "image/jpeg"
@@ -112,7 +112,8 @@ class TagWriter @Inject constructor(
             val artDir = File(context.cacheDir, "art").apply { mkdirs() }
 
             ArtWriteResult(
-                lastModified = queryLastModified(docUri),
+                lastModified = sig.lastModified,
+                sizeBytes = sig.sizeBytes,
                 artWidth = bounds.outWidth.takeIf { it > 0 },
                 artHeight = bounds.outHeight.takeIf { it > 0 },
                 thumbnailPath = writeThumbnail(artBytes, docUri.toString(), artDir),
@@ -122,17 +123,16 @@ class TagWriter @Inject constructor(
     /**
      * Replace embedded album art from raw bytes (e.g. downloaded from network).
      * Avoids FileProvider / ContentResolver complexity for in-memory content.
-     * Returns dimensions + new lastModified + thumbnail path.
      */
     suspend fun writeArtFromBytes(
         docUri: Uri,
         displayName: String,
         imageBytes: ByteArray,
-        expectedLastModified: Long = 0L,
+        expected: FileSignature = FileSignature.NONE,
     ): ArtWriteResult = withContext(Dispatchers.IO) {
         val artBytes = scaleToJpegFromBytes(imageBytes, maxPx = 1000)
 
-        editInPlace(docUri, displayName, expectedLastModified) { tag ->
+        val sig = editInPlace(docUri, displayName, expected) { tag ->
             val artwork = AndroidArtwork().apply {
                 binaryData = artBytes
                 mimeType = "image/jpeg"
@@ -147,7 +147,8 @@ class TagWriter @Inject constructor(
         val artDir = File(context.cacheDir, "art").apply { mkdirs() }
 
         ArtWriteResult(
-            lastModified = queryLastModified(docUri),
+            lastModified = sig.lastModified,
+            sizeBytes = sig.sizeBytes,
             artWidth = bounds.outWidth.takeIf { it > 0 },
             artHeight = bounds.outHeight.takeIf { it > 0 },
             thumbnailPath = writeThumbnail(artBytes, docUri.toString(), artDir),
@@ -158,21 +159,21 @@ class TagWriter @Inject constructor(
 
     /**
      * Restore the most recent pre-write backup of [docUri] (the undo).
-     * Returns the new lastModified, or null if there was nothing to restore.
+     * Returns the new signature, or null if there was nothing to restore.
      */
-    suspend fun restoreLastWrite(docUri: Uri): Long? = withContext(Dispatchers.IO) {
+    suspend fun restoreLastWrite(docUri: Uri): FileSignature? = withContext(Dispatchers.IO) {
         val backup = safety.latestBackup(docUri) ?: return@withContext null
-        if (safety.restore(docUri, backup)) queryLastModified(docUri) else null
+        val pre = safety.querySignature(docUri)?.lastModified ?: 0L
+        if (safety.restore(docUri, backup)) safety.stableSignatureAfterWrite(docUri, pre) else null
     }
 
-    private fun editInPlace(
+    private suspend fun editInPlace(
         docUri: Uri,
         displayName: String,
-        expectedLastModified: Long,
+        expected: FileSignature,
         block: (org.jaudiotagger.tag.Tag) -> Unit,
-    ): Long {
-        // 1. Refuse if the file changed out-of-band since we scanned it.
-        safety.assertUnchanged(docUri, displayName, expectedLastModified)
+    ): FileSignature {
+        safety.assertUnchanged(docUri, displayName, expected)
 
         val ext = displayName.substringAfterLast('.', "mp3").lowercase()
         val tmp = File(context.cacheDir, "tagwrite_${System.currentTimeMillis()}.$ext")
@@ -183,12 +184,18 @@ class TagWriter @Inject constructor(
             val audioFile = AudioFileIO.read(tmp)
             block(audioFile.tagOrCreateAndSetDefault)
             AudioFileIO.write(audioFile)
-            // 2. Snapshot the original before the destructive truncate-write.
             safety.backup(docUri, displayName)
+            // Pre-write mtime gives stableSignatureAfterWrite the baseline it
+            // polls against — the SAF cursor sometimes serves the old value
+            // for hundreds of ms after the OutputStream closes.
+            val preWriteMtime = safety.querySignature(docUri)?.lastModified ?: 0L
             context.contentResolver.openOutputStream(docUri, "wt")!!.use { out ->
                 tmp.inputStream().use { it.copyTo(out) }
             }
-            return queryLastModified(docUri)
+            val stable = safety.stableSignatureAfterWrite(docUri, preWriteMtime)
+            // tmp.length() is what we just wrote — immune to provider flush lag.
+            val newSize = tmp.length().takeIf { it > 0L } ?: stable.sizeBytes
+            return FileSignature(stable.lastModified, newSize)
         } finally {
             tmp.delete()
         }
@@ -258,14 +265,6 @@ class TagWriter @Inject constructor(
             bmp.recycle()
             file.absolutePath
         }.getOrNull()
-
-    private fun queryLastModified(docUri: Uri): Long = runCatching {
-        context.contentResolver.query(
-            docUri,
-            arrayOf(DocumentsContract.Document.COLUMN_LAST_MODIFIED),
-            null, null, null,
-        )?.use { if (it.moveToFirst()) it.getLong(0) else 0L } ?: 0L
-    }.getOrDefault(System.currentTimeMillis())
 
     private fun sha1(value: String): String =
         MessageDigest.getInstance("SHA-1").digest(value.toByteArray())

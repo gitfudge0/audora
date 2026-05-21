@@ -60,9 +60,9 @@ class BulkTagApplier @Inject constructor(
                     comment = track.comment ?: "",
                     compilation = newCompilation,
                 )
-                val newMod = tagWriter.write(
+                val sig = tagWriter.write(
                     track.documentUri.toUri(), track.displayName, tagEdits,
-                    expectedLastModified = track.lastModified,
+                    expected = FileSignature(track.lastModified, track.sizeBytes),
                 )
 
                 val resolvedArtist = newArtist.ifBlank { track.artist }
@@ -86,7 +86,8 @@ class BulkTagApplier @Inject constructor(
                             compilation = newCompilation,
                             albumKey = newKey,
                             albumLabel = resolvedAlbum ?: track.albumLabel,
-                            lastModified = newMod,
+                            lastModified = sig.lastModified,
+                            sizeBytes = sig.sizeOr(track.sizeBytes),
                             scannedAt = System.currentTimeMillis(),
                         ),
                     ),

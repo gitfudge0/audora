@@ -13,6 +13,7 @@ import dev.gitfudge.audora.data.lyrics.LrcWriter
 import dev.gitfudge.audora.data.lyrics.LrclibRepository
 import dev.gitfudge.audora.data.settings.SettingsRepository
 import dev.gitfudge.audora.data.tags.BulkTagApplier
+import dev.gitfudge.audora.data.tags.FileSignature
 import dev.gitfudge.audora.data.tags.TagWriter
 import dev.gitfudge.audora.domain.AlbumArtStatus
 import dev.gitfudge.audora.domain.AlbumLyricsStatus
@@ -242,7 +243,7 @@ class AlbumDetailViewModel @Inject constructor(
                         runCatching {
                             val res = tagWriter.writeArtFromBytes(
                                 track.documentUri.toUri(), track.displayName, preview.bytes,
-                                expectedLastModified = track.lastModified,
+                                expected = FileSignature(track.lastModified, track.sizeBytes),
                             )
                             trackDao.upsertAll(listOf(
                                 track.copy(
@@ -252,6 +253,7 @@ class AlbumDetailViewModel @Inject constructor(
                                     thumbnailPath = res.thumbnailPath,
                                     artScanPending = false,
                                     lastModified = res.lastModified,
+                                    sizeBytes = if (res.sizeBytes > 0L) res.sizeBytes else track.sizeBytes,
                                     scannedAt = System.currentTimeMillis(),
                                 ),
                             ))
@@ -420,17 +422,21 @@ class AlbumDetailViewModel @Inject constructor(
                             val docUri = track.documentUri.toUri()
                             lrcWriter.write(treeUri, docUri, track.displayName, item.fullText)
                             var newMod = track.lastModified
+                            var newSize = track.sizeBytes
                             if (s.embedLyricsInTags) {
-                                newMod = tagWriter.writeLyrics(
+                                val sig = tagWriter.writeLyrics(
                                     docUri, track.displayName, item.fullText,
-                                    expectedLastModified = track.lastModified,
+                                    expected = FileSignature(track.lastModified, track.sizeBytes),
                                 )
+                                newMod = sig.lastModified
+                                newSize = sig.sizeOr(track.sizeBytes)
                             }
                             trackDao.upsertAll(listOf(
                                 track.copy(
                                     hasSidecarLrc = true,
                                     sidecarLrcSynced = item.isSynced,
                                     lastModified = newMod,
+                                    sizeBytes = newSize,
                                     scannedAt = System.currentTimeMillis(),
                                 ),
                             ))
