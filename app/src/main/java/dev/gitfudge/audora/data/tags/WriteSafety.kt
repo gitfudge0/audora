@@ -57,8 +57,16 @@ class WriteSafetyManager @Inject constructor(
     fun assertUnchanged(docUri: Uri, displayName: String, expected: FileSignature) {
         val current = querySignature(docUri) ?: return
 
-        val sizeUsable = expected.sizeBytes > 0L && current.sizeBytes > 0L
-        if (sizeUsable && current.sizeBytes == expected.sizeBytes) return
+        // Size is the authoritative signal: if it matches, the file hasn't been
+        // rewritten. The COLUMN_SIZE cursor read can return 0 for files served
+        // through MediaProvider/FUSE (e.g. /storage/emulated/...), so when the
+        // cursor says 0 but we expect a real size, fall back to an fstat() on
+        // an open fd — kernel-level, codec-agnostic, reliable.
+        val currentSize = current.sizeBytes.takeIf { it > 0L }
+            ?: if (expected.sizeBytes > 0L) queryReliableSize(docUri) else 0L
+
+        val sizeUsable = expected.sizeBytes > 0L && currentSize > 0L
+        if (sizeUsable && currentSize == expected.sizeBytes) return
 
         val mtimeUsable = expected.lastModified > 0L && current.lastModified > 0L
         if (!mtimeUsable) {
@@ -69,6 +77,49 @@ class WriteSafetyManager @Inject constructor(
         if (kotlin.math.abs(current.lastModified - expected.lastModified) > 2_000L) {
             throw StaleFileException(displayName)
         }
+    }
+
+    /**
+     * Size fallback for providers whose [COLUMN_SIZE] returns 0. Tries cheap
+     * channels first (AssetFileDescriptor's declared length, fstat() on a raw
+     * ParcelFileDescriptor), then falls back to streaming the file and
+     * counting bytes — definitive but O(filesize). The stream fallback is
+     * what makes this work for MediaProvider/FUSE-backed files that refuse to
+     * report a size through any metadata channel.
+     */
+    private fun queryReliableSize(docUri: Uri): Long {
+        val afdSize = runCatching {
+            context.contentResolver.openAssetFileDescriptor(docUri, "r")?.use { afd ->
+                val declared = afd.declaredLength
+                val len = afd.length
+                when {
+                    declared > 0L -> declared
+                    len > 0L && len != android.content.res.AssetFileDescriptor.UNKNOWN_LENGTH -> len
+                    else -> 0L
+                }
+            } ?: 0L
+        }.getOrDefault(0L)
+        if (afdSize > 0L) return afdSize
+
+        val statSize = runCatching {
+            context.contentResolver.openFileDescriptor(docUri, "r")?.use { pfd ->
+                pfd.statSize.takeIf { it > 0L } ?: 0L
+            } ?: 0L
+        }.getOrDefault(0L)
+        if (statSize > 0L) return statSize
+
+        return runCatching {
+            context.contentResolver.openInputStream(docUri)?.use { input ->
+                var total = 0L
+                val buf = ByteArray(64 * 1024)
+                while (true) {
+                    val n = input.read(buf)
+                    if (n <= 0) break
+                    total += n
+                }
+                total
+            } ?: 0L
+        }.getOrDefault(0L)
     }
 
     /** Copy current bytes aside. Returns the backup file (or null on failure). */

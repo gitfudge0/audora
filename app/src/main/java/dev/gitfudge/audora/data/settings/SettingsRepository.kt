@@ -22,7 +22,6 @@ data class Settings(
      * already-scanned folder relies on the persisted DB and a manual rescan.
      */
     val lastScannedTreeUri: String?,
-    val embedLyricsInTags: Boolean,
     val lowResThresholdPx: Int,
     val themeMode: ThemeMode,
     /** False until the first-run walkthrough is finished or skipped. */
@@ -36,7 +35,6 @@ class SettingsRepository @Inject constructor(
     private object Keys {
         val MusicTreeUri = stringPreferencesKey("music_tree_uri")
         val LastScannedTreeUri = stringPreferencesKey("last_scanned_tree_uri")
-        val EmbedLyrics = booleanPreferencesKey("embed_lyrics_in_tags")
         val LowResThreshold = intPreferencesKey("low_res_threshold_px")
         val ThemeMode = stringPreferencesKey("theme_mode")
         val HasSeenWalkthrough = booleanPreferencesKey("has_seen_walkthrough")
@@ -46,7 +44,6 @@ class SettingsRepository @Inject constructor(
         Settings(
             musicTreeUri = prefs[Keys.MusicTreeUri],
             lastScannedTreeUri = prefs[Keys.LastScannedTreeUri],
-            embedLyricsInTags = prefs[Keys.EmbedLyrics] ?: true,
             lowResThresholdPx = prefs[Keys.LowResThreshold] ?: DEFAULT_LOW_RES_PX,
             themeMode = prefs[Keys.ThemeMode]?.toThemeModeOrNull() ?: ThemeMode.System,
             hasSeenWalkthrough = prefs[Keys.HasSeenWalkthrough] ?: false,
@@ -63,10 +60,6 @@ class SettingsRepository @Inject constructor(
 
     suspend fun setLastScannedTreeUri(uri: String) {
         dataStore.edit { it[Keys.LastScannedTreeUri] = uri }
-    }
-
-    suspend fun setEmbedLyricsInTags(enabled: Boolean) {
-        dataStore.edit { it[Keys.EmbedLyrics] = enabled }
     }
 
     suspend fun setLowResThresholdPx(px: Int) {

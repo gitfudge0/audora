@@ -451,7 +451,6 @@ class LibraryViewModel @Inject constructor(
         viewModelScope.launch {
             val queue = trackDao.getByDocumentUris(selectedSet.toList())
             if (queue.isEmpty()) return@launch
-            val s = settings.settings.first()
             val total = queue.size
             val saved = AtomicInteger(0)
             val noMatch = AtomicInteger(0)
@@ -501,22 +500,10 @@ class LibraryViewModel @Inject constructor(
                         val docUri = track.documentUri.toUri()
 
                         lrcWriter.write(treeUri, docUri, track.displayName, lyricsText)
-                        var newMod = track.lastModified
-                        var newSize = track.sizeBytes
-                        if (s.embedLyricsInTags) {
-                            val sig = tagWriter.writeLyrics(
-                                docUri, track.displayName, lyricsText,
-                                expected = FileSignature(track.lastModified, track.sizeBytes),
-                            )
-                            newMod = sig.lastModified
-                            newSize = sig.sizeOr(track.sizeBytes)
-                        }
                         trackDao.upsertAll(listOf(
                             track.copy(
                                 hasSidecarLrc = true,
                                 sidecarLrcSynced = isSynced,
-                                lastModified = newMod,
-                                sizeBytes = newSize,
                                 scannedAt = System.currentTimeMillis(),
                             ),
                         ))

@@ -392,7 +392,6 @@ class AlbumDetailViewModel @Inject constructor(
         val accepted = review.items.filter { it.accept }
         val skipped = review.items.size - accepted.size
         viewModelScope.launch {
-            val s = settings.settings.first()
             val saved = java.util.concurrent.atomic.AtomicInteger(0)
             val failed = java.util.concurrent.atomic.AtomicInteger(review.failedCount)
             _lyricsBatch.value = LyricsBatchPhase.Writing(
@@ -421,22 +420,10 @@ class AlbumDetailViewModel @Inject constructor(
                             val treeUri = track.treeUri.toUri()
                             val docUri = track.documentUri.toUri()
                             lrcWriter.write(treeUri, docUri, track.displayName, item.fullText)
-                            var newMod = track.lastModified
-                            var newSize = track.sizeBytes
-                            if (s.embedLyricsInTags) {
-                                val sig = tagWriter.writeLyrics(
-                                    docUri, track.displayName, item.fullText,
-                                    expected = FileSignature(track.lastModified, track.sizeBytes),
-                                )
-                                newMod = sig.lastModified
-                                newSize = sig.sizeOr(track.sizeBytes)
-                            }
                             trackDao.upsertAll(listOf(
                                 track.copy(
                                     hasSidecarLrc = true,
                                     sidecarLrcSynced = item.isSynced,
-                                    lastModified = newMod,
-                                    sizeBytes = newSize,
                                     scannedAt = System.currentTimeMillis(),
                                 ),
                             ))

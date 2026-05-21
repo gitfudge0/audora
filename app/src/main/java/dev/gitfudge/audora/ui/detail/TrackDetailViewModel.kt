@@ -282,24 +282,10 @@ class TrackDetailViewModel @Inject constructor(
 
                 lrcWriter.write(treeUri, docUri, t.displayName, lyricsText)
 
-                val s = settings.settings.first()
-                var newMod = t.lastModified
-                var newSize = t.sizeBytes
-                if (s.embedLyricsInTags) {
-                    val sig = tagWriter.writeLyrics(
-                        docUri, t.displayName, lyricsText,
-                        expected = FileSignature(t.lastModified, t.sizeBytes),
-                    )
-                    newMod = sig.lastModified
-                    newSize = sig.sizeOr(t.sizeBytes)
-                }
-
                 trackDao.upsertAll(listOf(
                     t.copy(
                         hasSidecarLrc = true,
                         sidecarLrcSynced = state.isSynced,
-                        lastModified = newMod,
-                        sizeBytes = newSize,
                         scannedAt = System.currentTimeMillis(),
                     ),
                 ))
@@ -343,23 +329,10 @@ class TrackDetailViewModel @Inject constructor(
                 val docUri = documentUri.toUri()
                 val synced = lrcReader.isSynced(text)
                 lrcWriter.write(t.treeUri.toUri(), docUri, t.displayName, text)
-                val s = settings.settings.first()
-                var newMod = t.lastModified
-                var newSize = t.sizeBytes
-                if (s.embedLyricsInTags) {
-                    val sig = tagWriter.writeLyrics(
-                        docUri, t.displayName, text,
-                        expected = FileSignature(t.lastModified, t.sizeBytes),
-                    )
-                    newMod = sig.lastModified
-                    newSize = sig.sizeOr(t.sizeBytes)
-                }
                 trackDao.upsertAll(listOf(
                     t.copy(
                         hasSidecarLrc = text.isNotBlank(),
                         sidecarLrcSynced = synced,
-                        lastModified = newMod,
-                        sizeBytes = newSize,
                         scannedAt = System.currentTimeMillis(),
                     ),
                 ))

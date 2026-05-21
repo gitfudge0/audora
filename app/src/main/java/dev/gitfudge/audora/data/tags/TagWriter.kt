@@ -12,6 +12,7 @@ import org.jaudiotagger.tag.FieldKey
 import org.jaudiotagger.tag.images.AndroidArtwork
 import java.io.ByteArrayOutputStream
 import java.io.File
+import java.io.IOException
 import java.security.MessageDigest
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -70,20 +71,6 @@ class TagWriter @Inject constructor(
                 } else {
                     tag.deleteField(FieldKey.IS_COMPILATION)
                 }
-            }
-        }
-
-    /** Embed plain or LRC lyrics into the LYRICS tag. Returns post-write signature. */
-    suspend fun writeLyrics(
-        docUri: Uri,
-        displayName: String,
-        lyricsText: String,
-        expected: FileSignature = FileSignature.NONE,
-    ): FileSignature =
-        withContext(Dispatchers.IO) {
-            editInPlace(docUri, displayName, expected) { tag ->
-                if (lyricsText.isBlank()) tag.deleteField(FieldKey.LYRICS)
-                else tag.setField(FieldKey.LYRICS, lyricsText)
             }
         }
 
@@ -178,22 +165,48 @@ class TagWriter @Inject constructor(
         val ext = displayName.substringAfterLast('.', "mp3").lowercase()
         val tmp = File(context.cacheDir, "tagwrite_${System.currentTimeMillis()}.$ext")
         try {
+            // Layer 1: refuse to "edit" a file we can't read. If the read yields
+            // zero bytes the file is already corrupted on disk; truncating it
+            // again would not help and would erase the cache backup window for
+            // the real (still-present) original elsewhere.
             context.contentResolver.openInputStream(docUri)!!.use { input ->
                 tmp.outputStream().use { input.copyTo(it) }
             }
+            if (tmp.length() <= 0L) {
+                throw IOException(
+                    "\"$displayName\" appears corrupted on disk (read returned 0 bytes). " +
+                        "Restore from a backup before retrying.",
+                )
+            }
+            val originalBytes = tmp.length()
+
             val audioFile = AudioFileIO.read(tmp)
             block(audioFile.tagOrCreateAndSetDefault)
             AudioFileIO.write(audioFile)
-            safety.backup(docUri, displayName)
-            // Pre-write mtime gives stableSignatureAfterWrite the baseline it
-            // polls against — the SAF cursor sometimes serves the old value
-            // for hundreds of ms after the OutputStream closes.
+
+            // Layer 2: take a durable backup of the original bytes BEFORE the
+            // truncating openOutputStream("wt"), and refuse to proceed unless
+            // that backup is non-empty. On any catchable failure during the
+            // rewrite we restore from this backup before rethrowing, so a
+            // failed write cannot leave a zeroed file.
+            val backup = safety.backup(docUri, displayName)
+                ?: throw IOException("Failed to back up \"$displayName\" before write; aborting.")
+            if (backup.length() != originalBytes) {
+                throw IOException(
+                    "Backup of \"$displayName\" is incomplete (${backup.length()}/$originalBytes bytes); aborting.",
+                )
+            }
+
             val preWriteMtime = safety.querySignature(docUri)?.lastModified ?: 0L
-            context.contentResolver.openOutputStream(docUri, "wt")!!.use { out ->
-                tmp.inputStream().use { it.copyTo(out) }
+            try {
+                context.contentResolver.openOutputStream(docUri, "wt")!!.use { out ->
+                    tmp.inputStream().use { it.copyTo(out) }
+                }
+            } catch (t: Throwable) {
+                runCatching { safety.restore(docUri, backup) }
+                throw t
             }
             val stable = safety.stableSignatureAfterWrite(docUri, preWriteMtime)
-            // tmp.length() is what we just wrote — immune to provider flush lag.
             val newSize = tmp.length().takeIf { it > 0L } ?: stable.sizeBytes
             return FileSignature(stable.lastModified, newSize)
         } finally {
