@@ -168,7 +168,7 @@ class LibraryViewModel @Inject constructor(
          */
         const val LIST_SAMPLE_MS = 300L
 
-        val BATCH_FETCH_PARALLELISM = Runtime.getRuntime().availableProcessors().coerceIn(2, 4)
+        const val BATCH_FETCH_PARALLELISM = 10
     }
 
     private data class LibrarySourceSettings(
@@ -470,59 +470,63 @@ class LibraryViewModel @Inject constructor(
                 )
             }
 
-            queue.map { track ->
-                async(workerDispatcher) {
-                    _downloadingUris.update { it + track.documentUri }
-                    _downloadEntries.update { entries ->
-                        entries.map { if (it.documentUri == track.documentUri) it.copy(status = DownloadStatus.DOWNLOADING) else it }
-                    }
-                    updateRunningState()
+            kotlinx.coroutines.coroutineScope {
+                queue.map { track ->
+                    async(workerDispatcher) {
+                        _downloadingUris.update { it + track.documentUri }
+                        _downloadEntries.update { entries ->
+                            entries.map { if (it.documentUri == track.documentUri) it.copy(status = DownloadStatus.DOWNLOADING) else it }
+                        }
+                        updateRunningState()
 
-                    runCatching {
-                        val result = lrclibRepo.fetch(
-                            title = track.title ?: track.displayName.substringBeforeLast('.'),
-                            artist = track.artist ?: "",
-                            album = track.album,
-                            durationMs = track.durationMs,
-                        )
-                        if (result == null || result.instrumental ||
-                            (result.syncedLyrics.isNullOrBlank() && result.plainLyrics.isNullOrBlank())
-                        ) {
-                            noMatch.incrementAndGet()
-                            _downloadEntries.update { entries ->
-                                entries.map { if (it.documentUri == track.documentUri) it.copy(status = DownloadStatus.NO_MATCH) else it }
+                        try {
+                            runCatching {
+                                val result = lrclibRepo.fetch(
+                                    title = track.title ?: track.displayName.substringBeforeLast('.'),
+                                    artist = track.artist ?: "",
+                                    album = track.album,
+                                    durationMs = track.durationMs,
+                                )
+                                if (result == null || result.instrumental ||
+                                    (result.syncedLyrics.isNullOrBlank() && result.plainLyrics.isNullOrBlank())
+                                ) {
+                                    noMatch.incrementAndGet()
+                                    _downloadEntries.update { entries ->
+                                        entries.map { if (it.documentUri == track.documentUri) it.copy(status = DownloadStatus.NO_MATCH) else it }
+                                    }
+                                    return@runCatching
+                                }
+                                val lyricsText = result.syncedLyrics ?: result.plainLyrics!!
+                                val isSynced = !result.syncedLyrics.isNullOrBlank()
+                                val treeUri = track.treeUri.toUri()
+                                val docUri = track.documentUri.toUri()
+
+                                lrcWriter.write(treeUri, docUri, track.displayName, lyricsText)
+                                trackDao.upsertAll(listOf(
+                                    track.copy(
+                                        hasSidecarLrc = true,
+                                        sidecarLrcSynced = isSynced,
+                                        scannedAt = System.currentTimeMillis(),
+                                    ),
+                                ))
+                                saved.incrementAndGet()
+                                _downloadEntries.update { entries ->
+                                    entries.map { if (it.documentUri == track.documentUri) it.copy(status = DownloadStatus.SAVED) else it }
+                                }
+                            }.onFailure {
+                                failed.incrementAndGet()
+                                _downloadEntries.update { entries ->
+                                    entries.map { if (it.documentUri == track.documentUri) it.copy(status = DownloadStatus.FAILED) else it }
+                                }
                             }
-                            return@runCatching
-                        }
-                        val lyricsText = result.syncedLyrics ?: result.plainLyrics!!
-                        val isSynced = !result.syncedLyrics.isNullOrBlank()
-                        val treeUri = track.treeUri.toUri()
-                        val docUri = track.documentUri.toUri()
-
-                        lrcWriter.write(treeUri, docUri, track.displayName, lyricsText)
-                        trackDao.upsertAll(listOf(
-                            track.copy(
-                                hasSidecarLrc = true,
-                                sidecarLrcSynced = isSynced,
-                                scannedAt = System.currentTimeMillis(),
-                            ),
-                        ))
-                        saved.incrementAndGet()
-                        _downloadEntries.update { entries ->
-                            entries.map { if (it.documentUri == track.documentUri) it.copy(status = DownloadStatus.SAVED) else it }
-                        }
-                    }.onFailure {
-                        failed.incrementAndGet()
-                        _downloadEntries.update { entries ->
-                            entries.map { if (it.documentUri == track.documentUri) it.copy(status = DownloadStatus.FAILED) else it }
+                        } finally {
+                            _downloadingUris.update { it - track.documentUri }
+                            done.incrementAndGet()
+                            updateRunningState()
                         }
                     }
-
-                    _downloadingUris.update { it - track.documentUri }
-                    done.incrementAndGet()
-                    updateRunningState()
-                }
-            }.awaitAll()
+                }.awaitAll()
+            }
 
             _batchFetchState.value = BatchFetchState.Done(saved.get(), noMatch.get(), failed.get())
             clearSelection()
