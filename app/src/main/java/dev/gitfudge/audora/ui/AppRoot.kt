@@ -4,6 +4,7 @@ import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.EnterExitState
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
@@ -162,11 +163,17 @@ fun AppRoot(viewModel: MainViewModel) {
                             route = "album/{albumKey}",
                             arguments = listOf(navArgument("albumKey") { type = NavType.StringType }),
                         ) {
+                            // Defer the album-detail list composition until the enter
+                            // slide has settled. While currentState == PreEnter the
+                            // screen is animating in; composing the full track list
+                            // then would stall the slide on the main thread.
+                            val enteringNow = transition.currentState == EnterExitState.PreEnter
                             AlbumDetailScreen(
                                 onBack = { navController.popBackStack() },
                                 onTrackClick = { docUri ->
                                     navController.navigate("detail/${Uri.encode(docUri)}")
                                 },
+                                deferHeavyContent = enteringNow,
                             )
                         }
                         composable("unfiled") {

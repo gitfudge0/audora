@@ -75,6 +75,7 @@ import java.io.File
 fun AlbumDetailScreen(
     onBack: () -> Unit,
     onTrackClick: (String) -> Unit,
+    deferHeavyContent: Boolean = false,
     viewModel: AlbumDetailViewModel = hiltViewModel(),
 ) {
     val albumState by viewModel.state.collectAsStateWithLifecycle()
@@ -101,6 +102,19 @@ fun AlbumDetailScreen(
             )
         },
     ) { inner ->
+        // While the enter slide is still running, render only the (cheap) top bar
+        // + a neutral body so the animation stays at frame rate. The track list
+        // composes once the transition settles — matching how it feels with
+        // animations disabled.
+        if (deferHeavyContent) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(inner),
+            )
+            return@Scaffold
+        }
+
         val state = when (val s = albumState) {
             AlbumDetailState.Loading -> {
                 // Neutral placeholder during the first DB round-trip. Rendering a
