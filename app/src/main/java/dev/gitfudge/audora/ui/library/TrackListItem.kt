@@ -12,6 +12,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.ui.text.font.FontWeight
+import dev.gitfudge.audora.ui.theme.AppTextStyles
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.contentDescription
@@ -34,6 +37,10 @@ import dev.gitfudge.audora.ui.components.ListRow
 import dev.gitfudge.audora.ui.theme.AudoraTheme
 import dev.gitfudge.audora.ui.theme.ThemeMode
 import java.io.File
+
+// Hoisted out of composition: the format-chip style is identical for every row,
+// so deriving it per recomposition would allocate a TextStyle on each scroll frame.
+private val FormatChipTextStyle = AppTextStyles.monoSmall.copy(fontWeight = FontWeight.SemiBold)
 
 @Composable
 fun TrackListItem(
@@ -65,8 +72,11 @@ fun TrackListItem(
             if (selectionMode) {
                 Checkbox(checked = selected, onCheckedChange = null)
             } else {
+                val artModel = remember(track.thumbnailPath) {
+                    track.thumbnailPath?.let { File(it) }
+                }
                 ArtTile(
-                    model = track.thumbnailPath?.let { File(it) },
+                    model = artModel,
                     contentDescription = null,
                     size = ArtTileSize.Sm,
                 )
@@ -108,8 +118,7 @@ fun TrackListItem(
                 ) {
                     Text(
                         text = track.format.take(4).uppercase(),
-                        style = dev.gitfudge.audora.ui.theme.AppTextStyles.monoSmall
-                            .copy(fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold),
+                        style = FormatChipTextStyle,
                         color = colors.onSurfaceVariant,
                         modifier = Modifier.padding(horizontal = 5.dp, vertical = 2.dp),
                     )

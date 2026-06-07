@@ -16,6 +16,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -61,6 +62,20 @@ fun AlbumsPane(
     val colors = MaterialTheme.colorScheme
     val spacing = LocalSpacing.current
 
+    // Hoisted, key-parameterised dispatchers so AlbumRow's callback params stay
+    // referentially stable. Otherwise a selection toggle reallocates a lambda
+    // per row and defeats skipping, recomposing every visible album row.
+    val onRowClick = remember(selectionMode, onToggleAlbumSelection, onAlbumClick) {
+        { albumKey: String ->
+            if (selectionMode) onToggleAlbumSelection(albumKey) else onAlbumClick(albumKey)
+        }
+    }
+    val onRowLongClick = remember(selectionMode, onEnterAlbumSelection) {
+        { albumKey: String ->
+            if (!selectionMode) onEnterAlbumSelection(albumKey)
+        }
+    }
+
     LazyColumn(
         modifier = modifier.fillMaxSize(),
         contentPadding = PaddingValues(
@@ -80,13 +95,8 @@ fun AlbumsPane(
         items(albums, key = { it.albumKey }) { summary ->
             AlbumRow(
                 summary = summary,
-                onClick = {
-                    if (selectionMode) onToggleAlbumSelection(summary.albumKey)
-                    else onAlbumClick(summary.albumKey)
-                },
-                onLongClick = {
-                    if (!selectionMode) onEnterAlbumSelection(summary.albumKey)
-                },
+                onClick = onRowClick,
+                onLongClick = onRowLongClick,
                 selected = summary.albumKey in selectedAlbumKeys,
                 selectionMode = selectionMode,
             )

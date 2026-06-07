@@ -39,6 +39,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
@@ -76,7 +77,7 @@ fun AlbumDetailScreen(
     onTrackClick: (String) -> Unit,
     viewModel: AlbumDetailViewModel = hiltViewModel(),
 ) {
-    val ui by viewModel.ui.collectAsStateWithLifecycle()
+    val albumState by viewModel.state.collectAsStateWithLifecycle()
     val tagEditorOpen by viewModel.tagEditorOpen.collectAsStateWithLifecycle()
     val tagWriteInFlight by viewModel.tagWriteInFlight.collectAsStateWithLifecycle()
     val artFlow by viewModel.artFlow.collectAsStateWithLifecycle()
@@ -100,31 +101,49 @@ fun AlbumDetailScreen(
             )
         },
     ) { inner ->
-        val state = ui
-        if (state == null) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(inner),
-                contentAlignment = Alignment.Center,
-            ) {
-                Text(
-                    text = "Album not found",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = colors.onSurfaceVariant,
+        val state = when (val s = albumState) {
+            AlbumDetailState.Loading -> {
+                // Neutral placeholder during the first DB round-trip. Rendering a
+                // blank (matching the slide-in background) instead of an empty-state
+                // message avoids a layout swap mid-navigation-animation.
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(inner),
                 )
+                return@Scaffold
             }
-            return@Scaffold
+            AlbumDetailState.NotFound -> {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(inner),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(
+                        text = "Album not found",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = colors.onSurfaceVariant,
+                    )
+                }
+                return@Scaffold
+            }
+            is AlbumDetailState.Loaded -> s.ui
         }
 
         val tracks = state.tracks
-        val multiDisc = tracks.mapNotNull { it.discNumber }.distinct().size > 1
-        val grouped: List<Pair<Int?, List<TrackEntity>>> = if (multiDisc) {
-            tracks.groupBy { it.discNumber ?: 0 }
-                .toSortedMap()
-                .map { (disc, items) -> (disc.takeIf { it != 0 }) to items }
-        } else {
-            listOf<Pair<Int?, List<TrackEntity>>>(null to tracks)
+        // Disc grouping is a groupBy + sort; hoisting it out of the composition
+        // body keeps it from re-running on every recomposition during the
+        // navigation slide-in (which jitters the entering screen).
+        val grouped: List<Pair<Int?, List<TrackEntity>>> = remember(tracks) {
+            val multiDisc = tracks.mapNotNull { it.discNumber }.distinct().size > 1
+            if (multiDisc) {
+                tracks.groupBy { it.discNumber ?: 0 }
+                    .toSortedMap()
+                    .map { (disc, items) -> (disc.takeIf { it != 0 }) to items }
+            } else {
+                listOf(null to tracks)
+            }
         }
 
         LazyColumn(
@@ -180,7 +199,7 @@ fun AlbumDetailScreen(
                     AlbumTrackRow(
                         track = track,
                         lowResThresholdPx = state.lowResThresholdPx,
-                        onClick = { onTrackClick(track.documentUri) },
+                        onClick = onTrackClick,
                     )
                 }
             }
@@ -274,8 +293,9 @@ private fun AlbumHero(
             .padding(horizontal = spacing.lg, vertical = spacing.md),
         verticalArrangement = Arrangement.spacedBy(spacing.sm),
     ) {
+        val heroModel = remember(coverThumbnailPath) { coverThumbnailPath?.let { File(it) } }
         ArtTileHero(
-            model = coverThumbnailPath?.let { File(it) },
+            model = heroModel,
             contentDescription = "Album cover",
             shape = androidx.compose.foundation.shape.RoundedCornerShape(4.dp),
             modifier = Modifier
@@ -368,12 +388,12 @@ private fun ActionPill(
 private fun AlbumTrackRow(
     track: TrackEntity,
     lowResThresholdPx: Int,
-    onClick: () -> Unit,
+    onClick: (documentUri: String) -> Unit,
 ) {
     val spacing = LocalSpacing.current
     val colors = MaterialTheme.colorScheme
     ListRow(
-        onClick = onClick,
+        onClick = { onClick(track.documentUri) },
         leading = {
             Text(
                 text = track.trackNumber?.toString()?.padStart(2, '0') ?: "—",
