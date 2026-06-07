@@ -1,0 +1,771 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Audora Mobile Mock</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --paper: #fff;
+      --bone: #fafafa;
+      --paper-2: #f4f4f4;
+      --paper-3: #ebebeb;
+      --ink: #111;
+      --graphite: #4a4a4a;
+      --stone: #888;
+      --line: #e8e8e8;
+      --fog: #c0c0c0;
+      --sodium: #df5a24;
+      --sodium-wash: #fbe6d9;
+      --ok: #4a6b3a;
+      --warn: #a56c16;
+      --missing: #b43a28;
+      font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: linear-gradient(180deg, var(--paper-2), var(--paper-3));
+      color: var(--ink);
+      letter-spacing: 0;
+    }
+
+    button,
+    input {
+      font: inherit;
+    }
+
+    button {
+      color: inherit;
+      cursor: pointer;
+    }
+
+    button:focus-visible,
+    input:focus-visible {
+      outline: 2px solid var(--sodium);
+      outline-offset: 2px;
+    }
+
+    .stage {
+      width: min(100%, 920px);
+      margin: 0 auto;
+      padding: 24px;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 390px));
+      gap: 28px;
+      justify-content: center;
+      align-items: start;
+    }
+
+    .phone-wrap {
+      display: grid;
+      gap: 10px;
+    }
+
+    .caption {
+      color: var(--graphite);
+      font-size: 13px;
+      font-weight: 700;
+      padding-left: 10px;
+    }
+
+    .phone {
+      width: min(100%, 390px);
+      height: 820px;
+      overflow: hidden;
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 34px;
+      box-shadow: 0 22px 70px rgb(17 17 17 / 16%);
+      position: relative;
+    }
+
+    .screen {
+      height: 100%;
+      overflow: hidden;
+      background: var(--paper);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .topbar {
+      height: 64px;
+      flex: 0 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px 6px 20px;
+      background: var(--paper);
+    }
+
+    .topbar h1 {
+      margin: 0;
+      flex: 1;
+      font-size: 22px;
+      line-height: 1.15;
+      font-weight: 760;
+    }
+
+    .icon-btn {
+      width: 44px;
+      height: 44px;
+      border: 0;
+      border-radius: 999px;
+      background: transparent;
+      color: var(--graphite);
+      display: grid;
+      place-items: center;
+    }
+
+    .icon-btn:hover {
+      background: var(--paper-2);
+    }
+
+    .icon-btn.active {
+      color: var(--sodium);
+      background: var(--sodium-wash);
+    }
+
+    .content {
+      min-height: 0;
+      overflow: auto;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .folder-strip {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 4px 20px 6px;
+      color: var(--graphite);
+      min-height: 30px;
+    }
+
+    .eyebrow {
+      font-size: 10px;
+      line-height: 1;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      font-weight: 800;
+      color: var(--stone);
+    }
+
+    .mono {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+      font-size: 12px;
+      color: var(--graphite);
+    }
+
+    .scan-row {
+      padding: 0 20px 8px;
+      color: var(--graphite);
+      font-size: 11px;
+    }
+
+    .progress {
+      height: 3px;
+      border-radius: 99px;
+      background: var(--paper-3);
+      overflow: hidden;
+      margin-bottom: 6px;
+    }
+
+    .progress span {
+      display: block;
+      width: 58%;
+      height: 100%;
+      background: var(--sodium);
+    }
+
+    .search-field {
+      display: none;
+      padding: 6px 20px 8px;
+    }
+
+    .search-field.open {
+      display: block;
+    }
+
+    .search-shell {
+      height: 52px;
+      border-radius: 8px;
+      background: var(--paper-2);
+      border: 1px solid transparent;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 0 12px;
+    }
+
+    .search-shell:focus-within {
+      border-color: var(--sodium);
+    }
+
+    .search-shell input {
+      width: 100%;
+      min-width: 0;
+      border: 0;
+      outline: 0;
+      background: transparent;
+      color: var(--ink);
+      font-size: 15px;
+    }
+
+    .toolbar-line {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 8px 20px;
+    }
+
+    .scope {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px;
+      border-radius: 999px;
+      background: var(--paper-2);
+      gap: 2px;
+    }
+
+    .scope button {
+      min-height: 34px;
+      border: 0;
+      border-radius: 999px;
+      background: transparent;
+      padding: 0 12px;
+      font-size: 13px;
+      font-weight: 760;
+      color: var(--graphite);
+    }
+
+    .scope button.active {
+      background: var(--ink);
+      color: var(--paper);
+    }
+
+    .assist-chip,
+    .filter-chip,
+    .primary-btn,
+    .ghost-btn {
+      min-height: 36px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: var(--paper-2);
+      padding: 0 12px;
+      font-size: 13px;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      white-space: nowrap;
+    }
+
+    .assist-chip {
+      color: var(--ink);
+    }
+
+    .filters {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding: 4px 20px 12px;
+      scrollbar-width: none;
+    }
+
+    .filters::-webkit-scrollbar {
+      display: none;
+    }
+
+    .filter-chip.active {
+      border-color: var(--sodium);
+      background: var(--sodium-wash);
+      color: #b9461a;
+    }
+
+    .divider {
+      height: 1px;
+      background: var(--line);
+      flex: 0 0 auto;
+    }
+
+    .list {
+      min-height: 0;
+      overflow: auto;
+      flex: 1;
+    }
+
+    .row {
+      min-height: 84px;
+      display: grid;
+      grid-template-columns: 64px minmax(0, 1fr);
+      gap: 12px;
+      align-items: center;
+      padding: 10px 20px;
+    }
+
+    .row + .row {
+      border-top: 1px solid var(--line);
+      margin-left: 96px;
+      padding-left: 0;
+    }
+
+    .row + .row .art {
+      margin-left: -76px;
+    }
+
+    .art {
+      width: 64px;
+      height: 64px;
+      border-radius: 12px;
+      background:
+        radial-gradient(circle at 70% 24%, rgb(255 255 255 / 26%), transparent 20%),
+        linear-gradient(135deg, #111, #3c3027 44%, #df5a24);
+      box-shadow: inset 0 0 0 1px rgb(255 255 255 / 24%);
+    }
+
+    .art.gray {
+      background: var(--paper-3);
+      display: grid;
+      place-items: center;
+      color: var(--stone);
+    }
+
+    .row h2 {
+      margin: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-size: 16px;
+      line-height: 1.2;
+      font-weight: 500;
+    }
+
+    .supporting {
+      margin: 4px 0 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      color: var(--graphite);
+      font-size: 13px;
+    }
+
+    .status-row {
+      display: flex;
+      gap: 6px;
+      margin-top: 8px;
+      overflow: hidden;
+    }
+
+    .status {
+      min-height: 22px;
+      border-radius: 999px;
+      padding: 0 7px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--paper);
+    }
+
+    .status.ok { background: var(--ok); }
+    .status.warn { background: var(--warn); }
+    .status.missing { background: var(--missing); }
+
+    .settings-content {
+      padding: 12px 20px 24px;
+      overflow: auto;
+    }
+
+    .section-label {
+      margin: 18px 0 8px;
+      color: var(--stone);
+      font-size: 11px;
+      line-height: 1;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      font-weight: 800;
+    }
+
+    .panel {
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: var(--bone);
+      overflow: hidden;
+    }
+
+    .panel-pad {
+      padding: 16px;
+    }
+
+    .setting-row {
+      min-height: 62px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 14px 16px;
+    }
+
+    .setting-row + .setting-row,
+    .panel-pad + .setting-row,
+    .setting-row + .panel-pad {
+      border-top: 1px solid var(--line);
+    }
+
+    .setting-row strong,
+    .panel-pad strong {
+      display: block;
+      font-size: 15px;
+      font-weight: 700;
+    }
+
+    .setting-row p,
+    .panel-pad p {
+      margin: 4px 0 0;
+      color: var(--graphite);
+      font-size: 13px;
+      line-height: 1.35;
+    }
+
+    .path-card {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 12px;
+      padding: 11px 12px;
+      border-radius: 12px;
+      background: var(--paper-2);
+    }
+
+    .primary-btn {
+      justify-content: center;
+      width: 100%;
+      margin-top: 12px;
+      border-color: var(--ink);
+      background: var(--ink);
+      color: var(--paper);
+    }
+
+    .ghost-btn {
+      background: var(--paper);
+      border-color: var(--fog);
+      color: var(--ink);
+    }
+
+    .switch {
+      width: 48px;
+      height: 28px;
+      border: 0;
+      border-radius: 999px;
+      background: var(--ink);
+      padding: 3px;
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    .switch span {
+      width: 22px;
+      height: 22px;
+      border-radius: 999px;
+      background: var(--paper);
+    }
+
+    .theme-tabs {
+      margin-top: 12px;
+      width: 100%;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 4px;
+      padding: 4px;
+      border-radius: 999px;
+      background: var(--paper-2);
+    }
+
+    .theme-tabs button {
+      min-height: 36px;
+      border: 0;
+      border-radius: 999px;
+      background: transparent;
+      font-weight: 760;
+      color: var(--graphite);
+    }
+
+    .theme-tabs button.active {
+      background: var(--ink);
+      color: var(--paper);
+    }
+
+    svg {
+      width: 20px;
+      height: 20px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      flex: 0 0 auto;
+    }
+
+    .small-icon {
+      width: 15px;
+      height: 15px;
+    }
+
+    @media (max-width: 840px) {
+      .stage {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 430px) {
+      .stage {
+        padding: 0;
+        gap: 0;
+      }
+
+      .phone-wrap {
+        gap: 0;
+      }
+
+      .caption {
+        display: none;
+      }
+
+      .phone {
+        width: 100%;
+        height: 100vh;
+        border: 0;
+        border-radius: 0;
+        box-shadow: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="stage">
+    <section class="phone-wrap">
+      <div class="caption">Library, folder action removed and search collapsed</div>
+      <div class="phone">
+        <div class="screen">
+          <header class="topbar">
+            <h1>Library</h1>
+            <button class="icon-btn active" id="searchToggle" aria-label="Search" title="Search">
+              <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.6-3.6"/></svg>
+            </button>
+            <button class="icon-btn" aria-label="Rescan" title="Rescan">
+              <svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 0 1-15.4 6.4L3 16"/><path d="M3 21v-5h5"/><path d="M3 12A9 9 0 0 1 18.4 5.6L21 8"/><path d="M21 3v5h-5"/></svg>
+            </button>
+            <button class="icon-btn" aria-label="Settings" title="Settings">
+              <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3"/><path d="M12 19v3"/><path d="m4.9 4.9 2.1 2.1"/><path d="m17 17 2.1 2.1"/><path d="M2 12h3"/><path d="M19 12h3"/><path d="m4.9 19.1 2.1-2.1"/><path d="m17 7 2.1-2.1"/></svg>
+            </button>
+          </header>
+
+          <div class="content">
+            <div class="folder-strip">
+              <svg class="small-icon" viewBox="0 0 24 24"><path d="M3 7h6l2 2h10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/></svg>
+              <span class="eyebrow">Watching</span>
+              <span class="mono">Music</span>
+            </div>
+
+            <div class="scan-row">
+              <div class="progress"><span></span></div>
+              Scanned 42 files, nils_frahm_all_melody.flac
+            </div>
+
+            <div class="search-field open" id="searchField">
+              <label class="search-shell">
+                <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.6-3.6"/></svg>
+                <input value="night" aria-label="Search title, artist, album">
+                <svg viewBox="0 0 24 24"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+              </label>
+            </div>
+
+            <div class="toolbar-line">
+              <div class="scope">
+                <button class="active">Albums 18</button>
+                <button>Tracks 248</button>
+              </div>
+              <button class="assist-chip">
+                <svg class="small-icon" viewBox="0 0 24 24"><path d="M4 6h16"/><path d="M7 12h10"/><path d="M10 18h4"/></svg>
+                Album
+                <svg class="small-icon" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
+              </button>
+            </div>
+
+            <div class="filters">
+              <button class="filter-chip active">All</button>
+              <button class="filter-chip">Missing art</button>
+              <button class="filter-chip">Low-res art</button>
+              <button class="filter-chip">No lyrics</button>
+              <button class="filter-chip">Incomplete tags</button>
+            </div>
+            <div class="divider"></div>
+
+            <div class="list">
+              <article class="row">
+                <div class="art gray">
+                  <svg viewBox="0 0 24 24"><path d="M20 20v-5a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v5"/><path d="M4 8h16"/><path d="M7 4h10"/></svg>
+                </div>
+                <div>
+                  <h2>Unfiled</h2>
+                  <p class="supporting">7 tracks with no album</p>
+                </div>
+              </article>
+              <article class="row">
+                <div class="art"></div>
+                <div>
+                  <h2>Night Bus</h2>
+                  <p class="supporting">Luna Rail · 11 tracks · 2024</p>
+                  <div class="status-row">
+                    <span class="status ok">Art</span>
+                    <span class="status warn">Lyrics</span>
+                    <span class="status ok">Tags</span>
+                  </div>
+                </div>
+              </article>
+              <article class="row">
+                <div class="art"></div>
+                <div>
+                  <h2>Field Notes</h2>
+                  <p class="supporting">The Harbor Index · 9 tracks · 2021</p>
+                  <div class="status-row">
+                    <span class="status missing">Art</span>
+                    <span class="status ok">Lyrics</span>
+                    <span class="status warn">Tags</span>
+                  </div>
+                </div>
+              </article>
+              <article class="row">
+                <div class="art"></div>
+                <div>
+                  <h2>Sunroom Tape</h2>
+                  <p class="supporting">Maeve Lark · 6 tracks</p>
+                  <div class="status-row">
+                    <span class="status ok">Art</span>
+                    <span class="status ok">Lyrics</span>
+                    <span class="status ok">Tags</span>
+                  </div>
+                </div>
+              </article>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="phone-wrap">
+      <div class="caption">Settings, folder change now lives here</div>
+      <div class="phone">
+        <div class="screen">
+          <header class="topbar">
+            <button class="icon-btn" aria-label="Back" title="Back">
+              <svg viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg>
+            </button>
+            <h1>Settings</h1>
+          </header>
+
+          <div class="settings-content">
+            <div class="section-label">Library</div>
+            <section class="panel">
+              <div class="panel-pad">
+                <strong>Folder to scan</strong>
+                <p>Choose the music folder Audora watches for scans and cleanup.</p>
+                <div class="path-card">
+                  <svg viewBox="0 0 24 24"><path d="M3 7h6l2 2h10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/></svg>
+                  <span class="mono">Music</span>
+                </div>
+                <button class="primary-btn">
+                  <svg viewBox="0 0 24 24"><path d="M7 7h10"/><path d="m14 4 3 3-3 3"/><path d="M17 17H7"/><path d="m10 20-3-3 3-3"/></svg>
+                  Change folder
+                </button>
+              </div>
+            </section>
+
+            <div class="section-label">Appearance</div>
+            <section class="panel">
+              <div class="panel-pad">
+                <strong>Theme</strong>
+                <p>Follow your device, or pin a mode.</p>
+                <div class="theme-tabs">
+                  <button class="active">System</button>
+                  <button>Light</button>
+                  <button>Dark</button>
+                </div>
+              </div>
+            </section>
+
+            <div class="section-label">Lyrics sync</div>
+            <section class="panel">
+              <div class="setting-row">
+                <div>
+                  <strong>Enable autosync of lyrics</strong>
+                  <p>Fetch lyrics for newly found tracks that do not already have LRC files.</p>
+                </div>
+                <button class="switch" aria-label="Enable autosync of lyrics"><span></span></button>
+              </div>
+              <div class="setting-row">
+                <div>
+                  <strong>Include earlier failed ones</strong>
+                  <p>Retry tracks that were checked before but had no match.</p>
+                </div>
+                <button class="switch" aria-label="Include earlier failed ones"><span></span></button>
+              </div>
+            </section>
+
+            <div class="section-label">Help & feedback</div>
+            <section class="panel">
+              <div class="setting-row">
+                <div>
+                  <strong>Replay walkthrough</strong>
+                </div>
+                <svg viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
+              </div>
+              <div class="setting-row">
+                <div>
+                  <strong>Report a bug or request a feature</strong>
+                </div>
+                <svg viewBox="0 0 24 24"><path d="M7 17 17 7"/><path d="M7 7h10v10"/></svg>
+              </div>
+            </section>
+
+            <div class="section-label">About</div>
+            <section class="panel">
+              <div class="setting-row">
+                <strong>Version</strong>
+                <p>1.0</p>
+              </div>
+              <div class="setting-row">
+                <strong>Licenses & sources</strong>
+                <p>LRCLIB · MusicBrainz</p>
+              </div>
+            </section>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const searchToggle = document.querySelector("#searchToggle");
+    const searchField = document.querySelector("#searchField");
+
+    searchToggle.addEventListener("click", () => {
+      searchToggle.classList.toggle("active");
+      searchField.classList.toggle("open");
+      const input = searchField.querySelector("input");
+      if (searchField.classList.contains("open")) input.focus();
+    });
+  </script>
+</body>
+</html>

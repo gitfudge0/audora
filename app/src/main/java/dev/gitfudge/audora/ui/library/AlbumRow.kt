@@ -7,6 +7,7 @@ import androidx.compose.material3.Checkbox
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import dev.gitfudge.audora.domain.AlbumSummary
@@ -16,6 +17,7 @@ import dev.gitfudge.audora.ui.common.AlbumTagStatusChip
 import dev.gitfudge.audora.ui.components.ArtTile
 import dev.gitfudge.audora.ui.components.ArtTileSize
 import dev.gitfudge.audora.ui.components.ListRow
+import dev.gitfudge.audora.ui.albumArtSharedElement
 import dev.gitfudge.audora.ui.theme.LocalSpacing
 import java.io.File
 
@@ -26,31 +28,36 @@ import java.io.File
 @Composable
 fun AlbumRow(
     summary: AlbumSummary,
-    onClick: () -> Unit,
+    onClick: (albumKey: String) -> Unit,
     modifier: Modifier = Modifier,
     selected: Boolean = false,
     selectionMode: Boolean = false,
-    onLongClick: () -> Unit = {},
+    onLongClick: (albumKey: String) -> Unit = {},
 ) {
     val spacing = LocalSpacing.current
     val colors = MaterialTheme.colorScheme
 
     ListRow(
         modifier = modifier,
-        onClick = onClick,
-        onLongClick = onLongClick,
+        onClick = { onClick(summary.albumKey) },
+        onLongClick = { onLongClick(summary.albumKey) },
         selected = selected,
         leading = {
-            if (selectionMode) {
-                Checkbox(checked = selected, onCheckedChange = null)
-            } else {
-                ArtTile(
-                    model = summary.coverThumbnailPath?.let { File(it) },
-                    contentDescription = null,
-                    size = ArtTileSize.Md,
-                )
+            val artModel = remember(summary.coverThumbnailPath) {
+                summary.coverThumbnailPath?.let { File(it) }
             }
+            ArtTile(
+                model = artModel,
+                contentDescription = null,
+                size = ArtTileSize.Md,
+                modifier = Modifier.albumArtSharedElement(summary.albumKey),
+            )
         },
+        trailing = if (selectionMode) {
+            {
+                Checkbox(checked = selected, onCheckedChange = null)
+            }
+        } else null,
         headline = {
             Text(
                 text = summary.albumLabel,

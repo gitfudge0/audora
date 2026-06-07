@@ -11,8 +11,8 @@ import dev.gitfudge.audora.data.art.CoverArtRepository
 import dev.gitfudge.audora.data.db.AlbumRow
 import dev.gitfudge.audora.data.db.TrackDao
 import dev.gitfudge.audora.data.db.TrackEntity
-import dev.gitfudge.audora.data.lyrics.LrcWriter
-import dev.gitfudge.audora.data.lyrics.LrclibRepository
+import dev.gitfudge.audora.data.lyrics.LyricsSyncRepository
+import dev.gitfudge.audora.data.lyrics.LyricsSyncStatus
 import dev.gitfudge.audora.data.scan.MediaScanner
 import dev.gitfudge.audora.data.scan.ScanResult
 import dev.gitfudge.audora.data.settings.SettingsRepository
@@ -105,6 +105,15 @@ data class DownloadEntry(
     val status: DownloadStatus,
 )
 
+private fun MutableStateFlow<List<DownloadEntry>>.updateStatus(
+    documentUri: String,
+    status: DownloadStatus,
+) {
+    update { entries ->
+        entries.map { if (it.documentUri == documentUri) it.copy(status = status) else it }
+    }
+}
+
 // ── Batch art per-album picker ────────────────────────────────────────────────
 
 data class AlbumPickerState(
@@ -151,8 +160,7 @@ class LibraryViewModel @Inject constructor(
     private val settings: SettingsRepository,
     private val trackDao: TrackDao,
     private val scanner: MediaScanner,
-    private val lrclibRepo: LrclibRepository,
-    private val lrcWriter: LrcWriter,
+    private val lyricsSyncRepository: LyricsSyncRepository,
     private val tagWriter: TagWriter,
     private val bulkTagApplier: BulkTagApplier,
     private val coverArtRepository: CoverArtRepository,
@@ -167,8 +175,8 @@ class LibraryViewModel @Inject constructor(
          * Interactive filter/sort/search changes are still bounded by this.
          */
         const val LIST_SAMPLE_MS = 300L
-
         const val BATCH_FETCH_PARALLELISM = 10
+
     }
 
     private data class LibrarySourceSettings(
@@ -190,6 +198,7 @@ class LibraryViewModel @Inject constructor(
     val scanState: StateFlow<ScanState> = _scanState.asStateFlow()
     private val _firstImportActive = MutableStateFlow(false)
     private var artEnrichmentJob: Job? = null
+    private var autoLyricsJob: Job? = null
 
     val libraryLoadState: StateFlow<LibraryLoadState> = combine(
         _scanState,
@@ -456,8 +465,6 @@ class LibraryViewModel @Inject constructor(
             val noMatch = AtomicInteger(0)
             val failed = AtomicInteger(0)
             val done = AtomicInteger(0)
-            val workerDispatcher = Dispatchers.IO.limitedParallelism(BATCH_FETCH_PARALLELISM)
-
             // Seed the entries list as all-pending and mark all URIs as downloading
             _downloadEntries.value = queue.map { DownloadEntry(it.documentUri, it.displayTitle(), DownloadStatus.PENDING) }
             _batchFetchState.value = BatchFetchState.Running(0, total, total)
@@ -470,6 +477,7 @@ class LibraryViewModel @Inject constructor(
                 )
             }
 
+            val workerDispatcher = Dispatchers.IO.limitedParallelism(BATCH_FETCH_PARALLELISM)
             kotlinx.coroutines.coroutineScope {
                 queue.map { track ->
                     async(workerDispatcher) {
@@ -480,43 +488,18 @@ class LibraryViewModel @Inject constructor(
                         updateRunningState()
 
                         try {
-                            runCatching {
-                                val result = lrclibRepo.fetch(
-                                    title = track.title ?: track.displayName.substringBeforeLast('.'),
-                                    artist = track.artist ?: "",
-                                    album = track.album,
-                                    durationMs = track.durationMs,
-                                )
-                                if (result == null || result.instrumental ||
-                                    (result.syncedLyrics.isNullOrBlank() && result.plainLyrics.isNullOrBlank())
-                                ) {
+                            when (lyricsSyncRepository.fetchAndSave(track)) {
+                                LyricsSyncStatus.Saved -> {
+                                    saved.incrementAndGet()
+                                    _downloadEntries.updateStatus(track.documentUri, DownloadStatus.SAVED)
+                                }
+                                LyricsSyncStatus.NoMatch -> {
                                     noMatch.incrementAndGet()
-                                    _downloadEntries.update { entries ->
-                                        entries.map { if (it.documentUri == track.documentUri) it.copy(status = DownloadStatus.NO_MATCH) else it }
-                                    }
-                                    return@runCatching
+                                    _downloadEntries.updateStatus(track.documentUri, DownloadStatus.NO_MATCH)
                                 }
-                                val lyricsText = result.syncedLyrics ?: result.plainLyrics!!
-                                val isSynced = !result.syncedLyrics.isNullOrBlank()
-                                val treeUri = track.treeUri.toUri()
-                                val docUri = track.documentUri.toUri()
-
-                                lrcWriter.write(treeUri, docUri, track.displayName, lyricsText)
-                                trackDao.upsertAll(listOf(
-                                    track.copy(
-                                        hasSidecarLrc = true,
-                                        sidecarLrcSynced = isSynced,
-                                        scannedAt = System.currentTimeMillis(),
-                                    ),
-                                ))
-                                saved.incrementAndGet()
-                                _downloadEntries.update { entries ->
-                                    entries.map { if (it.documentUri == track.documentUri) it.copy(status = DownloadStatus.SAVED) else it }
-                                }
-                            }.onFailure {
-                                failed.incrementAndGet()
-                                _downloadEntries.update { entries ->
-                                    entries.map { if (it.documentUri == track.documentUri) it.copy(status = DownloadStatus.FAILED) else it }
+                                LyricsSyncStatus.Failed -> {
+                                    failed.incrementAndGet()
+                                    _downloadEntries.updateStatus(track.documentUri, DownloadStatus.FAILED)
                                 }
                             }
                         } finally {
@@ -772,6 +755,7 @@ class LibraryViewModel @Inject constructor(
     fun rescan() {
         viewModelScope.launch {
             artEnrichmentJob?.cancel()
+            autoLyricsJob?.cancel()
             val s = settings.settings.first()
             val uri = s.musicTreeUri ?: return@launch
             doScan(uri)
@@ -797,6 +781,8 @@ class LibraryViewModel @Inject constructor(
     private suspend fun doScan(treeUri: String) {
         if (_scanState.value is ScanState.Running) return
         artEnrichmentJob?.cancel()
+        autoLyricsJob?.cancel()
+        val scanStartedAt = System.currentTimeMillis()
         _firstImportActive.value = trackDao.observeCount(treeUri).first() == 0
         _scanState.value = ScanState.Running(0, "")
         runCatching {
@@ -811,12 +797,79 @@ class LibraryViewModel @Inject constructor(
                 artEnrichmentJob = viewModelScope.launch {
                     scanner.enrichPendingArtwork(treeUri)
                 }
+                autoLyricsJob = viewModelScope.launch {
+                    autoFetchLyrics(treeUri, scanStartedAt)
+                }
             },
             onFailure = {
                 _firstImportActive.value = false
                 _scanState.value = ScanState.Failed(it.message ?: "Scan failed")
             },
         )
+    }
+
+    private suspend fun autoFetchLyrics(treeUri: String, scannedAfter: Long) {
+        val currentSettings = settings.settings.first()
+        if (!currentSettings.autoSyncLyrics) return
+        val queue = trackDao.getAutoLyricsCandidates(
+            treeUri = treeUri,
+            scannedAfter = scannedAfter,
+            includeEarlierFailed = currentSettings.includeEarlierFailedLyrics,
+        )
+        if (queue.isEmpty()) return
+
+        val total = queue.size
+        val saved = AtomicInteger(0)
+        val noMatch = AtomicInteger(0)
+        val failed = AtomicInteger(0)
+        val done = AtomicInteger(0)
+
+        _downloadEntries.value = queue.map {
+            DownloadEntry(it.documentUri, it.displayTitle(), DownloadStatus.PENDING)
+        }
+        _batchFetchState.value = BatchFetchState.Running(0, total, total)
+
+        fun updateRunningState() {
+            _batchFetchState.value = BatchFetchState.Running(
+                done = done.get(),
+                total = total,
+                inFlight = _downloadingUris.value.size,
+            )
+        }
+
+        val workerDispatcher = Dispatchers.IO.limitedParallelism(BATCH_FETCH_PARALLELISM)
+        kotlinx.coroutines.coroutineScope {
+            queue.map { track ->
+                async(workerDispatcher) {
+                    _downloadingUris.update { it + track.documentUri }
+                    _downloadEntries.updateStatus(track.documentUri, DownloadStatus.DOWNLOADING)
+                    updateRunningState()
+
+                    try {
+                        when (lyricsSyncRepository.fetchAndSave(track)) {
+                            LyricsSyncStatus.Saved -> {
+                                saved.incrementAndGet()
+                                _downloadEntries.updateStatus(track.documentUri, DownloadStatus.SAVED)
+                            }
+                            LyricsSyncStatus.NoMatch -> {
+                                noMatch.incrementAndGet()
+                                _downloadEntries.updateStatus(track.documentUri, DownloadStatus.NO_MATCH)
+                            }
+                            LyricsSyncStatus.Failed -> {
+                                failed.incrementAndGet()
+                                _downloadEntries.updateStatus(track.documentUri, DownloadStatus.FAILED)
+                            }
+                        }
+                    } finally {
+                        _downloadingUris.update { it - track.documentUri }
+                        done.incrementAndGet()
+                        updateRunningState()
+                    }
+                }
+            }.awaitAll()
+        }
+
+        _batchFetchState.value = BatchFetchState.Done(saved.get(), noMatch.get(), failed.get())
     }
 
     private fun buildQuery(

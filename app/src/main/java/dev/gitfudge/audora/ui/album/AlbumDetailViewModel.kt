@@ -55,6 +55,15 @@ data class AlbumDetailUi(
     val lowResThresholdPx: Int,
 )
 
+/** Top-level load state for the Album Detail screen. */
+sealed interface AlbumDetailState {
+    /** First DB round-trip in flight — render a neutral placeholder, no empty-state flash. */
+    data object Loading : AlbumDetailState
+    /** Loaded, but the album has no tracks (e.g. all removed by a concurrent rescan). */
+    data object NotFound : AlbumDetailState
+    data class Loaded(val ui: AlbumDetailUi) : AlbumDetailState
+}
+
 // ── Hero art ─────────────────────────────────────────────────────────────────
 
 sealed interface AlbumArtFlowState {
@@ -120,7 +129,7 @@ class AlbumDetailViewModel @Inject constructor(
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    val ui: StateFlow<AlbumDetailUi?> = settings.settings
+    val state: StateFlow<AlbumDetailState> = settings.settings
         .flatMapLatest { s ->
             val uri = s.musicTreeUri
                 ?: return@flatMapLatest flowOf(emptyList<TrackEntity>() to s.lowResThresholdPx)
@@ -128,9 +137,17 @@ class AlbumDetailViewModel @Inject constructor(
                 .map { tracks -> tracks to s.lowResThresholdPx }
         }
         .map { (tracks, lowResPx) ->
-            if (tracks.isEmpty()) null else summarize(albumKey, tracks, lowResPx)
+            if (tracks.isEmpty()) AlbumDetailState.NotFound
+            else AlbumDetailState.Loaded(summarize(albumKey, tracks, lowResPx))
         }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+        // Seed as Loading (not NotFound) so the entering screen renders a neutral
+        // placeholder during the first DB round-trip instead of flashing the
+        // "Album not found" empty state and then re-laying-out into the list.
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), AlbumDetailState.Loading)
+
+    /** Convenience for action handlers: the loaded album, or null if not yet loaded. */
+    private val loadedUi: AlbumDetailUi?
+        get() = (state.value as? AlbumDetailState.Loaded)?.ui
 
     // ── Tag editor ───────────────────────────────────────────────────────────
 
@@ -159,7 +176,7 @@ class AlbumDetailViewModel @Inject constructor(
 
     fun applyTagEdits(edits: AlbumTagEdits) {
         if (_tagWriteInFlight.value) return
-        val tracks = ui.value?.tracks ?: return
+        val tracks = loadedUi?.tracks ?: return
         val bulkEdits = buildMap {
             edits.album?.let { put(BulkTagField.ALBUM, it) }
             edits.albumArtist?.let { put(BulkTagField.ALBUM_ARTIST, it) }
@@ -183,7 +200,7 @@ class AlbumDetailViewModel @Inject constructor(
     val artDownloading: StateFlow<Boolean> = _artDownloading.asStateFlow()
 
     fun startHeroArt() {
-        val state = ui.value ?: return
+        val state = loadedUi ?: return
         if (_artFlow.value !is AlbumArtFlowState.Idle) return
         viewModelScope.launch {
             _artFlow.value = AlbumArtFlowState.Searching
@@ -220,7 +237,7 @@ class AlbumDetailViewModel @Inject constructor(
 
     fun confirmHeroArt() {
         val preview = _artFlow.value as? AlbumArtFlowState.Preview ?: return
-        val tracks = ui.value?.tracks ?: return
+        val tracks = loadedUi?.tracks ?: return
         viewModelScope.launch {
             val saved = java.util.concurrent.atomic.AtomicInteger(0)
             val failed = java.util.concurrent.atomic.AtomicInteger(0)
@@ -290,7 +307,7 @@ class AlbumDetailViewModel @Inject constructor(
     val lyricsBatch: StateFlow<LyricsBatchPhase> = _lyricsBatch.asStateFlow()
 
     fun startLyricsBatch() {
-        val tracks = ui.value?.tracks ?: return
+        val tracks = loadedUi?.tracks ?: return
         if (_lyricsBatch.value !is LyricsBatchPhase.Idle) return
         val withExisting = tracks.count { it.hasSidecarLrc }
         _lyricsBatch.value = LyricsBatchPhase.Options(
@@ -308,7 +325,7 @@ class AlbumDetailViewModel @Inject constructor(
 
     fun confirmLyricsOptions() {
         val opts = _lyricsBatch.value as? LyricsBatchPhase.Options ?: return
-        val allTracks = ui.value?.tracks ?: return
+        val allTracks = loadedUi?.tracks ?: return
         val targets = if (opts.replaceExisting) allTracks else allTracks.filter { !it.hasSidecarLrc }
         if (targets.isEmpty()) {
             _lyricsBatch.value = LyricsBatchPhase.Done(saved = 0, skipped = allTracks.size, noMatch = 0, failed = 0)
@@ -387,7 +404,7 @@ class AlbumDetailViewModel @Inject constructor(
 
     fun commitLyricsReview() {
         val review = _lyricsBatch.value as? LyricsBatchPhase.Review ?: return
-        val tracks = ui.value?.tracks ?: return
+        val tracks = loadedUi?.tracks ?: return
         val byUri = tracks.associateBy { it.documentUri }
         val accepted = review.items.filter { it.accept }
         val skipped = review.items.size - accepted.size

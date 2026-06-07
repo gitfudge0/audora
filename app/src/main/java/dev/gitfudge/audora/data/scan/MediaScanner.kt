@@ -368,6 +368,7 @@ class MediaScanner @Inject constructor(
                 artScanPending = true,
                 hasSidecarLrc = hasSidecar,
                 sidecarLrcSynced = sidecarSynced,
+                lyricsFetchAttempted = false,
                 coreTagsComplete = coreComplete,
                 artistUnknown = artistUnknown,
                 scannedAt = System.currentTimeMillis(),

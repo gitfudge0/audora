@@ -4,6 +4,8 @@ import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
@@ -25,6 +27,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -49,6 +52,7 @@ import dev.gitfudge.audora.ui.theme.LocalMotion
 import dev.gitfudge.audora.ui.theme.AudoraTheme
 import dev.gitfudge.audora.ui.unfiled.UnfiledScreen
 
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun AppRoot(viewModel: MainViewModel) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -92,6 +96,8 @@ fun AppRoot(viewModel: MainViewModel) {
                 is RootUiState.Library -> {
                     val navController = rememberNavController()
                     val routeDuration = if (motion.reducedMotion) motion.fast else motion.deliberate
+                    SharedTransitionLayout {
+                      CompositionLocalProvider(LocalSharedTransitionScope provides this) {
                     NavHost(
                         navController = navController,
                         startDestination = "library",
@@ -125,6 +131,7 @@ fun AppRoot(viewModel: MainViewModel) {
                         },
                     ) {
                         composable("library") {
+                          CompositionLocalProvider(LocalNavAnimatedVisibilityScope provides this) {
                             LibraryScaffoldScreen(
                                 folderLabel = current.folderLabel,
                                 onChangeFolder = { pickFolder.launch(null) },
@@ -138,11 +145,14 @@ fun AppRoot(viewModel: MainViewModel) {
                                 onOpenSettings = { navController.navigate("settings") },
                                 viewModel = libraryViewModel,
                             )
+                          }
                         }
                         composable("settings") {
                             SettingsScreen(
                                 onBack = { navController.popBackStack() },
                                 viewModel = viewModel,
+                                folderLabel = current.folderLabel,
+                                onChangeFolder = { pickFolder.launch(null) },
                                 onOpenLicenses = { navController.navigate("licenses") },
                                 onReplayWalkthrough = { viewModel.setWalkthroughSeen(false) },
                             )
@@ -161,13 +171,28 @@ fun AppRoot(viewModel: MainViewModel) {
                         composable(
                             route = "album/{albumKey}",
                             arguments = listOf(navArgument("albumKey") { type = NavType.StringType }),
-                        ) {
+                        ) { backStackEntry ->
+                          CompositionLocalProvider(LocalNavAnimatedVisibilityScope provides this) {
+                            // Show a cheap skeleton while the enter slide is running
+                            // so the animation never contends with a heavy first
+                            // composition. Once currentState == targetState the
+                            // transition is settled and the real content can render.
+                            val transitionComplete =
+                                transition.currentState == transition.targetState
+                            // Nav decodes the arg back to the same album key the row
+                            // holds (summary.albumKey), so the shared-element keys
+                            // line up on both sides of the transition.
+                            val albumKey =
+                                backStackEntry.arguments?.getString("albumKey").orEmpty()
                             AlbumDetailScreen(
+                                albumKey = albumKey,
                                 onBack = { navController.popBackStack() },
                                 onTrackClick = { docUri ->
                                     navController.navigate("detail/${Uri.encode(docUri)}")
                                 },
+                                transitionComplete = transitionComplete,
                             )
+                          }
                         }
                         composable("unfiled") {
                             UnfiledScreen(
@@ -177,6 +202,8 @@ fun AppRoot(viewModel: MainViewModel) {
                                 },
                             )
                         }
+                    }
+                      }
                     }
                 }
             }

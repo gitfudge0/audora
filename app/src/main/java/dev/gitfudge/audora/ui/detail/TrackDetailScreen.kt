@@ -6,10 +6,15 @@ import androidx.activity.result.contract.ActivityResultContracts.PickVisualMedia
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.background
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -17,6 +22,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
@@ -27,6 +33,7 @@ import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.automirrored.rounded.ArrowForward
 import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.Edit
+import androidx.compose.material.icons.rounded.Image
 import androidx.compose.material.icons.rounded.MusicNote
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -37,6 +44,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -44,6 +52,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
@@ -62,7 +72,6 @@ import dev.gitfudge.audora.ui.common.AlbumArtPreviewDialog
 import dev.gitfudge.audora.domain.lyricsStatus
 import dev.gitfudge.audora.ui.components.AppPanel
 import dev.gitfudge.audora.ui.components.AppTextField
-import dev.gitfudge.audora.ui.components.AppTopBar
 import dev.gitfudge.audora.ui.components.ArtTile
 import dev.gitfudge.audora.ui.components.ArtTileHero
 import dev.gitfudge.audora.ui.components.ArtTileSize
@@ -231,34 +240,6 @@ private fun TrackDetailContent(
     Scaffold(
         containerColor = colors.background,
         snackbarHost = { SnackbarHost(snackbarHostState) },
-        topBar = {
-            AppTopBar(
-                title = track?.displayTitle() ?: "Track",
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = "Back")
-                    }
-                },
-                actions = {
-                    if (savingTags) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(24.dp).padding(end = spacing.sm),
-                            strokeWidth = 2.dp,
-                            color = colors.secondary,
-                        )
-                    } else {
-                        IconButton(onClick = onSaveTags, enabled = isDirty) {
-                            Icon(
-                                Icons.Rounded.Check,
-                                contentDescription = "Save tags",
-                                // Sodium when there's a write pending (design: state accent).
-                                tint = if (isDirty) colors.secondary else colors.onSurfaceVariant,
-                            )
-                        }
-                    }
-                },
-            )
-        },
     ) { innerPadding ->
         if (track == null) {
             Box(Modifier.fillMaxSize().padding(innerPadding), Alignment.Center) {
@@ -271,102 +252,357 @@ private fun TrackDetailContent(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .verticalScroll(rememberScrollState())
-                .padding(horizontal = spacing.lg, vertical = spacing.md),
-            verticalArrangement = Arrangement.spacedBy(spacing.md),
+                .verticalScroll(rememberScrollState()),
+            verticalArrangement = Arrangement.spacedBy(0.dp),
         ) {
-            // File metadata strip — hardware-style facts in mono, dot-separated.
-            FileMetaStrip(track)
-
-            // ── Lyrics (top, expanded) ───────────────────────────────────────
-            SectionLabel("Lyrics")
-            LyricsSection(
+            TrackHero(
                 track = track,
-                lyricsState = lyricsState,
-                saving = savingLyrics,
-                onFetch = onFetchLyrics,
-                onSave = onSaveLyrics,
-                onDismiss = onDismissLyrics,
-                manualLyrics = manualLyrics,
-                onStartEdit = onStartEditLyrics,
-                onManualChange = onManualLyricsChange,
-                onCancelEdit = onCancelEditLyrics,
-                onSaveManual = onSaveManualLyrics,
+                isDirty = isDirty,
+                savingTags = savingTags,
+                onBack = onBack,
+                onSaveTags = onSaveTags,
             )
 
-            // ── Art ──────────────────────────────────────────────────────────
-            Spacer(Modifier.height(spacing.sm))
-            SectionLabel("Cover art")
-            ArtSection(
-                track = track,
-                pendingArtUri = pendingArtUri,
-                savingArt = savingArt,
-                artFetchState = artFetchState,
-                onPickArt = onPickArt,
-                onSaveArt = onSaveArt,
-                onClearPendingArt = onClearPendingArt,
-                onFetchArt = onFetchArt,
-                onSelectCandidate = onSelectCandidate,
-                onDismissFetchArt = onDismissFetchArt,
-                onApplyPreview = onApplyPreview,
-                onBackToCandidates = onBackToCandidates,
-            )
-
-            // ── Core tags ────────────────────────────────────────────────────
-            Spacer(Modifier.height(spacing.sm))
-            SectionLabel("Core")
-            TagField("Title", form.title, onSetTitle, capitalization = KeyboardCapitalization.Words)
-            TagField("Artist", form.artist, onSetArtist, capitalization = KeyboardCapitalization.Words)
-            TagField("Genre", form.genre, onSetGenre)
-
-            // ── Album tags ───────────────────────────────────────────────────
-            Spacer(Modifier.height(spacing.sm))
-            SectionLabel("Album")
-            TagField("Album", form.album, onSetAlbum, capitalization = KeyboardCapitalization.Words)
-            TagField("Album artist", form.albumArtist, onSetAlbumArtist, capitalization = KeyboardCapitalization.Words)
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(spacing.md)) {
-                TagField("Track #", form.trackNumber, onSetTrackNumber, KeyboardType.Number, modifier = Modifier.weight(1f))
-                TagField("Disc #", form.discNumber, onSetDiscNumber, KeyboardType.Number, modifier = Modifier.weight(1f))
-            }
-            TagField("Year", form.year, onSetYear, KeyboardType.Number)
-
-            // ── More tags ────────────────────────────────────────────────────
-            Spacer(Modifier.height(spacing.sm))
-            SectionLabel("More")
-            TagField("Composer", form.composer, onSetComposer, capitalization = KeyboardCapitalization.Words)
-            TagField("Comment", form.comment, onSetComment)
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { onSetCompilation(!form.compilation) }
-                    .padding(vertical = spacing.sm),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween,
+            Column(
+                modifier = Modifier.padding(horizontal = spacing.lg, vertical = spacing.md),
+                verticalArrangement = Arrangement.spacedBy(spacing.md),
             ) {
-                Text(
-                    "Part of a compilation",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurface,
+                TrackStatusSummary(track = track, isDirty = isDirty, changeCount = changes.size)
+
+                TrackQuickActions(
+                    isDirty = isDirty,
+                    savingTags = savingTags,
+                    onReviewChanges = onSaveTags,
+                    onPickArt = onPickArt,
+                    onStartEditLyrics = onStartEditLyrics,
                 )
-                androidx.compose.material3.Switch(
-                    checked = form.compilation,
-                    onCheckedChange = onSetCompilation,
+
+                // ── Core tags ────────────────────────────────────────────────
+                SectionLabel("Core tags", trailing = if (changes.isNotEmpty()) "${changes.size} dirty" else null)
+                TagField("Title", form.title, onSetTitle, capitalization = KeyboardCapitalization.Words)
+                TagField("Artist", form.artist, onSetArtist, capitalization = KeyboardCapitalization.Words)
+                TagField("Genre", form.genre, onSetGenre)
+
+                // ── Album tags ───────────────────────────────────────────────
+                Spacer(Modifier.height(spacing.sm))
+                SectionLabel("Album")
+                TagField("Album", form.album, onSetAlbum, capitalization = KeyboardCapitalization.Words)
+                TagField("Album artist", form.albumArtist, onSetAlbumArtist, capitalization = KeyboardCapitalization.Words)
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(spacing.md)) {
+                    TagField("Track #", form.trackNumber, onSetTrackNumber, KeyboardType.Number, modifier = Modifier.weight(1f))
+                    TagField("Disc #", form.discNumber, onSetDiscNumber, KeyboardType.Number, modifier = Modifier.weight(1f))
+                }
+                TagField("Year", form.year, onSetYear, KeyboardType.Number)
+
+                // ── More tags ────────────────────────────────────────────────
+                Spacer(Modifier.height(spacing.sm))
+                SectionLabel("More")
+                TagField("Composer", form.composer, onSetComposer, capitalization = KeyboardCapitalization.Words)
+                TagField("Comment", form.comment, onSetComment)
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { onSetCompilation(!form.compilation) }
+                        .padding(vertical = spacing.sm),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                ) {
+                    Text(
+                        "Part of a compilation",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurface,
+                    )
+                    androidx.compose.material3.Switch(
+                        checked = form.compilation,
+                        onCheckedChange = onSetCompilation,
+                    )
+                }
+
+                // ── Lyrics ───────────────────────────────────────────────────
+                Spacer(Modifier.height(spacing.sm))
+                SectionLabel("Lyrics")
+                LyricsSection(
+                    track = track,
+                    lyricsState = lyricsState,
+                    saving = savingLyrics,
+                    onFetch = onFetchLyrics,
+                    onSave = onSaveLyrics,
+                    onDismiss = onDismissLyrics,
+                    manualLyrics = manualLyrics,
+                    onStartEdit = onStartEditLyrics,
+                    onManualChange = onManualLyricsChange,
+                    onCancelEdit = onCancelEditLyrics,
+                    onSaveManual = onSaveManualLyrics,
+                )
+
+                // ── Art ──────────────────────────────────────────────────────
+                Spacer(Modifier.height(spacing.sm))
+                SectionLabel("Cover art")
+                ArtSection(
+                    track = track,
+                    pendingArtUri = pendingArtUri,
+                    savingArt = savingArt,
+                    artFetchState = artFetchState,
+                    onPickArt = onPickArt,
+                    onSaveArt = onSaveArt,
+                    onClearPendingArt = onClearPendingArt,
+                    onFetchArt = onFetchArt,
+                    onSelectCandidate = onSelectCandidate,
+                    onDismissFetchArt = onDismissFetchArt,
+                    onApplyPreview = onApplyPreview,
+                    onBackToCandidates = onBackToCandidates,
+                )
+
+                // DESIGN.md motion: tween-only, 150-250ms ease-out. Default spring would bounce.
+                AnimatedVisibility(
+                    isDirty,
+                    enter = expandVertically(animationSpec = motion.spec(motion.standard)),
+                    exit = shrinkVertically(animationSpec = motion.spec(motion.fast)),
+                ) {
+                    Column(verticalArrangement = Arrangement.spacedBy(spacing.md)) {
+                        Spacer(Modifier.height(spacing.sm))
+                        SectionLabel("Pending changes")
+                        ChangesCard(changes, saving = savingTags, onWrite = onSaveTags)
+                    }
+                }
+
+                Spacer(Modifier.height(spacing.xl))
+            }
+        }
+    }
+}
+
+// ── Hero and summary ──────────────────────────────────────────────────────────
+
+@Composable
+private fun TrackHero(
+    track: TrackEntity,
+    isDirty: Boolean,
+    savingTags: Boolean,
+    onBack: () -> Unit,
+    onSaveTags: () -> Unit,
+) {
+    val spacing = LocalSpacing.current
+    val heroModel = remember(track.thumbnailPath) { track.thumbnailPath?.let { File(it) } }
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .aspectRatio(1f),
+    ) {
+        ArtTileHero(
+            model = heroModel,
+            contentDescription = "Album art",
+            shape = androidx.compose.foundation.shape.RoundedCornerShape(0.dp),
+            modifier = Modifier.fillMaxSize(),
+        )
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(96.dp)
+                .align(Alignment.TopCenter)
+                .background(
+                    Brush.verticalGradient(
+                        0f to Color.Black.copy(alpha = 0.58f),
+                        1f to Color.Transparent,
+                    ),
+                ),
+        )
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .statusBarsPadding()
+                .padding(horizontal = spacing.sm, vertical = spacing.sm),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            HeroIconButton(onClick = onBack) {
+                Icon(
+                    Icons.AutoMirrored.Rounded.ArrowBack,
+                    contentDescription = "Back",
+                    tint = Color.White,
                 )
             }
-
-            // DESIGN.md motion: tween-only, 150-250ms ease-out. Default spring would bounce.
-            AnimatedVisibility(
-                isDirty,
-                enter = expandVertically(animationSpec = motion.spec(motion.standard)),
-                exit = shrinkVertically(animationSpec = motion.spec(motion.fast)),
+            HeroIconButton(
+                onClick = onSaveTags,
+                enabled = isDirty && !savingTags,
+                light = true,
             ) {
-                Column(verticalArrangement = Arrangement.spacedBy(spacing.md)) {
-                    SectionLabel("Pending changes")
-                    ChangesCard(changes, saving = savingTags, onWrite = onSaveTags)
+                if (savingTags) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(20.dp),
+                        strokeWidth = 2.dp,
+                        color = Color.Black,
+                    )
+                } else {
+                    Icon(
+                        Icons.Rounded.Check,
+                        contentDescription = "Save tags",
+                        tint = Color.Black,
+                    )
                 }
             }
+        }
 
-            Spacer(Modifier.height(spacing.xl))
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(220.dp)
+                .align(Alignment.BottomCenter)
+                .background(
+                    Brush.verticalGradient(
+                        colorStops = arrayOf(
+                            0f to Color.Transparent,
+                            0.36f to Color.Black.copy(alpha = 0.46f),
+                            1f to Color.Black.copy(alpha = 0.92f),
+                        ),
+                    ),
+                ),
+        )
+
+        Column(
+            modifier = Modifier
+                .align(Alignment.BottomStart)
+                .fillMaxWidth()
+                .padding(horizontal = spacing.lg, vertical = spacing.lg),
+            verticalArrangement = Arrangement.spacedBy(spacing.xs),
+        ) {
+            Text(
+                text = "TRACK · ${(track.artist ?: "Unknown artist").uppercase()}",
+                style = AppTextStyles.eyebrow,
+                color = Color.White.copy(alpha = 0.76f),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+            Text(
+                text = track.displayTitle(),
+                style = MaterialTheme.typography.titleLarge,
+                color = Color.White,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+            )
+            Text(
+                text = buildString {
+                    append(track.album?.takeIf { it.isNotBlank() } ?: track.albumLabel)
+                    track.trackNumber?.let { append(" · track %02d".format(it)) }
+                    track.year?.let { append(" · $it") }
+                },
+                style = MaterialTheme.typography.bodySmall,
+                color = Color.White.copy(alpha = 0.76f),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+            FileMetaStrip(track, color = Color.White.copy(alpha = 0.76f))
+        }
+    }
+}
+
+@Composable
+private fun HeroIconButton(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    light: Boolean = false,
+    content: @Composable () -> Unit,
+) {
+    IconButton(
+        onClick = onClick,
+        enabled = enabled,
+        modifier = modifier.background(
+            color = if (light) Color.White.copy(alpha = if (enabled) 0.94f else 0.58f) else Color.Black.copy(alpha = 0.32f),
+            shape = androidx.compose.foundation.shape.CircleShape,
+        ),
+    ) {
+        content()
+    }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun TrackStatusSummary(track: TrackEntity, isDirty: Boolean, changeCount: Int) {
+    val spacing = LocalSpacing.current
+    val sc = LocalStatusColors.current
+    FlowRow(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(spacing.xs),
+        verticalArrangement = Arrangement.spacedBy(spacing.xs),
+    ) {
+        val lyricsLabel = when (track.lyricsStatus()) {
+            LyricsStatus.NONE -> "No lyrics"
+            LyricsStatus.SIDECAR_PLAIN -> "Plain lyrics"
+            LyricsStatus.SIDECAR_SYNCED -> "Synced lyrics"
+        }
+        val lyricsColor = when (track.lyricsStatus()) {
+            LyricsStatus.NONE -> sc.missing
+            LyricsStatus.SIDECAR_PLAIN -> sc.warn
+            LyricsStatus.SIDECAR_SYNCED -> sc.ok
+        }
+        SummaryChip(label = lyricsLabel, color = lyricsColor)
+        if (isDirty) {
+            SummaryChip(label = "$changeCount tag edit${if (changeCount == 1) "" else "s"}", color = sc.warn)
+        }
+        val artLabel = if (track.artWidth != null && track.artHeight != null) {
+            "Art ${track.artWidth}px"
+        } else if (track.hasEmbeddedArt) {
+            "Art embedded"
+        } else {
+            "No art"
+        }
+        SummaryChip(label = artLabel, color = if (track.hasEmbeddedArt) sc.ok else sc.missing)
+    }
+}
+
+@Composable
+private fun SummaryChip(label: String, color: Color) {
+    Surface(
+        shape = LocalShapeScale.current.pill,
+        color = color.copy(alpha = 0.10f),
+        border = BorderStroke(1.dp, color.copy(alpha = 0.26f)),
+    ) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelMedium,
+            color = color,
+            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+        )
+    }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun TrackQuickActions(
+    isDirty: Boolean,
+    savingTags: Boolean,
+    onReviewChanges: () -> Unit,
+    onPickArt: () -> Unit,
+    onStartEditLyrics: () -> Unit,
+) {
+    val spacing = LocalSpacing.current
+    FlowRow(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(spacing.sm),
+        verticalArrangement = Arrangement.spacedBy(spacing.sm),
+    ) {
+        PrimaryButton(onClick = onReviewChanges, enabled = isDirty && !savingTags) {
+            if (savingTags) {
+                CircularProgressIndicator(Modifier.size(18.dp), strokeWidth = 2.dp)
+            } else {
+                Icon(Icons.Rounded.Check, null, Modifier.size(18.dp))
+            }
+            Spacer(Modifier.size(spacing.xs))
+            Text("Write file")
+        }
+        SecondaryButton(onClick = onPickArt) {
+            Icon(Icons.Rounded.Image, null, Modifier.size(18.dp))
+            Spacer(Modifier.size(spacing.xs))
+            Text("Replace art")
+        }
+        GhostButton(onClick = onStartEditLyrics) {
+            Icon(Icons.Rounded.Edit, null, Modifier.size(18.dp))
+            Spacer(Modifier.size(spacing.xs))
+            Text("Edit lyrics")
         }
     }
 }
@@ -736,12 +972,26 @@ private fun LyricsPreviewCard(
 // ── Shared components ─────────────────────────────────────────────────────────
 
 @Composable
-private fun SectionLabel(text: String) {
-    Text(
-        text = text.uppercase(),
-        style = MaterialTheme.typography.labelSmall,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
-    )
+private fun SectionLabel(text: String, trailing: String? = null) {
+    val colors = MaterialTheme.colorScheme
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = text.uppercase(),
+            style = MaterialTheme.typography.labelSmall,
+            color = colors.onSurfaceVariant,
+        )
+        if (trailing != null) {
+            Text(
+                text = trailing.uppercase(),
+                style = AppTextStyles.monoSmall,
+                color = colors.onSurfaceVariant,
+            )
+        }
+    }
     Hairline()
 }
 
@@ -773,8 +1023,10 @@ private fun TagField(
  * separators. Hardware-style facts before the workspace sections.
  */
 @Composable
-private fun FileMetaStrip(track: TrackEntity) {
-    val colors = MaterialTheme.colorScheme
+private fun FileMetaStrip(
+    track: TrackEntity,
+    color: Color = MaterialTheme.colorScheme.onSurfaceVariant,
+) {
     val parts = buildList {
         add(track.format.uppercase())
         add(dev.gitfudge.audora.util.MediaFormat.size(track.sizeBytes))
@@ -793,13 +1045,13 @@ private fun FileMetaStrip(track: TrackEntity) {
                 Text(
                     "·",
                     style = dev.gitfudge.audora.ui.theme.AppTextStyles.monoSmall,
-                    color = colors.onSurfaceVariant.copy(alpha = 0.5f),
+                    color = color.copy(alpha = 0.58f),
                 )
             }
             Text(
                 part,
                 style = dev.gitfudge.audora.ui.theme.AppTextStyles.monoSmall,
-                color = colors.onSurfaceVariant,
+                color = color,
             )
         }
     }

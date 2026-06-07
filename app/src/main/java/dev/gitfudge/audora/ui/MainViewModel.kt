@@ -64,8 +64,32 @@ class MainViewModel @Inject constructor(
             initialValue = ThemeMode.System,
         )
 
+    val autoSyncLyrics: StateFlow<Boolean> = settings.settings
+        .map { it.autoSyncLyrics }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = false,
+        )
+
+    val includeEarlierFailedLyrics: StateFlow<Boolean> = settings.settings
+        .map { it.includeEarlierFailedLyrics }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = false,
+        )
+
     fun setThemeMode(mode: ThemeMode) {
         viewModelScope.launch { settings.setThemeMode(mode) }
+    }
+
+    fun setAutoSyncLyrics(enabled: Boolean) {
+        viewModelScope.launch { settings.setAutoSyncLyrics(enabled) }
+    }
+
+    fun setIncludeEarlierFailedLyrics(enabled: Boolean) {
+        viewModelScope.launch { settings.setIncludeEarlierFailedLyrics(enabled) }
     }
 
     fun setWalkthroughSeen(seen: Boolean) {

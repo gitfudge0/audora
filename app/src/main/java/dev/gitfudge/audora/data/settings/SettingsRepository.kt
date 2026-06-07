@@ -24,6 +24,8 @@ data class Settings(
     val lastScannedTreeUri: String?,
     val lowResThresholdPx: Int,
     val themeMode: ThemeMode,
+    val autoSyncLyrics: Boolean,
+    val includeEarlierFailedLyrics: Boolean,
     /** False until the first-run walkthrough is finished or skipped. */
     val hasSeenWalkthrough: Boolean,
 )
@@ -37,6 +39,8 @@ class SettingsRepository @Inject constructor(
         val LastScannedTreeUri = stringPreferencesKey("last_scanned_tree_uri")
         val LowResThreshold = intPreferencesKey("low_res_threshold_px")
         val ThemeMode = stringPreferencesKey("theme_mode")
+        val AutoSyncLyrics = booleanPreferencesKey("auto_sync_lyrics")
+        val IncludeEarlierFailedLyrics = booleanPreferencesKey("include_earlier_failed_lyrics")
         val HasSeenWalkthrough = booleanPreferencesKey("has_seen_walkthrough")
     }
 
@@ -46,6 +50,8 @@ class SettingsRepository @Inject constructor(
             lastScannedTreeUri = prefs[Keys.LastScannedTreeUri],
             lowResThresholdPx = prefs[Keys.LowResThreshold] ?: DEFAULT_LOW_RES_PX,
             themeMode = prefs[Keys.ThemeMode]?.toThemeModeOrNull() ?: ThemeMode.System,
+            autoSyncLyrics = prefs[Keys.AutoSyncLyrics] ?: true,
+            includeEarlierFailedLyrics = prefs[Keys.IncludeEarlierFailedLyrics] ?: false,
             hasSeenWalkthrough = prefs[Keys.HasSeenWalkthrough] ?: false,
         )
     }
@@ -68,6 +74,14 @@ class SettingsRepository @Inject constructor(
 
     suspend fun setThemeMode(mode: ThemeMode) {
         dataStore.edit { it[Keys.ThemeMode] = mode.name }
+    }
+
+    suspend fun setAutoSyncLyrics(enabled: Boolean) {
+        dataStore.edit { it[Keys.AutoSyncLyrics] = enabled }
+    }
+
+    suspend fun setIncludeEarlierFailedLyrics(enabled: Boolean) {
+        dataStore.edit { it[Keys.IncludeEarlierFailedLyrics] = enabled }
     }
 
     suspend fun setHasSeenWalkthrough(seen: Boolean) {
