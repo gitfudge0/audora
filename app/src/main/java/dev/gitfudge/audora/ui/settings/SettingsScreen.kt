@@ -15,7 +15,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.automirrored.rounded.OpenInNew
 import androidx.compose.material.icons.rounded.ChevronRight
+import androidx.compose.material.icons.rounded.Download
 import androidx.compose.material.icons.rounded.LocalCafe
+import androidx.compose.material.icons.rounded.Refresh
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -24,6 +28,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -39,7 +44,10 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.gitfudge.audora.BuildConfig
 import dev.gitfudge.audora.R
+import dev.gitfudge.audora.data.releases.AppRelease
 import dev.gitfudge.audora.ui.MainViewModel
+import dev.gitfudge.audora.ui.ManualUpdateCheckResult
+import dev.gitfudge.audora.ui.UpdateStatus
 import dev.gitfudge.audora.ui.components.AppPanel
 import dev.gitfudge.audora.ui.components.AppTopBar
 import dev.gitfudge.audora.ui.components.Hairline
@@ -59,22 +67,32 @@ fun SettingsScreen(
     folderLabel: String,
     onChangeFolder: () -> Unit,
     onOpenLicenses: () -> Unit = {},
+    onOpenChangelog: () -> Unit = {},
     onReplayWalkthrough: () -> Unit = {},
 ) {
     val themeMode by viewModel.themeMode.collectAsStateWithLifecycle()
     val autoSyncLyrics by viewModel.autoSyncLyrics.collectAsStateWithLifecycle()
     val includeEarlierFailedLyrics by viewModel.includeEarlierFailedLyrics.collectAsStateWithLifecycle()
+    val releasesState by viewModel.releasesUiState.collectAsStateWithLifecycle()
     SettingsContent(
         themeMode = themeMode,
         autoSyncLyrics = autoSyncLyrics,
         includeEarlierFailedLyrics = includeEarlierFailedLyrics,
+        updateRelease = releasesState.updateRelease,
+        isCheckingForUpdate = releasesState.isLoading,
+        updateStatus = releasesState.updateStatus,
+        manualCheckResult = releasesState.manualCheckResult,
         onThemeModeChange = viewModel::setThemeMode,
         onAutoSyncLyricsChange = viewModel::setAutoSyncLyrics,
         onIncludeEarlierFailedLyricsChange = viewModel::setIncludeEarlierFailedLyrics,
+        onCheckForUpdate = viewModel::checkForUpdate,
+        onDismissManualCheckResult = viewModel::dismissManualCheckResult,
+        onInstallUpdate = viewModel::downloadAndInstallUpdate,
         onBack = onBack,
         folderLabel = folderLabel,
         onChangeFolder = onChangeFolder,
         onOpenLicenses = onOpenLicenses,
+        onOpenChangelog = onOpenChangelog,
         onReplayWalkthrough = onReplayWalkthrough,
     )
 }
@@ -85,13 +103,21 @@ private fun SettingsContent(
     themeMode: ThemeMode,
     autoSyncLyrics: Boolean,
     includeEarlierFailedLyrics: Boolean,
+    updateRelease: AppRelease?,
+    isCheckingForUpdate: Boolean,
+    updateStatus: UpdateStatus,
+    manualCheckResult: ManualUpdateCheckResult?,
     onThemeModeChange: (ThemeMode) -> Unit,
     onAutoSyncLyricsChange: (Boolean) -> Unit,
     onIncludeEarlierFailedLyricsChange: (Boolean) -> Unit,
+    onCheckForUpdate: () -> Unit,
+    onDismissManualCheckResult: () -> Unit,
+    onInstallUpdate: () -> Unit,
     onBack: () -> Unit,
     folderLabel: String,
     onChangeFolder: () -> Unit,
     onOpenLicenses: () -> Unit = {},
+    onOpenChangelog: () -> Unit = {},
     onReplayWalkthrough: () -> Unit = {},
 ) {
     val spacing = LocalSpacing.current
@@ -104,6 +130,34 @@ private fun SettingsContent(
                 android.content.Intent.ACTION_VIEW,
                 android.net.Uri.parse(url),
             ),
+        )
+    }
+
+    manualCheckResult?.let { result ->
+        AlertDialog(
+            onDismissRequest = onDismissManualCheckResult,
+            title = {
+                Text(
+                    when (result) {
+                        ManualUpdateCheckResult.UpToDate -> "You're up to date"
+                        is ManualUpdateCheckResult.Failed -> "Update check failed"
+                    },
+                )
+            },
+            text = {
+                Text(
+                    when (result) {
+                        ManualUpdateCheckResult.UpToDate ->
+                            "Audora ${BuildConfig.VERSION_NAME} is the latest version available."
+                        is ManualUpdateCheckResult.Failed -> result.message
+                    },
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = onDismissManualCheckResult) {
+                    Text("OK")
+                }
+            },
         )
     }
 
@@ -237,6 +291,72 @@ private fun SettingsContent(
                     SettingsInfoRow("Build", BuildConfig.VERSION_CODE.toString())
                     Hairline()
                     SettingsNavRow(
+                        label = if (isCheckingForUpdate) "Checking for update" else "Check for update",
+                        supporting = updateRelease?.let { "Audora ${it.version} is available" }
+                            ?: "GitHub releases",
+                        enabled = !isCheckingForUpdate,
+                        onClick = onCheckForUpdate,
+                        trailing = {
+                            if (isCheckingForUpdate) {
+                                CircularProgressIndicator(modifier = Modifier.size(18.dp))
+                            } else {
+                                Icon(
+                                    imageVector = Icons.Rounded.Refresh,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.size(18.dp),
+                                )
+                            }
+                        },
+                    )
+                    updateRelease?.let { release ->
+                        Hairline()
+                        SettingsNavRow(
+                            label = if (updateStatus == UpdateStatus.Downloading) {
+                                "Downloading update"
+                            } else {
+                                "Update available"
+                            },
+                            supporting = "Audora ${release.version}",
+                            enabled = updateStatus != UpdateStatus.Downloading,
+                            onClick = onInstallUpdate,
+                            trailing = {
+                                if (updateStatus == UpdateStatus.Downloading) {
+                                    CircularProgressIndicator(modifier = Modifier.size(18.dp))
+                                } else {
+                                    Icon(
+                                        imageVector = Icons.Rounded.Download,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        modifier = Modifier.size(18.dp),
+                                    )
+                                }
+                            },
+                        )
+                    }
+                    if (updateStatus is UpdateStatus.Error) {
+                        Text(
+                            text = updateStatus.message,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = colors.error,
+                            modifier = Modifier.padding(horizontal = spacing.lg, vertical = spacing.sm),
+                        )
+                    } else if (updateStatus is UpdateStatus.ReadyToInstall) {
+                        Text(
+                            text = "Installer opened. If Android asked for permission, enable it and tap Update again.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = colors.onSurfaceVariant,
+                            modifier = Modifier.padding(horizontal = spacing.lg, vertical = spacing.sm),
+                        )
+                    }
+                    Hairline()
+                    SettingsNavRow(
+                        label = "Changelog",
+                        supporting = "GitHub releases",
+                        onClick = onOpenChangelog,
+                    )
+                    Hairline()
+                    SettingsNavRow(
                         label = "Licenses & sources",
                         supporting = "LRCLIB · MusicBrainz",
                         onClick = onOpenLicenses,
@@ -333,6 +453,8 @@ private fun SettingsNavRow(
     supporting: String? = null,
     external: Boolean = false,
     rowContentDescription: String? = null,
+    enabled: Boolean = true,
+    trailing: @Composable (() -> Unit)? = null,
 ) {
     ListRow(
         modifier = if (rowContentDescription != null) {
@@ -340,12 +462,12 @@ private fun SettingsNavRow(
         } else {
             Modifier
         },
-        onClick = onClick,
+        onClick = if (enabled) onClick else null,
         headline = { Text(label, style = MaterialTheme.typography.bodyMedium) },
         supporting = supporting?.let {
             { Text(it, style = AppTextStyles.mono) }
         },
-        trailing = {
+        trailing = trailing ?: {
             Icon(
                 imageVector = if (external) {
                     Icons.AutoMirrored.Rounded.OpenInNew
@@ -394,9 +516,16 @@ private fun SettingsLightPreview() {
             themeMode = ThemeMode.System,
             autoSyncLyrics = true,
             includeEarlierFailedLyrics = false,
+            updateRelease = null,
+            isCheckingForUpdate = false,
+            updateStatus = UpdateStatus.Idle,
+            manualCheckResult = null,
             onThemeModeChange = {},
             onAutoSyncLyricsChange = {},
             onIncludeEarlierFailedLyricsChange = {},
+            onCheckForUpdate = {},
+            onDismissManualCheckResult = {},
+            onInstallUpdate = {},
             onBack = {},
             folderLabel = "Music",
             onChangeFolder = {},
@@ -412,9 +541,16 @@ private fun SettingsDarkPreview() {
             themeMode = ThemeMode.Dark,
             autoSyncLyrics = true,
             includeEarlierFailedLyrics = true,
+            updateRelease = null,
+            isCheckingForUpdate = false,
+            updateStatus = UpdateStatus.Idle,
+            manualCheckResult = null,
             onThemeModeChange = {},
             onAutoSyncLyricsChange = {},
             onIncludeEarlierFailedLyricsChange = {},
+            onCheckForUpdate = {},
+            onDismissManualCheckResult = {},
+            onInstallUpdate = {},
             onBack = {},
             folderLabel = "Music",
             onChangeFolder = {},

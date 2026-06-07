@@ -36,7 +36,9 @@ import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -49,6 +51,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.sample
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
@@ -63,6 +66,17 @@ sealed interface ScanState {
     data class Running(val count: Int, val label: String) : ScanState
     data class Done(val result: ScanResult) : ScanState
     data class Failed(val cause: String) : ScanState
+}
+
+/**
+ * One-shot, fire-and-forget notices surfaced as snackbars. Modeled as channel
+ * events rather than [StateFlow] so they're consumed exactly once: returning to
+ * the library after visiting a track/album must not replay the last scan's
+ * toasts (the scan state itself stays [ScanState.Done] across that navigation).
+ */
+sealed interface LibraryNotice {
+    data class AutoSyncStarted(val total: Int) : LibraryNotice
+    data class Mislabeled(val count: Int) : LibraryNotice
 }
 
 sealed interface LibraryLoadState {
@@ -196,6 +210,11 @@ class LibraryViewModel @Inject constructor(
 
     private val _scanState = MutableStateFlow<ScanState>(ScanState.Idle)
     val scanState: StateFlow<ScanState> = _scanState.asStateFlow()
+
+    // Buffered so a notice emitted while the user is off-screen (e.g. a scan
+    // finishing on the album detail) is delivered once when they return.
+    private val _notices = Channel<LibraryNotice>(Channel.BUFFERED)
+    val notices: Flow<LibraryNotice> = _notices.receiveAsFlow()
     private val _firstImportActive = MutableStateFlow(false)
     private var artEnrichmentJob: Job? = null
     private var autoLyricsJob: Job? = null
@@ -798,6 +817,9 @@ class LibraryViewModel @Inject constructor(
                 _firstImportActive.value = false
                 settings.setLastScannedTreeUri(treeUri)
                 _scanState.value = ScanState.Done(it)
+                if (it.mislabeled > 0) {
+                    _notices.send(LibraryNotice.Mislabeled(it.mislabeled))
+                }
                 artEnrichmentJob = viewModelScope.launch {
                     try {
                         scanner.enrichPendingArtwork(treeUri) { done, total ->
@@ -842,6 +864,7 @@ class LibraryViewModel @Inject constructor(
             DownloadEntry(it.documentUri, it.displayTitle(), DownloadStatus.PENDING)
         }
         _batchFetchState.value = BatchFetchState.Running(0, total, total, auto = true)
+        _notices.send(LibraryNotice.AutoSyncStarted(total))
 
         fun updateRunningState() {
             _batchFetchState.value = BatchFetchState.Running(

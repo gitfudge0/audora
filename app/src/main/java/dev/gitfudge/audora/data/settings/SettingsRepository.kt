@@ -28,6 +28,8 @@ data class Settings(
     val includeEarlierFailedLyrics: Boolean,
     /** False until the first-run walkthrough is finished or skipped. */
     val hasSeenWalkthrough: Boolean,
+    /** App version whose GitHub release notes have already been acknowledged. */
+    val lastSeenReleaseVersion: String?,
 )
 
 @Singleton
@@ -42,6 +44,7 @@ class SettingsRepository @Inject constructor(
         val AutoSyncLyrics = booleanPreferencesKey("auto_sync_lyrics")
         val IncludeEarlierFailedLyrics = booleanPreferencesKey("include_earlier_failed_lyrics")
         val HasSeenWalkthrough = booleanPreferencesKey("has_seen_walkthrough")
+        val LastSeenReleaseVersion = stringPreferencesKey("last_seen_release_version")
     }
 
     val settings: Flow<Settings> = dataStore.data.map { prefs ->
@@ -53,6 +56,7 @@ class SettingsRepository @Inject constructor(
             autoSyncLyrics = prefs[Keys.AutoSyncLyrics] ?: true,
             includeEarlierFailedLyrics = prefs[Keys.IncludeEarlierFailedLyrics] ?: false,
             hasSeenWalkthrough = prefs[Keys.HasSeenWalkthrough] ?: false,
+            lastSeenReleaseVersion = prefs[Keys.LastSeenReleaseVersion],
         )
     }
 
@@ -86,6 +90,10 @@ class SettingsRepository @Inject constructor(
 
     suspend fun setHasSeenWalkthrough(seen: Boolean) {
         dataStore.edit { it[Keys.HasSeenWalkthrough] = seen }
+    }
+
+    suspend fun setLastSeenReleaseVersion(version: String) {
+        dataStore.edit { it[Keys.LastSeenReleaseVersion] = version }
     }
 
     companion object {

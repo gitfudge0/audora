@@ -11,6 +11,7 @@ import dev.gitfudge.audora.data.lyrics.LrclibApi
 import dev.gitfudge.audora.data.net.RateLimitInterceptor
 import dev.gitfudge.audora.data.net.RetryInterceptor
 import dev.gitfudge.audora.data.net.UserAgentInterceptor
+import dev.gitfudge.audora.data.releases.GitHubReleasesApi
 import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
@@ -55,6 +56,20 @@ object NetworkModule {
     @Singleton
     fun provideLrclibApi(@Named("lrclib") retrofit: Retrofit): LrclibApi =
         retrofit.create(LrclibApi::class.java)
+
+    @Provides
+    @Singleton
+    @Named("github")
+    fun provideGitHubRetrofit(json: Json, okHttp: OkHttpClient): Retrofit = Retrofit.Builder()
+        .baseUrl("https://api.github.com/")
+        .client(okHttp)
+        .addConverterFactory(json.asConverterFactory("application/json; charset=UTF8".toMediaType()))
+        .build()
+
+    @Provides
+    @Singleton
+    fun provideGitHubReleasesApi(@Named("github") retrofit: Retrofit): GitHubReleasesApi =
+        retrofit.create(GitHubReleasesApi::class.java)
 
     /**
      * Dedicated MusicBrainz client: same base behavior plus a hard ~1 req/sec

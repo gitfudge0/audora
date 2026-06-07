@@ -47,7 +47,9 @@ import dev.gitfudge.audora.ui.library.LibraryScaffoldScreen
 import dev.gitfudge.audora.ui.library.LibraryViewModel
 import dev.gitfudge.audora.ui.onboarding.OnboardingScreen
 import dev.gitfudge.audora.ui.onboarding.WalkthroughScreen
+import dev.gitfudge.audora.ui.settings.ChangelogScreen
 import dev.gitfudge.audora.ui.settings.SettingsScreen
+import dev.gitfudge.audora.ui.settings.WhatsNewDialog
 import dev.gitfudge.audora.ui.theme.LocalMotion
 import dev.gitfudge.audora.ui.theme.AudoraTheme
 import dev.gitfudge.audora.ui.unfiled.UnfiledScreen
@@ -56,6 +58,7 @@ import dev.gitfudge.audora.ui.unfiled.UnfiledScreen
 @Composable
 fun AppRoot(viewModel: MainViewModel) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val releasesState by viewModel.releasesUiState.collectAsStateWithLifecycle()
 
     val pickFolder = rememberLauncherForActivityResult(
         ActivityResultContracts.OpenDocumentTree(),
@@ -154,7 +157,16 @@ fun AppRoot(viewModel: MainViewModel) {
                                 folderLabel = current.folderLabel,
                                 onChangeFolder = { pickFolder.launch(null) },
                                 onOpenLicenses = { navController.navigate("licenses") },
+                                onOpenChangelog = { navController.navigate("changelog") },
                                 onReplayWalkthrough = { viewModel.setWalkthroughSeen(false) },
+                            )
+                        }
+                        composable("changelog") {
+                            ChangelogScreen(
+                                releasesState = releasesState,
+                                onBack = { navController.popBackStack() },
+                                onRefresh = viewModel::refreshReleases,
+                                onInstallUpdate = viewModel::downloadAndInstallUpdate,
                             )
                         }
                         composable("licenses") {
@@ -207,6 +219,13 @@ fun AppRoot(viewModel: MainViewModel) {
                     }
                 }
             }
+        }
+
+        releasesState.whatsNewRelease?.let { release ->
+            WhatsNewDialog(
+                release = release,
+                onDismiss = viewModel::dismissWhatsNew,
+            )
         }
     }
 }

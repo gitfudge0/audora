@@ -167,40 +167,37 @@ private fun ReadyLibraryScaffold(
     val query by viewModel.query.collectAsStateWithLifecycle()
     val context = androidx.compose.ui.platform.LocalContext.current
 
-    // Announce auto-sync once when it kicks off so a background fetch can't pass
-    // unnoticed. Keyed on the run's identity (auto + total) so it fires per run,
-    // not on every progress tick.
-    val autoSyncStart = (batchFetchState as? BatchFetchState.Running)
-        ?.takeIf { it.auto }?.total
-    LaunchedEffect(autoSyncStart) {
-        autoSyncStart?.let { total ->
-            snackbarHostState.showSnackbar(
-                if (total == 1) {
-                    context.getString(R.string.auto_lyrics_sync_started, total)
-                } else {
-                    context.getString(R.string.auto_lyrics_sync_started_plural, total)
-                },
-            )
-        }
-    }
-
-    // After a scan settles, surface files whose extension lies about their
-    // real container. Actionable: tapping jumps to the filtered Tracks view.
-    LaunchedEffect(scanState) {
-        val done = scanState as? ScanState.Done ?: return@LaunchedEffect
-        val mislabeled = done.result.mislabeled
-        if (mislabeled <= 0) return@LaunchedEffect
-        val message = if (mislabeled == 1) {
-            context.getString(R.string.scan_mislabeled_toast, mislabeled)
-        } else {
-            context.getString(R.string.scan_mislabeled_toast_plural, mislabeled)
-        }
-        val result = snackbarHostState.showSnackbar(
-            message = message,
-            actionLabel = context.getString(R.string.scan_mislabeled_action),
-        )
-        if (result == androidx.compose.material3.SnackbarResult.ActionPerformed) {
-            viewModel.showWrongExtension()
+    // One-shot scan notices (auto-sync started, mislabeled files). Delivered via
+    // a channel so each is shown exactly once per scan — leaving and returning to
+    // the library must not replay them, even though scanState stays Done.
+    LaunchedEffect(Unit) {
+        viewModel.notices.collect { notice ->
+            when (notice) {
+                is LibraryNotice.AutoSyncStarted -> {
+                    snackbarHostState.showSnackbar(
+                        if (notice.total == 1) {
+                            context.getString(R.string.auto_lyrics_sync_started, notice.total)
+                        } else {
+                            context.getString(R.string.auto_lyrics_sync_started_plural, notice.total)
+                        },
+                    )
+                }
+                is LibraryNotice.Mislabeled -> {
+                    // Actionable: tapping jumps to the filtered Tracks view.
+                    val message = if (notice.count == 1) {
+                        context.getString(R.string.scan_mislabeled_toast, notice.count)
+                    } else {
+                        context.getString(R.string.scan_mislabeled_toast_plural, notice.count)
+                    }
+                    val result = snackbarHostState.showSnackbar(
+                        message = message,
+                        actionLabel = context.getString(R.string.scan_mislabeled_action),
+                    )
+                    if (result == androidx.compose.material3.SnackbarResult.ActionPerformed) {
+                        viewModel.showWrongExtension()
+                    }
+                }
+            }
         }
     }
 
