@@ -43,6 +43,9 @@
     <string name="scan_running_count">Scanning… %1$d files · %2$s</string>
     <string name="scan_done">%1$d tracks · %2$d updated · %3$d removed</string>
     <string name="scan_failed">Scan failed: %1$s</string>
+    <string name="scan_mislabeled_toast">%1$d file has the wrong extension</string>
+    <string name="scan_mislabeled_toast_plural">%1$d files have the wrong extension</string>
+    <string name="scan_mislabeled_action">Show</string>
 
     <!-- Filter chips -->
     <string name="filter_all">All</string>
@@ -51,6 +54,7 @@
     <string name="filter_no_lyrics">No lyrics</string>
     <string name="filter_incomplete_tags">Incomplete tags</string>
     <string name="filter_unknown_artist">Unknown artist</string>
+    <string name="filter_wrong_extension">Wrong extension</string>
     <string name="filter_duplicates">Possible duplicates</string>
 
     <!-- Sort options -->
@@ -68,7 +72,7 @@
     <string name="library_importing_scanned">Scanned %1$d files</string>
     <string name="library_importing_indexed">Indexed %1$d tracks so far</string>
     <string name="library_importing_current_file">Current file: %1$s</string>
-    <string name="library_art_enrichment_running">Finishing artwork in background · %1$d remaining</string>
+    <string name="library_art_enrichment_running">Finishing artwork in background · %1$d/%2$d</string>
 
     <!-- Status dot content descriptions -->
     <string name="status_art_ok">Art OK</string>
@@ -84,6 +88,11 @@
     <!-- Generic -->
     <string name="action_retry">Retry</string>
     <string name="cd_app_logo">Audora logo</string>
+
+    <!-- Auto lyrics sync -->
+    <string name="auto_lyrics_sync_running">Syncing lyrics · %1$d/%2$d</string>
+    <string name="auto_lyrics_sync_started">Syncing lyrics for %1$d track</string>
+    <string name="auto_lyrics_sync_started_plural">Syncing lyrics for %1$d tracks</string>
 
     <!-- Downloads sheet -->
     <string name="downloads_title">Lyrics downloads</string>

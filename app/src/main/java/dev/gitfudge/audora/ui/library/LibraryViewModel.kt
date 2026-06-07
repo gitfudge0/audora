@@ -76,14 +76,14 @@ sealed interface LibraryLoadState {
 
 sealed interface ArtEnrichmentState {
     data object Idle : ArtEnrichmentState
-    data class Running(val remaining: Int) : ArtEnrichmentState
+    data class Running(val done: Int, val total: Int) : ArtEnrichmentState
 }
 
 // ── Batch lyrics fetch ────────────────────────────────────────────────────────
 
 sealed interface BatchFetchState {
     data object Idle : BatchFetchState
-    data class Running(val done: Int, val total: Int, val inFlight: Int) : BatchFetchState
+    data class Running(val done: Int, val total: Int, val inFlight: Int, val auto: Boolean = false) : BatchFetchState
     data class Done(val saved: Int, val noMatch: Int, val failed: Int) : BatchFetchState
 }
 
@@ -219,15 +219,12 @@ class LibraryViewModel @Inject constructor(
         }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), LibraryLoadState.Ready)
 
-    val artEnrichmentState: StateFlow<ArtEnrichmentState> = musicTreeUriFlow
-        .flatMapLatest { uri ->
-            if (uri == null) return@flatMapLatest flowOf(0)
-            trackDao.observePendingArtCount(uri)
-        }
-        .map { remaining ->
-            if (remaining > 0) ArtEnrichmentState.Running(remaining) else ArtEnrichmentState.Idle
-        }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), ArtEnrichmentState.Idle)
+    // Driven by the enrichment job's own progress, not the DB pending-count: the
+    // pending flag is cleared in batched writes (every 300 tracks), so a DB count
+    // sits frozen until the final flush. The job reports per-track progress so the
+    // row can actually tick.
+    private val _artEnrichmentState = MutableStateFlow<ArtEnrichmentState>(ArtEnrichmentState.Idle)
+    val artEnrichmentState: StateFlow<ArtEnrichmentState> = _artEnrichmentState.asStateFlow()
 
     // ── Filter / sort ─────────────────────────────────────────────────────────
 
@@ -752,6 +749,13 @@ class LibraryViewModel @Inject constructor(
     fun setFilter(f: LibraryFilter) { _filter.value = f; clearSelection() }
     fun setSort(s: LibrarySort) { _sort.value = s }
 
+    /** Jump to the Tracks tab filtered to mislabeled files (scan-toast action). */
+    fun showWrongExtension() {
+        _tab.value = LibraryTab.TRACKS
+        _filter.value = LibraryFilter.WRONG_EXTENSION
+        clearSelection()
+    }
+
     fun rescan() {
         viewModelScope.launch {
             artEnrichmentJob?.cancel()
@@ -795,7 +799,17 @@ class LibraryViewModel @Inject constructor(
                 settings.setLastScannedTreeUri(treeUri)
                 _scanState.value = ScanState.Done(it)
                 artEnrichmentJob = viewModelScope.launch {
-                    scanner.enrichPendingArtwork(treeUri)
+                    try {
+                        scanner.enrichPendingArtwork(treeUri) { done, total ->
+                            _artEnrichmentState.value = if (done >= total) {
+                                ArtEnrichmentState.Idle
+                            } else {
+                                ArtEnrichmentState.Running(done, total)
+                            }
+                        }
+                    } finally {
+                        _artEnrichmentState.value = ArtEnrichmentState.Idle
+                    }
                 }
                 autoLyricsJob = viewModelScope.launch {
                     autoFetchLyrics(treeUri, scanStartedAt)
@@ -827,13 +841,14 @@ class LibraryViewModel @Inject constructor(
         _downloadEntries.value = queue.map {
             DownloadEntry(it.documentUri, it.displayTitle(), DownloadStatus.PENDING)
         }
-        _batchFetchState.value = BatchFetchState.Running(0, total, total)
+        _batchFetchState.value = BatchFetchState.Running(0, total, total, auto = true)
 
         fun updateRunningState() {
             _batchFetchState.value = BatchFetchState.Running(
                 done = done.get(),
                 total = total,
                 inFlight = _downloadingUris.value.size,
+                auto = true,
             )
         }
 
@@ -921,6 +936,7 @@ class LibraryViewModel @Inject constructor(
                 LibraryFilter.NO_LYRICS -> append(" AND hasSidecarLrc = 0")
                 LibraryFilter.INCOMPLETE_TAGS -> append(" AND coreTagsComplete = 0")
                 LibraryFilter.UNKNOWN_ARTIST -> append(" AND artistUnknown = 1")
+                LibraryFilter.WRONG_EXTENSION -> append(" AND detectedFormat IS NOT NULL")
                 // Albums-only refinement; on the Tracks tab it behaves like ALL.
                 LibraryFilter.DUPLICATES -> {}
             }
@@ -955,6 +971,9 @@ private fun AlbumSummary.matchesFilter(filter: LibraryFilter): Boolean = when (f
         lyricsStatus == AlbumLyricsStatus.NONE || lyricsStatus == AlbumLyricsStatus.PARTIAL
     LibraryFilter.INCOMPLETE_TAGS -> tagStatus != AlbumTagStatus.ALL_OK
     LibraryFilter.UNKNOWN_ARTIST -> tagStatus == AlbumTagStatus.ALL_BAD
+    // Track-level concern with no album rollup; the chip is hidden on Albums,
+    // so on this tab it behaves like ALL.
+    LibraryFilter.WRONG_EXTENSION -> true
     // Handled in the albums flow with whole-list context; never reached here.
     LibraryFilter.DUPLICATES -> true
 }

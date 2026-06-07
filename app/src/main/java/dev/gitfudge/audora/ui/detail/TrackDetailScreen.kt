@@ -23,18 +23,26 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.automirrored.rounded.ArrowForward
+import androidx.compose.material.icons.rounded.AutoAwesome
 import androidx.compose.material.icons.rounded.Check
+import androidx.compose.material.icons.rounded.ChevronRight
+import androidx.compose.material.icons.rounded.DriveFileRenameOutline
 import androidx.compose.material.icons.rounded.Edit
 import androidx.compose.material.icons.rounded.Image
 import androidx.compose.material.icons.rounded.MusicNote
+import androidx.compose.material.icons.rounded.Warning
+import androidx.compose.material.icons.rounded.Public
+import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -64,7 +72,11 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.gitfudge.audora.data.art.CoverArtCandidate
+import dev.gitfudge.audora.data.art.MetadataCandidate
 import dev.gitfudge.audora.data.db.TrackEntity
+import dev.gitfudge.audora.domain.FilenameParse
+import dev.gitfudge.audora.domain.NamingPattern
+import dev.gitfudge.audora.domain.TokenMapping
 import dev.gitfudge.audora.data.lyrics.LrclibResult
 import dev.gitfudge.audora.domain.LyricsStatus
 import dev.gitfudge.audora.domain.displayTitle
@@ -105,6 +117,11 @@ fun TrackDetailScreen(
     val artSaveState by viewModel.artSaveState.collectAsStateWithLifecycle()
     val artFetchState by viewModel.artFetchState.collectAsStateWithLifecycle()
     val manualLyrics by viewModel.manualLyrics.collectAsStateWithLifecycle()
+    val suggestSource by viewModel.suggestSource.collectAsStateWithLifecycle()
+    val namingPattern by viewModel.namingPattern.collectAsStateWithLifecycle()
+    val filenameParse by viewModel.filenameParse.collectAsStateWithLifecycle()
+    val webQuery by viewModel.webQuery.collectAsStateWithLifecycle()
+    val metadataFetchState by viewModel.metadataFetchState.collectAsStateWithLifecycle()
 
     val snackbar = remember { SnackbarHostState() }
 
@@ -186,6 +203,19 @@ fun TrackDetailScreen(
         onDismissFetchArt = viewModel::dismissFetchArt,
         onApplyPreview = viewModel::applyPreviewedArt,
         onBackToCandidates = viewModel::backToCandidates,
+        suggestSource = suggestSource,
+        namingPattern = namingPattern,
+        filenameParse = filenameParse,
+        webQuery = webQuery,
+        metadataFetchState = metadataFetchState,
+        onOpenSuggest = viewModel::openSuggest,
+        onCloseSuggest = viewModel::closeSuggest,
+        onSetNamingPattern = viewModel::setNamingPattern,
+        onApplyFilenameParse = viewModel::applyFilenameParse,
+        onSetWebQuery = viewModel::setWebQuery,
+        onFetchMetadata = viewModel::fetchMetadata,
+        onSelectMetadataCandidate = viewModel::applyMetadataCandidate,
+        onDismissMetadata = viewModel::dismissMetadata,
     )
 }
 
@@ -232,6 +262,19 @@ private fun TrackDetailContent(
     onDismissFetchArt: () -> Unit,
     onApplyPreview: () -> Unit,
     onBackToCandidates: () -> Unit,
+    suggestSource: SuggestSource,
+    namingPattern: NamingPattern,
+    filenameParse: FilenameParse?,
+    webQuery: String,
+    metadataFetchState: MetadataFetchState,
+    onOpenSuggest: (SuggestSource) -> Unit,
+    onCloseSuggest: () -> Unit,
+    onSetNamingPattern: (NamingPattern) -> Unit,
+    onApplyFilenameParse: () -> Unit,
+    onSetWebQuery: (String) -> Unit,
+    onFetchMetadata: () -> Unit,
+    onSelectMetadataCandidate: (MetadataCandidate) -> Unit,
+    onDismissMetadata: () -> Unit,
 ) {
     val spacing = LocalSpacing.current
     val colors = MaterialTheme.colorScheme
@@ -269,12 +312,33 @@ private fun TrackDetailContent(
             ) {
                 TrackStatusSummary(track = track, isDirty = isDirty, changeCount = changes.size)
 
+                FormatMismatchWarning(track)
+
                 TrackQuickActions(
                     isDirty = isDirty,
                     savingTags = savingTags,
                     onReviewChanges = onSaveTags,
                     onPickArt = onPickArt,
                     onStartEditLyrics = onStartEditLyrics,
+                )
+
+                // ── Suggest tags (adaptive populator) ────────────────────────
+                SuggestTagsSection(
+                    track = track,
+                    coreTagsSparse = form.title.isBlank() || form.artist.isBlank(),
+                    source = suggestSource,
+                    namingPattern = namingPattern,
+                    filenameParse = filenameParse,
+                    webQuery = webQuery,
+                    metadataFetchState = metadataFetchState,
+                    onOpenSuggest = onOpenSuggest,
+                    onCloseSuggest = onCloseSuggest,
+                    onSetNamingPattern = onSetNamingPattern,
+                    onApplyFilenameParse = onApplyFilenameParse,
+                    onSetWebQuery = onSetWebQuery,
+                    onFetchMetadata = onFetchMetadata,
+                    onSelectMetadataCandidate = onSelectMetadataCandidate,
+                    onDismissMetadata = onDismissMetadata,
                 )
 
                 // ── Core tags ────────────────────────────────────────────────
@@ -551,6 +615,51 @@ private fun TrackStatusSummary(track: TrackEntity, isDirty: Boolean, changeCount
             "No art"
         }
         SummaryChip(label = artLabel, color = if (track.hasEmbeddedArt) sc.ok else sc.missing)
+    }
+}
+
+/**
+ * Shown when the file's real container disagrees with its name extension
+ * (detected at scan). Reassures that editing is still safe — the write path
+ * uses the real format automatically.
+ */
+@Composable
+private fun FormatMismatchWarning(track: TrackEntity) {
+    val detected = track.detectedFormat ?: return
+    val spacing = LocalSpacing.current
+    val sc = LocalStatusColors.current
+    val nameExt = track.displayName.substringAfterLast('.', "").uppercase().ifEmpty { "?" }
+
+    Surface(
+        shape = LocalShapeScale.current.md,
+        color = sc.warn.copy(alpha = 0.10f),
+        border = BorderStroke(1.dp, sc.warn.copy(alpha = 0.26f)),
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        Row(
+            modifier = Modifier.padding(spacing.md),
+            horizontalArrangement = Arrangement.spacedBy(spacing.sm),
+        ) {
+            Icon(
+                Icons.Rounded.Warning,
+                contentDescription = null,
+                tint = sc.warn,
+                modifier = Modifier.size(18.dp),
+            )
+            Column(verticalArrangement = Arrangement.spacedBy(spacing.xs)) {
+                Text(
+                    "Wrong file extension",
+                    style = MaterialTheme.typography.labelLarge,
+                    color = sc.warn,
+                )
+                Text(
+                    "Named .${nameExt.lowercase()} but the audio is actually $detected. " +
+                        "Editing tags, lyrics and art is still safe — Audora writes using the real format.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
     }
 }
 
@@ -1156,6 +1265,488 @@ private fun DiffRow(change: FieldChange) {
     }
 }
 
+// ── Suggest tags ──────────────────────────────────────────────────────────────
+
+/**
+ * Adaptive entry point + workspace for populating tag fields from the filename
+ * or the web. Loud sodium-washed prompt banner when core tags are empty/sparse;
+ * a quiet collapsed row when the track is already tagged. Both sources are pure
+ * populators — they set the existing form fields, which dirties the standard
+ * pending-changes diff. Nothing is written until the user presses "Write file".
+ */
+@Composable
+private fun SuggestTagsSection(
+    track: TrackEntity,
+    coreTagsSparse: Boolean,
+    source: SuggestSource,
+    namingPattern: NamingPattern,
+    filenameParse: FilenameParse?,
+    webQuery: String,
+    metadataFetchState: MetadataFetchState,
+    onOpenSuggest: (SuggestSource) -> Unit,
+    onCloseSuggest: () -> Unit,
+    onSetNamingPattern: (NamingPattern) -> Unit,
+    onApplyFilenameParse: () -> Unit,
+    onSetWebQuery: (String) -> Unit,
+    onFetchMetadata: () -> Unit,
+    onSelectMetadataCandidate: (MetadataCandidate) -> Unit,
+    onDismissMetadata: () -> Unit,
+) {
+    val spacing = LocalSpacing.current
+    val colors = MaterialTheme.colorScheme
+    val open = source != SuggestSource.NONE
+    val prompt = coreTagsSparse && !open
+
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = LocalShapeScale.current.lg,
+        // Loud sodium wash only as a prompt; quiet otherwise.
+        color = if (prompt) colors.primary.copy(alpha = 0.10f) else colors.surfaceVariant,
+        contentColor = colors.onSurface,
+        border = if (prompt) BorderStroke(1.dp, colors.primary.copy(alpha = 0.34f)) else null,
+    ) {
+        Column(Modifier.fillMaxWidth()) {
+            when {
+                // Collapsed, already-tagged → quiet entry row.
+                !open && !coreTagsSparse -> SuggestQuietRow(onClick = { onOpenSuggest(SuggestSource.FILENAME) })
+                // Collapsed, sparse → loud prompt banner.
+                !open -> SuggestPromptHead(coreTagsSparse = coreTagsSparse)
+                // Open → header showing the source toggle is handled below.
+                else -> {}
+            }
+
+            if (open || coreTagsSparse) {
+                SuggestSourceToggle(
+                    source = if (open) source else SuggestSource.NONE,
+                    onOpenSuggest = onOpenSuggest,
+                    promptStyle = coreTagsSparse && !open,
+                )
+            }
+
+            // ── Filename workspace ──────────────────────────────────────────
+            AnimatedVisibility(source == SuggestSource.FILENAME && filenameParse != null) {
+                if (filenameParse != null) {
+                    FilenameWorkspace(
+                        rawName = track.displayName,
+                        parse = filenameParse,
+                        selectedPattern = namingPattern,
+                        onSelectPattern = onSetNamingPattern,
+                        onApply = onApplyFilenameParse,
+                    )
+                }
+            }
+
+            // ── Web workspace ───────────────────────────────────────────────
+            AnimatedVisibility(source == SuggestSource.WEB) {
+                WebLookupWorkspace(
+                    query = webQuery,
+                    fetchState = metadataFetchState,
+                    onQueryChange = onSetWebQuery,
+                    onSearch = onFetchMetadata,
+                    onSelect = onSelectMetadataCandidate,
+                    onDismiss = onDismissMetadata,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun SuggestPromptHead(coreTagsSparse: Boolean) {
+    val spacing = LocalSpacing.current
+    val colors = MaterialTheme.colorScheme
+    Row(
+        Modifier.fillMaxWidth().padding(start = spacing.lg, top = spacing.lg, end = spacing.lg),
+        horizontalArrangement = Arrangement.spacedBy(spacing.md),
+    ) {
+        Box(
+            Modifier
+                .size(34.dp)
+                .background(colors.primary, androidx.compose.foundation.shape.RoundedCornerShape(10.dp)),
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(Icons.Rounded.AutoAwesome, null, tint = colors.onPrimary, modifier = Modifier.size(18.dp))
+        }
+        Column(verticalArrangement = Arrangement.spacedBy(spacing.xs)) {
+            Text(
+                "This track has no tags",
+                style = MaterialTheme.typography.bodyLarge,
+                color = colors.onSurface,
+            )
+            Text(
+                "Only the filename is set. Fill title, artist and more from the name, " +
+                    "or look it up online. Nothing is written until you confirm.",
+                style = MaterialTheme.typography.bodySmall,
+                color = colors.onSurfaceVariant,
+            )
+        }
+    }
+}
+
+@Composable
+private fun SuggestQuietRow(onClick: () -> Unit) {
+    val spacing = LocalSpacing.current
+    val colors = MaterialTheme.colorScheme
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(spacing.md),
+        horizontalArrangement = Arrangement.spacedBy(spacing.md),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Box(
+            Modifier
+                .size(30.dp)
+                .background(colors.surfaceVariant, androidx.compose.foundation.shape.RoundedCornerShape(9.dp)),
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(Icons.Rounded.AutoAwesome, null, tint = colors.onSurfaceVariant, modifier = Modifier.size(16.dp))
+        }
+        Column(Modifier.weight(1f)) {
+            Text("Suggest tags", style = MaterialTheme.typography.bodyLarge, color = colors.onSurface)
+            Text(
+                "Re-fill from filename or look up online",
+                style = MaterialTheme.typography.bodySmall,
+                color = colors.onSurfaceVariant,
+            )
+        }
+        Icon(Icons.Rounded.ChevronRight, null, tint = colors.outline)
+    }
+}
+
+@Composable
+private fun SuggestSourceToggle(
+    source: SuggestSource,
+    onOpenSuggest: (SuggestSource) -> Unit,
+    promptStyle: Boolean,
+) {
+    val spacing = LocalSpacing.current
+    Row(
+        Modifier.fillMaxWidth().padding(spacing.md),
+        horizontalArrangement = Arrangement.spacedBy(spacing.sm),
+    ) {
+        SourceButton(
+            label = "From filename",
+            icon = Icons.Rounded.DriveFileRenameOutline,
+            selected = source == SuggestSource.FILENAME,
+            onClick = { onOpenSuggest(SuggestSource.FILENAME) },
+            modifier = Modifier.weight(1f),
+        )
+        SourceButton(
+            label = "From the web",
+            icon = Icons.Rounded.Public,
+            selected = source == SuggestSource.WEB,
+            onClick = { onOpenSuggest(SuggestSource.WEB) },
+            modifier = Modifier.weight(1f),
+        )
+    }
+}
+
+@Composable
+private fun SourceButton(
+    label: String,
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    selected: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val colors = MaterialTheme.colorScheme
+    val spacing = LocalSpacing.current
+    Surface(
+        onClick = onClick,
+        shape = LocalShapeScale.current.md,
+        color = if (selected) colors.onSurface else colors.surface,
+        border = BorderStroke(1.dp, if (selected) colors.onSurface else colors.outline),
+        modifier = modifier.height(46.dp),
+    ) {
+        Row(
+            Modifier.fillMaxSize().padding(horizontal = spacing.md),
+            horizontalArrangement = Arrangement.spacedBy(spacing.sm),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Icon(
+                icon,
+                null,
+                modifier = Modifier.size(18.dp),
+                tint = if (selected) colors.surface else colors.onSurfaceVariant,
+            )
+            Text(
+                label,
+                style = MaterialTheme.typography.labelLarge,
+                color = if (selected) colors.surface else colors.onSurface,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+        }
+    }
+}
+
+@Composable
+private fun FilenameWorkspace(
+    rawName: String,
+    parse: FilenameParse,
+    selectedPattern: NamingPattern,
+    onSelectPattern: (NamingPattern) -> Unit,
+    onApply: () -> Unit,
+) {
+    val spacing = LocalSpacing.current
+    val colors = MaterialTheme.colorScheme
+    Column(
+        Modifier.fillMaxWidth().padding(start = spacing.md, end = spacing.md, bottom = spacing.md),
+        verticalArrangement = Arrangement.spacedBy(spacing.md),
+    ) {
+        Hairline()
+        // Raw filename, mono.
+        Surface(
+            shape = LocalShapeScale.current.sm,
+            color = colors.surfaceVariant,
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Text(
+                rawName,
+                style = AppTextStyles.monoSmall,
+                color = colors.onSurface,
+                modifier = Modifier.padding(horizontal = spacing.md, vertical = spacing.sm),
+            )
+        }
+
+        Text("NAMING PATTERN", style = AppTextStyles.eyebrow, color = colors.onSurfaceVariant)
+        LazyRow(horizontalArrangement = Arrangement.spacedBy(spacing.sm)) {
+            items(NamingPattern.entries.toList(), key = { it.name }) { pattern ->
+                PatternChip(
+                    label = pattern.label,
+                    selected = pattern == selectedPattern,
+                    onClick = { onSelectPattern(pattern) },
+                )
+            }
+        }
+
+        Column(verticalArrangement = Arrangement.spacedBy(spacing.sm)) {
+            parse.mappings.forEach { TokenMapRow(it) }
+        }
+
+        val fieldCount = parse.fields.size
+        PrimaryButton(
+            onClick = onApply,
+            enabled = fieldCount > 0,
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Icon(Icons.Rounded.Check, null, Modifier.size(18.dp))
+            Spacer(Modifier.size(spacing.xs))
+            Text("Add $fieldCount field${if (fieldCount == 1) "" else "s"} to review")
+        }
+    }
+}
+
+@Composable
+private fun PatternChip(label: String, selected: Boolean, onClick: () -> Unit) {
+    val colors = MaterialTheme.colorScheme
+    val sc = LocalStatusColors.current
+    Surface(
+        onClick = onClick,
+        shape = LocalShapeScale.current.pill,
+        color = if (selected) colors.primary.copy(alpha = 0.12f) else colors.surfaceVariant,
+        border = BorderStroke(1.dp, if (selected) colors.primary.copy(alpha = 0.5f) else colors.outline),
+    ) {
+        Text(
+            label,
+            style = AppTextStyles.monoSmall,
+            color = if (selected) colors.primary else colors.onSurfaceVariant,
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+            maxLines = 1,
+        )
+    }
+}
+
+@Composable
+private fun TokenMapRow(mapping: TokenMapping) {
+    val spacing = LocalSpacing.current
+    val colors = MaterialTheme.colorScheme
+    val ignored = mapping.fieldLabel == null
+    Row(
+        Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(spacing.sm),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Surface(
+            shape = LocalShapeScale.current.sm,
+            color = if (ignored) colors.surfaceVariant else colors.onSurface,
+            modifier = Modifier.weight(0.45f, fill = false),
+        ) {
+            Text(
+                mapping.token,
+                style = AppTextStyles.monoSmall.copy(
+                    textDecoration = if (ignored) {
+                        androidx.compose.ui.text.style.TextDecoration.LineThrough
+                    } else {
+                        null
+                    },
+                ),
+                color = if (ignored) colors.onSurfaceVariant else colors.surface,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.padding(horizontal = 9.dp, vertical = 5.dp),
+            )
+        }
+        Icon(
+            Icons.AutoMirrored.Rounded.ArrowForward,
+            null,
+            tint = colors.outline,
+            modifier = Modifier.size(15.dp),
+        )
+        if (ignored) {
+            Text("Ignored", style = MaterialTheme.typography.bodySmall, color = colors.onSurfaceVariant)
+        } else {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                Text("${mapping.fieldLabel}", style = MaterialTheme.typography.bodySmall, color = colors.onSurfaceVariant)
+                Text(
+                    mapping.value.orEmpty(),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = colors.onSurface,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun WebLookupWorkspace(
+    query: String,
+    fetchState: MetadataFetchState,
+    onQueryChange: (String) -> Unit,
+    onSearch: () -> Unit,
+    onSelect: (MetadataCandidate) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    val spacing = LocalSpacing.current
+    val colors = MaterialTheme.colorScheme
+    Column(
+        Modifier.fillMaxWidth().padding(start = spacing.md, end = spacing.md, bottom = spacing.md),
+        verticalArrangement = Arrangement.spacedBy(spacing.md),
+    ) {
+        Hairline()
+        Row(horizontalArrangement = Arrangement.spacedBy(spacing.sm)) {
+            AppTextField(
+                value = query,
+                onValueChange = onQueryChange,
+                placeholder = "Search MusicBrainz",
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+                modifier = Modifier.weight(1f),
+            )
+            SecondaryButton(onClick = onSearch, enabled = query.isNotBlank()) {
+                Icon(Icons.Rounded.Search, null, Modifier.size(18.dp))
+            }
+        }
+
+        when (fetchState) {
+            is MetadataFetchState.Idle -> {}
+            is MetadataFetchState.Fetching -> {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(spacing.md),
+                ) {
+                    CircularProgressIndicator(Modifier.size(20.dp), strokeWidth = 2.dp, color = colors.primary)
+                    Text("Searching…", style = MaterialTheme.typography.bodySmall, color = colors.onSurfaceVariant)
+                }
+            }
+            is MetadataFetchState.Found -> {
+                Column(verticalArrangement = Arrangement.spacedBy(spacing.sm)) {
+                    // Fixed-height, internally scrolling list so a full 10 results
+                    // never push the rest of the screen off-screen.
+                    LazyColumn(
+                        modifier = Modifier.fillMaxWidth().height(296.dp),
+                        verticalArrangement = Arrangement.spacedBy(spacing.sm),
+                    ) {
+                        itemsIndexed(
+                            fetchState.candidates,
+                            key = { i, c -> "$i-${c.recordingMbid}" },
+                        ) { i, candidate ->
+                            MetadataCandidateRow(candidate, isBest = i == 0, onClick = { onSelect(candidate) })
+                        }
+                    }
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    ) {
+                        Icon(Icons.Rounded.Public, null, Modifier.size(15.dp), tint = colors.onSurfaceVariant)
+                        Text(
+                            "Metadata from MusicBrainz · tap a result to review",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = colors.onSurfaceVariant,
+                        )
+                    }
+                }
+            }
+            is MetadataFetchState.NotFound -> {
+                Text("No match found on MusicBrainz.", style = MaterialTheme.typography.bodySmall, color = colors.onSurfaceVariant)
+                GhostButton(onClick = onDismiss, modifier = Modifier.fillMaxWidth()) { Text("Dismiss") }
+            }
+            is MetadataFetchState.Error -> {
+                Text(fetchState.message, style = MaterialTheme.typography.bodySmall, color = colors.error)
+                GhostButton(onClick = onDismiss, modifier = Modifier.fillMaxWidth()) { Text("Dismiss") }
+            }
+        }
+    }
+}
+
+@Composable
+private fun MetadataCandidateRow(
+    candidate: MetadataCandidate,
+    isBest: Boolean,
+    onClick: () -> Unit,
+) {
+    val spacing = LocalSpacing.current
+    val colors = MaterialTheme.colorScheme
+    Surface(
+        onClick = onClick,
+        shape = LocalShapeScale.current.md,
+        color = colors.surface,
+        border = BorderStroke(1.dp, if (isBest) colors.primary.copy(alpha = 0.38f) else colors.outline),
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        Row(
+            Modifier.padding(spacing.sm),
+            horizontalArrangement = Arrangement.spacedBy(spacing.md),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            ArtTile(
+                model = candidate.thumbnailUrl,
+                contentDescription = null,
+                size = ArtTileSize.Md,
+            )
+            Column(Modifier.weight(1f)) {
+                Text(
+                    candidate.title.ifBlank { "Untitled" },
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = colors.onSurface,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                Text(
+                    listOf(candidate.artist, candidate.album.ifBlank { "Single" }, candidate.year)
+                        .filter { it.isNotBlank() }
+                        .joinToString(" · "),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = colors.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
+            if (isBest) {
+                Text(
+                    "BEST",
+                    style = AppTextStyles.eyebrow,
+                    color = colors.primary,
+                )
+            }
+        }
+    }
+}
+
 // ── Previews ──────────────────────────────────────────────────────────────────
 
 @Preview(name = "Detail · with lyrics preview", showBackground = true)
@@ -1193,6 +1784,57 @@ private fun DetailLyricsPreviewPreview() {
             artFetchState = ArtFetchState.Idle,
             onFetchArt = {}, onSelectCandidate = {}, onDismissFetchArt = {},
             onApplyPreview = {}, onBackToCandidates = {},
+            suggestSource = SuggestSource.NONE,
+            namingPattern = NamingPattern.TRACK_ARTIST_TITLE,
+            filenameParse = null,
+            webQuery = "",
+            metadataFetchState = MetadataFetchState.Idle,
+            onOpenSuggest = {}, onCloseSuggest = {}, onSetNamingPattern = {},
+            onApplyFilenameParse = {}, onSetWebQuery = {}, onFetchMetadata = {},
+            onSelectMetadataCandidate = {}, onDismissMetadata = {},
+        )
+    }
+}
+
+@Preview(name = "Detail · suggest from filename", showBackground = true)
+@Composable
+private fun DetailSuggestFilenamePreview() {
+    AudoraTheme {
+        TrackDetailContent(
+            track = previewTrack("04 - Luna Rail - Night Bus.flac", null, null),
+            form = TagFormState(),
+            isDirty = false,
+            changes = emptyList(),
+            savingTags = false,
+            lyricsState = LyricsState.Idle,
+            savingLyrics = false,
+            pendingArtUri = null,
+            savingArt = false,
+            snackbarHostState = remember { SnackbarHostState() },
+            onBack = {},
+            onSaveTags = {},
+            onSetTitle = {}, onSetArtist = {}, onSetAlbum = {}, onSetAlbumArtist = {},
+            onSetTrackNumber = {}, onSetDiscNumber = {}, onSetYear = {}, onSetGenre = {},
+            onSetComposer = {}, onSetComment = {}, onSetCompilation = {},
+            onFetchLyrics = {}, onSaveLyrics = {}, onDismissLyrics = {},
+            manualLyrics = null,
+            onStartEditLyrics = {}, onManualLyricsChange = {},
+            onCancelEditLyrics = {}, onSaveManualLyrics = {},
+            onPickArt = {}, onSaveArt = {}, onClearPendingArt = {},
+            artFetchState = ArtFetchState.Idle,
+            onFetchArt = {}, onSelectCandidate = {}, onDismissFetchArt = {},
+            onApplyPreview = {}, onBackToCandidates = {},
+            suggestSource = SuggestSource.FILENAME,
+            namingPattern = NamingPattern.TRACK_ARTIST_TITLE,
+            filenameParse = dev.gitfudge.audora.domain.FilenameTags.parse(
+                "04 - Luna Rail - Night Bus.flac",
+                NamingPattern.TRACK_ARTIST_TITLE,
+            ),
+            webQuery = "",
+            metadataFetchState = MetadataFetchState.Idle,
+            onOpenSuggest = {}, onCloseSuggest = {}, onSetNamingPattern = {},
+            onApplyFilenameParse = {}, onSetWebQuery = {}, onFetchMetadata = {},
+            onSelectMetadataCandidate = {}, onDismissMetadata = {},
         )
     }
 }

@@ -506,6 +506,501 @@
       color: var(--paper);
     }
 
+    /* ── Track detail ─────────────────────────────────────────── */
+    .detail-hero {
+      position: relative;
+      flex: 0 0 auto;
+      aspect-ratio: 1 / 1;
+      width: 100%;
+      background:
+        radial-gradient(circle at 68% 22%, rgb(255 255 255 / 22%), transparent 30%),
+        linear-gradient(150deg, #141414, #3c3027 46%, #df5a24);
+    }
+
+    .detail-hero.empty {
+      background: var(--paper-3);
+      display: grid;
+      place-items: center;
+      color: var(--fog);
+    }
+
+    .detail-hero.empty svg {
+      width: 52px;
+      height: 52px;
+      stroke-width: 1.4;
+    }
+
+    .hero-bar {
+      position: absolute;
+      inset: 0 0 auto 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px;
+      background: linear-gradient(180deg, rgb(0 0 0 / 42%), transparent);
+    }
+
+    .hero-btn {
+      width: 40px;
+      height: 40px;
+      border: 0;
+      border-radius: 999px;
+      display: grid;
+      place-items: center;
+      background: rgb(0 0 0 / 34%);
+      color: #fff;
+    }
+
+    .detail-hero.empty .hero-bar {
+      background: none;
+    }
+
+    .detail-hero.empty .hero-btn {
+      background: var(--paper-2);
+      color: var(--graphite);
+    }
+
+    .hero-btn.save {
+      background: rgb(255 255 255 / 92%);
+      color: var(--ink);
+    }
+
+    .hero-btn.save:disabled {
+      background: rgb(255 255 255 / 50%);
+      color: var(--stone);
+      cursor: default;
+    }
+
+    .hero-meta {
+      position: absolute;
+      inset: auto 0 0 0;
+      padding: 20px 20px 18px;
+      display: grid;
+      gap: 4px;
+      color: #fff;
+      background: linear-gradient(0deg, rgb(0 0 0 / 90%) 6%, rgb(0 0 0 / 44%) 46%, transparent);
+    }
+
+    .detail-hero.empty .hero-meta {
+      color: var(--ink);
+      background: linear-gradient(0deg, var(--paper) 30%, transparent);
+    }
+
+    .hero-eyebrow {
+      font-size: 10px;
+      letter-spacing: .09em;
+      text-transform: uppercase;
+      font-weight: 800;
+      opacity: .8;
+    }
+
+    .hero-title {
+      margin: 0;
+      font-size: 22px;
+      line-height: 1.15;
+      font-weight: 720;
+    }
+
+    .hero-sub {
+      font-size: 13px;
+      opacity: .82;
+    }
+
+    .hero-filemeta {
+      margin-top: 5px;
+      font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+      font-size: 11px;
+      opacity: .76;
+    }
+
+    .detail-body {
+      padding: 16px 20px 28px;
+      overflow: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .schips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .schip {
+      min-height: 24px;
+      border-radius: 999px;
+      padding: 0 9px;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11px;
+      font-weight: 700;
+      border: 1px solid;
+    }
+
+    .schip.ok { color: var(--ok); border-color: rgb(74 107 58 / 32%); background: rgb(74 107 58 / 9%); }
+    .schip.warn { color: var(--warn); border-color: rgb(165 108 22 / 32%); background: rgb(165 108 22 / 9%); }
+    .schip.missing { color: var(--missing); border-color: rgb(180 58 40 / 32%); background: rgb(180 58 40 / 9%); }
+
+    /* Adaptive suggest banner */
+    .suggest {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: var(--bone);
+      overflow: hidden;
+    }
+
+    .suggest.prompt {
+      border-color: rgb(223 90 36 / 34%);
+      background: var(--sodium-wash);
+    }
+
+    .suggest-head {
+      padding: 14px 16px 12px;
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+    }
+
+    .suggest-spark {
+      width: 34px;
+      height: 34px;
+      flex: 0 0 auto;
+      border-radius: 10px;
+      display: grid;
+      place-items: center;
+      background: var(--sodium);
+      color: #fff;
+    }
+
+    .suggest-head strong {
+      display: block;
+      font-size: 15px;
+      font-weight: 720;
+    }
+
+    .suggest-head p {
+      margin: 3px 0 0;
+      font-size: 12.5px;
+      line-height: 1.35;
+      color: var(--graphite);
+    }
+
+    .suggest-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      padding: 0 16px 16px;
+    }
+
+    .source-btn {
+      min-height: 46px;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      background: var(--paper);
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 0 13px;
+      font-size: 13.5px;
+      font-weight: 700;
+      color: var(--ink);
+      text-align: left;
+    }
+
+    .source-btn svg { color: var(--graphite); }
+
+    .source-btn.active {
+      border-color: var(--ink);
+      background: var(--ink);
+      color: var(--paper);
+    }
+
+    .source-btn.active svg { color: var(--paper); }
+
+    /* Quiet collapsed entry — track already tagged */
+    .suggest-quiet {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      padding: 13px 14px;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: var(--bone);
+      text-align: left;
+      color: var(--ink);
+    }
+
+    .suggest-quiet .quiet-spark {
+      width: 30px;
+      height: 30px;
+      flex: 0 0 auto;
+      border-radius: 9px;
+      display: grid;
+      place-items: center;
+      background: var(--paper-2);
+      color: var(--graphite);
+    }
+
+    .suggest-quiet strong {
+      display: block;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .suggest-quiet small {
+      display: block;
+      margin-top: 1px;
+      font-size: 12px;
+      color: var(--graphite);
+    }
+
+    .suggest-quiet .chev {
+      margin-left: auto;
+      color: var(--fog);
+    }
+
+    /* Filename parse */
+    .work {
+      border-top: 1px solid var(--line);
+      padding: 14px 16px 16px;
+      display: grid;
+      gap: 12px;
+    }
+
+    .filename {
+      padding: 10px 12px;
+      border-radius: 10px;
+      background: var(--paper-2);
+      font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+      font-size: 12.5px;
+      color: var(--ink);
+      word-break: break-all;
+    }
+
+    .field-tip {
+      font-size: 11px;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      font-weight: 800;
+      color: var(--stone);
+    }
+
+    .patterns {
+      display: flex;
+      gap: 7px;
+      overflow-x: auto;
+      scrollbar-width: none;
+      margin: 0 -16px;
+      padding: 0 16px 2px;
+    }
+
+    .patterns::-webkit-scrollbar { display: none; }
+
+    .pattern {
+      flex: 0 0 auto;
+      min-height: 32px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: var(--paper-2);
+      padding: 0 12px;
+      font-size: 12px;
+      font-weight: 700;
+      font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+      color: var(--graphite);
+      white-space: nowrap;
+    }
+
+    .pattern.active {
+      border-color: var(--sodium);
+      background: var(--sodium-wash);
+      color: #b9461a;
+    }
+
+    .map {
+      display: grid;
+      gap: 6px;
+    }
+
+    .map-row {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+    }
+
+    .token {
+      flex: 0 0 auto;
+      max-width: 50%;
+      padding: 5px 9px;
+      border-radius: 7px;
+      background: var(--ink);
+      color: var(--paper);
+      font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+      font-size: 12px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .token.skip {
+      background: var(--paper-2);
+      color: var(--stone);
+      text-decoration: line-through;
+    }
+
+    .map-row .arrow { color: var(--fog); }
+
+    .map-field {
+      font-size: 13px;
+      color: var(--graphite);
+    }
+
+    .map-field b {
+      color: var(--ink);
+      font-weight: 720;
+    }
+
+    /* Web candidates */
+    .query {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      height: 46px;
+      border-radius: 10px;
+      background: var(--paper-2);
+      border: 1px solid transparent;
+      padding: 0 12px;
+    }
+
+    .query:focus-within { border-color: var(--sodium); }
+
+    .query input {
+      flex: 1;
+      min-width: 0;
+      border: 0;
+      outline: 0;
+      background: transparent;
+      font-size: 14px;
+      color: var(--ink);
+    }
+
+    .cands { display: grid; gap: 8px; }
+
+    .cand {
+      display: grid;
+      grid-template-columns: 44px 1fr auto;
+      gap: 11px;
+      align-items: center;
+      padding: 9px 11px;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      background: var(--paper);
+      text-align: left;
+      width: 100%;
+    }
+
+    .cand.best { border-color: rgb(223 90 36 / 38%); }
+
+    .cand-art {
+      width: 44px;
+      height: 44px;
+      border-radius: 8px;
+      background:
+        radial-gradient(circle at 70% 24%, rgb(255 255 255 / 22%), transparent 24%),
+        linear-gradient(135deg, #181818, #4a3b30 50%, #c4571f);
+    }
+
+    .cand strong {
+      display: block;
+      font-size: 14px;
+      font-weight: 600;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .cand span {
+      display: block;
+      margin-top: 2px;
+      font-size: 12px;
+      color: var(--graphite);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .match {
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: .05em;
+      color: var(--sodium);
+      text-transform: uppercase;
+    }
+
+    .source-note {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      color: var(--stone);
+    }
+
+    /* Pending diff */
+    .diff-card {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: var(--bone);
+      padding: 16px;
+      display: grid;
+      gap: 11px;
+    }
+
+    .diff-head {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+    }
+
+    .diff-head .from {
+      margin-left: auto;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--sodium);
+      font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+    }
+
+    .diff-row {
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      background: var(--paper);
+      padding: 9px 11px;
+      display: grid;
+      gap: 4px;
+    }
+
+    .diff-row .dlabel {
+      font-size: 10px;
+      letter-spacing: .07em;
+      text-transform: uppercase;
+      font-weight: 800;
+      color: var(--stone);
+    }
+
+    .diff-val {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+      font-size: 12.5px;
+    }
+
+    .diff-val .old { color: var(--missing); text-decoration: line-through; }
+    .diff-val .new { color: var(--ok); font-weight: 700; }
+    .diff-val .arrow { color: var(--fog); }
+
     svg {
       width: 20px;
       height: 20px;
@@ -750,6 +1245,306 @@
                 <p>LRCLIB · MusicBrainz</p>
               </div>
             </section>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="phone-wrap">
+      <div class="caption">Track with no tags — adaptive "Suggest tags" banner</div>
+      <div class="phone">
+        <div class="screen">
+          <div class="detail-hero empty">
+            <div class="hero-bar">
+              <button class="hero-btn" aria-label="Back" title="Back">
+                <svg viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg>
+              </button>
+              <button class="hero-btn save" disabled aria-label="Write file" title="Write file">
+                <svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>
+              </button>
+            </div>
+            <svg viewBox="0 0 24 24"><path d="M20 20v-5a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v5"/><path d="M4 8h16"/><path d="M7 4h10"/></svg>
+            <div class="hero-meta">
+              <div class="hero-eyebrow">Track · unknown artist</div>
+              <h1 class="hero-title">04 Luna Rail Night Bus</h1>
+              <div class="hero-sub">No album</div>
+              <div class="hero-filemeta">FLAC · 38.4 MB · 4:15</div>
+            </div>
+          </div>
+
+          <div class="detail-body">
+            <div class="schips">
+              <span class="schip missing">No tags</span>
+              <span class="schip missing">No art</span>
+              <span class="schip missing">No lyrics</span>
+            </div>
+
+            <div class="suggest prompt">
+              <div class="suggest-head">
+                <span class="suggest-spark">
+                  <svg class="small-icon" viewBox="0 0 24 24"><path d="M12 3v4"/><path d="M12 17v4"/><path d="M3 12h4"/><path d="M17 12h4"/><path d="m6 6 2.5 2.5"/><path d="m15.5 15.5 2.5 2.5"/></svg>
+                </span>
+                <div>
+                  <strong>This track has no tags</strong>
+                  <p>Only the filename is set. Fill title, artist and more from the name, or look it up online. Nothing is written until you confirm.</p>
+                </div>
+              </div>
+              <div class="suggest-actions">
+                <button class="source-btn active">
+                  <svg class="small-icon" viewBox="0 0 24 24"><path d="M4 7V5a2 2 0 0 1 2-2h8l4 4v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-2"/><path d="M3 12h9"/><path d="m8 9-3 3 3 3"/></svg>
+                  From filename
+                </button>
+                <button class="source-btn">
+                  <svg class="small-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3a14 14 0 0 1 0 18 14 14 0 0 1 0-18"/></svg>
+                  From the web
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <div class="section-label">Core tags</div>
+              <div class="panel">
+                <div class="setting-row"><div><strong>Title</strong><p style="font-style:italic;color:var(--stone)">Empty</p></div></div>
+                <div class="setting-row"><div><strong>Artist</strong><p style="font-style:italic;color:var(--stone)">Empty</p></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="phone-wrap">
+      <div class="caption">Track already tagged — banner collapses to a quiet entry</div>
+      <div class="phone">
+        <div class="screen">
+          <div class="detail-hero">
+            <div class="hero-bar">
+              <button class="hero-btn" aria-label="Back" title="Back">
+                <svg viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg>
+              </button>
+              <button class="hero-btn save" disabled aria-label="Write file" title="Write file">
+                <svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>
+              </button>
+            </div>
+            <div class="hero-meta">
+              <div class="hero-eyebrow">Track · Luna Rail</div>
+              <h1 class="hero-title">Night Bus</h1>
+              <div class="hero-sub">Night Bus · track 04 · 2024</div>
+              <div class="hero-filemeta">FLAC · 38.4 MB · 4:15 · 1600 × 1600</div>
+            </div>
+          </div>
+
+          <div class="detail-body">
+            <div class="schips">
+              <span class="schip ok">Tags</span>
+              <span class="schip ok">Art 1600px</span>
+              <span class="schip warn">Plain lyrics</span>
+            </div>
+
+            <button class="suggest-quiet">
+              <span class="quiet-spark">
+                <svg class="small-icon" viewBox="0 0 24 24"><path d="M12 3v4"/><path d="M12 17v4"/><path d="M3 12h4"/><path d="M17 12h4"/><path d="m6 6 2.5 2.5"/><path d="m15.5 15.5 2.5 2.5"/></svg>
+              </span>
+              <span>
+                <strong>Suggest tags</strong>
+                <small>Re-fill from filename or look up online</small>
+              </span>
+              <svg class="small-icon chev" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
+            </button>
+
+            <div>
+              <div class="section-label">Core tags</div>
+              <div class="panel">
+                <div class="setting-row"><div><strong>Title</strong><p>Night Bus</p></div></div>
+                <div class="setting-row"><div><strong>Artist</strong><p>Luna Rail</p></div></div>
+                <div class="setting-row"><div><strong>Album</strong><p>Night Bus</p></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="phone-wrap">
+      <div class="caption">"From filename" — pattern picker maps name parts to fields</div>
+      <div class="phone">
+        <div class="screen">
+          <div class="detail-hero empty">
+            <div class="hero-bar">
+              <button class="hero-btn" aria-label="Back" title="Back">
+                <svg viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg>
+              </button>
+              <button class="hero-btn save" disabled aria-label="Write file" title="Write file">
+                <svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>
+              </button>
+            </div>
+            <svg viewBox="0 0 24 24"><path d="M20 20v-5a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v5"/><path d="M4 8h16"/><path d="M7 4h10"/></svg>
+            <div class="hero-meta">
+              <div class="hero-eyebrow">Track · unknown artist</div>
+              <h1 class="hero-title">04 Luna Rail Night Bus</h1>
+              <div class="hero-filemeta">FLAC · 38.4 MB · 4:15</div>
+            </div>
+          </div>
+
+          <div class="detail-body">
+            <div class="suggest">
+              <div class="suggest-actions" style="padding-top:14px">
+                <button class="source-btn active">
+                  <svg class="small-icon" viewBox="0 0 24 24"><path d="M4 7V5a2 2 0 0 1 2-2h8l4 4v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-2"/><path d="M3 12h9"/><path d="m8 9-3 3 3 3"/></svg>
+                  From filename
+                </button>
+                <button class="source-btn">
+                  <svg class="small-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3a14 14 0 0 1 0 18 14 14 0 0 1 0-18"/></svg>
+                  From the web
+                </button>
+              </div>
+
+              <div class="work">
+                <div class="filename">04 - Luna Rail - Night Bus.flac</div>
+
+                <div>
+                  <div class="field-tip" style="margin-bottom:7px">Naming pattern</div>
+                  <div class="patterns">
+                    <button class="pattern active">Track · Artist · Title</button>
+                    <button class="pattern">Artist · Title</button>
+                    <button class="pattern">Track · Title</button>
+                    <button class="pattern">Title only</button>
+                  </div>
+                </div>
+
+                <div class="map">
+                  <div class="map-row">
+                    <span class="token">04</span>
+                    <svg class="small-icon arrow" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
+                    <span class="map-field">Track # <b>4</b></span>
+                  </div>
+                  <div class="map-row">
+                    <span class="token">Luna Rail</span>
+                    <svg class="small-icon arrow" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
+                    <span class="map-field">Artist <b>Luna Rail</b></span>
+                  </div>
+                  <div class="map-row">
+                    <span class="token">Night Bus</span>
+                    <svg class="small-icon arrow" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
+                    <span class="map-field">Title <b>Night Bus</b></span>
+                  </div>
+                  <div class="map-row">
+                    <span class="token skip">.flac</span>
+                    <svg class="small-icon arrow" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
+                    <span class="map-field" style="color:var(--stone)">Ignored</span>
+                  </div>
+                </div>
+
+                <button class="primary-btn" style="margin-top:2px">
+                  <svg class="small-icon" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>
+                  Add 3 fields to review
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="phone-wrap">
+      <div class="caption">"From the web" — MusicBrainz matches, then the usual review diff</div>
+      <div class="phone">
+        <div class="screen">
+          <div class="detail-hero empty">
+            <div class="hero-bar">
+              <button class="hero-btn" aria-label="Back" title="Back">
+                <svg viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg>
+              </button>
+              <button class="hero-btn save" aria-label="Write file" title="Write file">
+                <svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>
+              </button>
+            </div>
+            <svg viewBox="0 0 24 24"><path d="M20 20v-5a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v5"/><path d="M4 8h16"/><path d="M7 4h10"/></svg>
+            <div class="hero-meta">
+              <div class="hero-eyebrow">Track · unknown artist</div>
+              <h1 class="hero-title">04 Luna Rail Night Bus</h1>
+              <div class="hero-filemeta">FLAC · 38.4 MB · 4:15</div>
+            </div>
+          </div>
+
+          <div class="detail-body">
+            <div class="suggest">
+              <div class="suggest-actions" style="padding-top:14px">
+                <button class="source-btn">
+                  <svg class="small-icon" viewBox="0 0 24 24"><path d="M4 7V5a2 2 0 0 1 2-2h8l4 4v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-2"/><path d="M3 12h9"/><path d="m8 9-3 3 3 3"/></svg>
+                  From filename
+                </button>
+                <button class="source-btn active">
+                  <svg class="small-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3a14 14 0 0 1 0 18 14 14 0 0 1 0-18"/></svg>
+                  From the web
+                </button>
+              </div>
+
+              <div class="work">
+                <label class="query">
+                  <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.6-3.6"/></svg>
+                  <input value="Luna Rail Night Bus" aria-label="Search MusicBrainz">
+                </label>
+
+                <div class="cands">
+                  <button class="cand best">
+                    <span class="cand-art"></span>
+                    <span>
+                      <strong>Night Bus</strong>
+                      <span>Luna Rail · Night Bus · 2024</span>
+                    </span>
+                    <span class="match">Best</span>
+                  </button>
+                  <button class="cand">
+                    <span class="cand-art"></span>
+                    <span>
+                      <strong>Night Bus (Live)</strong>
+                      <span>Luna Rail · Late Platforms · 2025</span>
+                    </span>
+                  </button>
+                  <button class="cand">
+                    <span class="cand-art"></span>
+                    <span>
+                      <strong>Nightbus</strong>
+                      <span>Rail Lines · Single · 2019</span>
+                    </span>
+                  </button>
+                </div>
+
+                <div class="source-note">
+                  <svg class="small-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3a14 14 0 0 1 0 18 14 14 0 0 1 0-18"/></svg>
+                  Metadata from MusicBrainz · tap a result to review
+                </div>
+              </div>
+            </div>
+
+            <div class="diff-card">
+              <div class="diff-head">
+                <svg class="small-icon" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+                <strong>4 changes</strong>
+                <span class="from">from web</span>
+              </div>
+              <div class="diff-row">
+                <span class="dlabel">Title</span>
+                <div class="diff-val"><span class="old">—</span><svg class="small-icon arrow" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg><span class="new">Night Bus</span></div>
+              </div>
+              <div class="diff-row">
+                <span class="dlabel">Artist</span>
+                <div class="diff-val"><span class="old">—</span><svg class="small-icon arrow" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg><span class="new">Luna Rail</span></div>
+              </div>
+              <div class="diff-row">
+                <span class="dlabel">Album</span>
+                <div class="diff-val"><span class="old">—</span><svg class="small-icon arrow" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg><span class="new">Night Bus</span></div>
+              </div>
+              <div class="diff-row">
+                <span class="dlabel">Year</span>
+                <div class="diff-val"><span class="old">—</span><svg class="small-icon arrow" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg><span class="new">2024</span></div>
+              </div>
+              <button class="primary-btn" style="margin-top:2px">
+                <svg class="small-icon" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>
+                Write file
+              </button>
+            </div>
           </div>
         </div>
       </div>

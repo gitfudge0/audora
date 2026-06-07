@@ -26,6 +26,30 @@ data class MbArtistCredit(
     val name: String = "",
 )
 
+// ── Recording search (metadata lookup) ──────────────────────────────────────
+
+@Serializable
+data class MbRecordingSearchResult(
+    val recordings: List<MbRecording> = emptyList(),
+)
+
+@Serializable
+data class MbRecording(
+    val id: String = "",
+    val title: String = "",
+    val score: Int = 0,
+    @SerialName("artist-credit")
+    val artistCredit: List<MbArtistCredit> = emptyList(),
+    val releases: List<MbRecordingRelease> = emptyList(),
+)
+
+@Serializable
+data class MbRecordingRelease(
+    val id: String = "",
+    val title: String = "",
+    val date: String? = null,
+)
+
 interface MusicBrainzApi {
     @Headers("User-Agent: Audora/0.1 ( https://github.com/gitfudge0/audora )")
     @GET("ws/2/release")
@@ -34,4 +58,12 @@ interface MusicBrainzApi {
         @Query("fmt") format: String = "json",
         @Query("limit") limit: Int = 5,
     ): Response<MbReleaseSearchResult>
+
+    @Headers("User-Agent: Audora/0.1 ( https://github.com/gitfudge0/audora )")
+    @GET("ws/2/recording")
+    suspend fun searchRecordings(
+        @Query("query") query: String,
+        @Query("fmt") format: String = "json",
+        @Query("limit") limit: Int = 10,
+    ): Response<MbRecordingSearchResult>
 }

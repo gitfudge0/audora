@@ -30,6 +30,8 @@ data class ScanResult(
     val upserted: Int,
     val removed: Int,
     val failed: Int,
+    /** Tracks in the tree whose real container disagrees with their extension. */
+    val mislabeled: Int,
 )
 
 private val AUDIO_EXTENSIONS = setOf(
@@ -197,17 +199,27 @@ class MediaScanner @Inject constructor(
                 upserted = upserted,
                 removed = stale.size,
                 failed = failed.get(),
+                // Whole-tree total, not just this scan's new files, so an
+                // incremental rescan that skips unchanged files still reports
+                // the real count.
+                mislabeled = trackDao.countMislabeled(treeUriString),
             )
         }
     }
 
-    suspend fun enrichPendingArtwork(treeUriString: String): ArtEnrichmentResult = withContext(Dispatchers.IO) {
+    suspend fun enrichPendingArtwork(
+        treeUriString: String,
+        onProgress: (done: Int, total: Int) -> Unit = { _, _ -> },
+    ): ArtEnrichmentResult = withContext(Dispatchers.IO) {
         coroutineScope {
             val artDir = File(context.cacheDir, "art").apply { mkdirs() }
             val generatedAlbumThumbs = ConcurrentHashMap.newKeySet<String>()
             val pendingTracks = trackDao.getPendingArtScanTracks(treeUriString)
+            val total = pendingTracks.size
+            onProgress(0, total)
             val artDispatcher = Dispatchers.IO.limitedParallelism(ART_ENRICH_PARALLELISM)
             val failed = AtomicInteger(0)
+            val done = AtomicInteger(0)
             var processed = 0
             val pendingWrites = ArrayList<TrackEntity>(UPSERT_BATCH_SIZE)
 
@@ -228,7 +240,7 @@ class MediaScanner @Inject constructor(
                         }.getOrElse {
                             failed.incrementAndGet()
                             track.copy(artScanPending = false, scannedAt = System.currentTimeMillis())
-                        }
+                        }.also { onProgress(done.incrementAndGet(), total) }
                     }
                 }.awaitAll()
 
@@ -275,6 +287,56 @@ class MediaScanner @Inject constructor(
         val ext = name.substringAfterLast('.', "").lowercase()
         return ext in AUDIO_EXTENSIONS
     }
+
+    /**
+     * Returns a friendly container name (e.g. "MP3") when [name]'s extension
+     * disagrees with the real container sniffed from the file's magic bytes,
+     * else null. Conservative: only flags when both the magic family and the
+     * extension map to *known, incompatible* families. Unknown magic, or any
+     * extension that plausibly carries the detected container (e.g. ADTS AAC in
+     * an .aac, Opus in an .ogg), is never flagged.
+     */
+    private fun detectMislabeledFormat(docUri: Uri, name: String): String? = runCatching {
+        val ext = name.substringAfterLast('.', "").lowercase()
+        val head = ByteArray(12)
+        val read = context.contentResolver.openInputStream(docUri)?.use { it.read(head) } ?: return null
+        if (read < 4) return null
+
+        fun ascii(offset: Int, s: String): Boolean =
+            s.indices.all { offset + it < read && head[offset + it] == s[it].code.toByte() }
+
+        // Magic → (canonical family, friendly label).
+        val magic = when {
+            ascii(0, "fLaC") -> "flac" to "FLAC"
+            ascii(0, "OggS") -> "ogg" to "OGG"
+            ascii(0, "RIFF") && ascii(8, "WAVE") -> "wav" to "WAV"
+            ascii(0, "FORM") && (ascii(8, "AIFF") || ascii(8, "AIFC")) -> "aiff" to "AIFF"
+            ascii(4, "ftyp") -> "mp4" to "M4A"
+            ascii(0, "MAC ") -> "ape" to "APE"
+            ascii(0, "wvpk") -> "wavpack" to "WavPack"
+            head[0] == 0x30.toByte() && head[1] == 0x26.toByte() &&
+                head[2] == 0xB2.toByte() && head[3] == 0x75.toByte() -> "wma" to "WMA"
+            ascii(0, "ID3") -> "mpeg" to "MP3"
+            // MPEG audio frame sync: 11 set bits (0xFFE0 mask). Covers MP3 and ADTS AAC.
+            head[0] == 0xFF.toByte() && (head[1].toInt() and 0xE0) == 0xE0 -> "mpeg" to "MP3"
+            else -> null
+        } ?: return null
+
+        // Extensions that legitimately carry each magic family.
+        val compatibleExts = when (magic.first) {
+            "flac" -> setOf("flac")
+            "ogg" -> setOf("ogg", "oga", "opus")
+            "wav" -> setOf("wav")
+            "aiff" -> setOf("aif", "aiff")
+            "mp4" -> setOf("m4a", "m4b", "mp4", "aac", "alac")
+            "ape" -> setOf("ape")
+            "wavpack" -> setOf("wv")
+            "wma" -> setOf("wma")
+            "mpeg" -> setOf("mp3", "aac")
+            else -> emptySet()
+        }
+        if (ext in compatibleExts) null else magic.second
+    }.getOrNull()
 
     private fun readLrcState(treeUri: Uri, lrcDocId: String): Boolean = runCatching {
         val uri = DocumentsContract.buildDocumentUriUsingTree(treeUri, lrcDocId)
@@ -338,6 +400,7 @@ class MediaScanner @Inject constructor(
             val coreComplete = !title.isNullOrBlank() &&
                 !artist.isNullOrBlank() &&
                 !album.isNullOrBlank()
+            val detectedFormat = detectMislabeledFormat(docUri, name)
 
             return TrackEntity(
                 documentUri = docUriString,
@@ -371,6 +434,7 @@ class MediaScanner @Inject constructor(
                 lyricsFetchAttempted = false,
                 coreTagsComplete = coreComplete,
                 artistUnknown = artistUnknown,
+                detectedFormat = detectedFormat,
                 scannedAt = System.currentTimeMillis(),
             )
         } finally {

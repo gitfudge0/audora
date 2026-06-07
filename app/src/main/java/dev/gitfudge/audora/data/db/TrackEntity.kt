@@ -58,5 +58,12 @@ data class TrackEntity(
     val coreTagsComplete: Boolean,
     val artistUnknown: Boolean,
 
+    /**
+     * Friendly name of the real audio container (e.g. "MP3") when the file's
+     * content disagrees with its name extension, else null. Detected from magic
+     * bytes at scan time; powers the "wrong extension" filter and detail warning.
+     */
+    val detectedFormat: String? = null,
+
     val scannedAt: Long,
 )

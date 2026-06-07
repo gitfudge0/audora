@@ -2,10 +2,13 @@ package dev.gitfudge.audora.ui.library
 
 import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.EaseOutQuart
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -162,6 +165,44 @@ private fun ReadyLibraryScaffold(
     val albumPreview by viewModel.albumPreview.collectAsStateWithLifecycle()
     val previewDownloading by viewModel.previewDownloading.collectAsStateWithLifecycle()
     val query by viewModel.query.collectAsStateWithLifecycle()
+    val context = androidx.compose.ui.platform.LocalContext.current
+
+    // Announce auto-sync once when it kicks off so a background fetch can't pass
+    // unnoticed. Keyed on the run's identity (auto + total) so it fires per run,
+    // not on every progress tick.
+    val autoSyncStart = (batchFetchState as? BatchFetchState.Running)
+        ?.takeIf { it.auto }?.total
+    LaunchedEffect(autoSyncStart) {
+        autoSyncStart?.let { total ->
+            snackbarHostState.showSnackbar(
+                if (total == 1) {
+                    context.getString(R.string.auto_lyrics_sync_started, total)
+                } else {
+                    context.getString(R.string.auto_lyrics_sync_started_plural, total)
+                },
+            )
+        }
+    }
+
+    // After a scan settles, surface files whose extension lies about their
+    // real container. Actionable: tapping jumps to the filtered Tracks view.
+    LaunchedEffect(scanState) {
+        val done = scanState as? ScanState.Done ?: return@LaunchedEffect
+        val mislabeled = done.result.mislabeled
+        if (mislabeled <= 0) return@LaunchedEffect
+        val message = if (mislabeled == 1) {
+            context.getString(R.string.scan_mislabeled_toast, mislabeled)
+        } else {
+            context.getString(R.string.scan_mislabeled_toast_plural, mislabeled)
+        }
+        val result = snackbarHostState.showSnackbar(
+            message = message,
+            actionLabel = context.getString(R.string.scan_mislabeled_action),
+        )
+        if (result == androidx.compose.material3.SnackbarResult.ActionPerformed) {
+            viewModel.showWrongExtension()
+        }
+    }
 
     LaunchedEffect(batchFetchState) {
         if (batchFetchState is BatchFetchState.Done) {
@@ -607,6 +648,17 @@ private fun LibraryScaffoldContent(
                 modifier = Modifier.padding(horizontal = spacing.lg),
             )
 
+            // Auto-sync runs after a scan with no selection active; surface it as
+            // an ambient activity row (mirroring scan/art enrichment) so it isn't
+            // invisible. The SelectionBar already shows progress during a manual
+            // fetch, so suppress this row while selecting to avoid double reporting.
+            AutoLyricsSyncRow(
+                state = batchFetchState,
+                visible = !isSelecting,
+                onClick = { showDownloadSheet = true },
+                modifier = Modifier.padding(horizontal = spacing.lg),
+            )
+
             AnimatedVisibility(visible = searchExpanded || query.isNotBlank()) {
                 LibrarySearchField(
                     query = query,
@@ -940,6 +992,47 @@ private fun FolderStrip(folderLabel: String, modifier: Modifier = Modifier) {
 }
 
 @Composable
+private fun AutoLyricsSyncRow(
+    state: BatchFetchState,
+    visible: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val running = state as? BatchFetchState.Running
+    AnimatedVisibility(visible = visible && running?.auto == true) {
+        val spacing = LocalSpacing.current
+        val colors = MaterialTheme.colorScheme
+        val done = running?.done ?: 0
+        val total = running?.total ?: 0
+        val target = if (total == 0) 0f else done.toFloat() / total
+        val progress by animateFloatAsState(
+            targetValue = target,
+            animationSpec = tween(durationMillis = 400, easing = EaseOutQuart),
+            label = "autoLyricsProgress",
+        )
+        Column(
+            modifier
+                .fillMaxWidth()
+                .clickable(onClick = onClick)
+                .padding(vertical = spacing.xs),
+        ) {
+            LinearProgressIndicator(
+                progress = { progress },
+                modifier = Modifier.fillMaxWidth(),
+                color = colors.primary,
+                trackColor = colors.surfaceContainer,
+            )
+            Spacer(Modifier.height(spacing.xs))
+            Text(
+                text = stringResource(R.string.auto_lyrics_sync_running, done, total),
+                style = MaterialTheme.typography.labelSmall,
+                color = colors.onSurfaceVariant,
+            )
+        }
+    }
+}
+
+@Composable
 private fun ScanProgressRow(
     scanState: ScanState,
     artEnrichmentState: ArtEnrichmentState,
@@ -972,7 +1065,8 @@ private fun ScanProgressRow(
             is ArtEnrichmentState.Running -> Text(
                 text = stringResource(
                     R.string.library_art_enrichment_running,
-                    artEnrichmentState.remaining,
+                    artEnrichmentState.done,
+                    artEnrichmentState.total,
                 ),
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -1006,10 +1100,15 @@ private fun FilterBar(
         horizontalArrangement = Arrangement.spacedBy(spacing.sm),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        // "Possible duplicates" is an album-level refinement; hide it on Tracks.
-        LibraryFilter.entries.filter {
-            it != LibraryFilter.DUPLICATES ||
-                tab == dev.gitfudge.audora.domain.LibraryTab.ALBUMS
+        // "Possible duplicates" is an album-level refinement (hidden on Tracks);
+        // "Wrong extension" is a per-track concern with no album rollup (hidden
+        // on Albums).
+        LibraryFilter.entries.filter { f ->
+            when (f) {
+                LibraryFilter.DUPLICATES -> tab == dev.gitfudge.audora.domain.LibraryTab.ALBUMS
+                LibraryFilter.WRONG_EXTENSION -> tab == dev.gitfudge.audora.domain.LibraryTab.TRACKS
+                else -> true
+            }
         }.forEach { f ->
             AppFilterChip(
                 selected = filter == f,
@@ -1072,6 +1171,7 @@ private fun LibraryFilter.labelRes(): Int = when (this) {
     LibraryFilter.NO_LYRICS -> R.string.filter_no_lyrics
     LibraryFilter.INCOMPLETE_TAGS -> R.string.filter_incomplete_tags
     LibraryFilter.UNKNOWN_ARTIST -> R.string.filter_unknown_artist
+    LibraryFilter.WRONG_EXTENSION -> R.string.filter_wrong_extension
     LibraryFilter.DUPLICATES -> R.string.filter_duplicates
 }
 
@@ -1088,7 +1188,7 @@ private fun LibrarySort.labelRes(): Int = when (this) {
 @Composable
 private fun previewScaffold(
     themeMode: ThemeMode,
-    scanState: ScanState = ScanState.Done(ScanResult(scanned = 248, upserted = 3, removed = 0, failed = 0)),
+    scanState: ScanState = ScanState.Done(ScanResult(scanned = 248, upserted = 3, removed = 0, failed = 0, mislabeled = 0)),
     filter: LibraryFilter = LibraryFilter.ALL,
     tracks: List<TrackEntity> = previewTracks(),
     tab: dev.gitfudge.audora.domain.LibraryTab = dev.gitfudge.audora.domain.LibraryTab.TRACKS,

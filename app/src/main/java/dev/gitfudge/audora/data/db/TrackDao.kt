@@ -26,6 +26,9 @@ interface TrackDao {
     @Query("SELECT COUNT(*) FROM tracks WHERE treeUri = :treeUri AND artScanPending = 1")
     fun observePendingArtCount(treeUri: String): Flow<Int>
 
+    @Query("SELECT COUNT(*) FROM tracks WHERE treeUri = :treeUri AND detectedFormat IS NOT NULL")
+    suspend fun countMislabeled(treeUri: String): Int
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsertAll(tracks: List<TrackEntity>)
 

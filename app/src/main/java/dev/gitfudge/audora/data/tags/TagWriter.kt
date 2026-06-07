@@ -162,8 +162,8 @@ class TagWriter @Inject constructor(
     ): FileSignature {
         safety.assertUnchanged(docUri, displayName, expected)
 
-        val ext = displayName.substringAfterLast('.', "mp3").lowercase()
-        val tmp = File(context.cacheDir, "tagwrite_${System.currentTimeMillis()}.$ext")
+        val nameExt = displayName.substringAfterLast('.', "mp3").lowercase()
+        var tmp = File(context.cacheDir, "tagwrite_${System.currentTimeMillis()}.$nameExt")
         try {
             // Layer 1: refuse to "edit" a file we can't read. If the read yields
             // zero bytes the file is already corrupted on disk; truncating it
@@ -179,6 +179,17 @@ class TagWriter @Inject constructor(
                 )
             }
             val originalBytes = tmp.length()
+
+            // jaudiotagger selects its reader/writer purely from the file
+            // extension. A file whose real container disagrees with its name
+            // (e.g. MP3 bytes inside a ".flac") would be handed to the wrong
+            // reader and fail with "not a flac file". Sniff the actual container
+            // from the magic bytes and rename the temp so the right codec is used.
+            val realExt = sniffAudioExtension(tmp) ?: nameExt
+            if (realExt != nameExt) {
+                val renamed = File(context.cacheDir, "tagwrite_${System.currentTimeMillis()}.$realExt")
+                if (tmp.renameTo(renamed)) tmp = renamed
+            }
 
             val audioFile = AudioFileIO.read(tmp)
             block(audioFile.tagOrCreateAndSetDefault)
@@ -211,6 +222,30 @@ class TagWriter @Inject constructor(
             return FileSignature(stable.lastModified, newSize)
         } finally {
             tmp.delete()
+        }
+    }
+
+    /**
+     * Detect the real audio container from leading magic bytes, independent of
+     * the file name. Returns a jaudiotagger-compatible extension, or null when
+     * the bytes match no known signature (callers fall back to the name's ext).
+     */
+    private fun sniffAudioExtension(file: File): String? {
+        val head = ByteArray(12)
+        val read = file.inputStream().use { it.read(head) }
+        if (read < 4) return null
+        fun ascii(offset: Int, s: String): Boolean =
+            s.indices.all { offset + it < read && head[offset + it] == s[it].code.toByte() }
+
+        return when {
+            ascii(0, "fLaC") -> "flac"
+            ascii(0, "OggS") -> "ogg"
+            ascii(0, "RIFF") && ascii(8, "WAVE") -> "wav"
+            ascii(4, "ftyp") -> "m4a"
+            ascii(0, "ID3") -> "mp3"
+            // MPEG audio frame sync: 11 set bits (0xFFE0 mask).
+            head[0] == 0xFF.toByte() && (head[1].toInt() and 0xE0) == 0xE0 -> "mp3"
+            else -> null
         }
     }
 

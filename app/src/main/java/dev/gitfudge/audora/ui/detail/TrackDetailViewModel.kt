@@ -10,6 +10,11 @@ import dev.gitfudge.audora.data.db.TrackDao
 import dev.gitfudge.audora.data.db.TrackEntity
 import dev.gitfudge.audora.data.art.CoverArtCandidate
 import dev.gitfudge.audora.data.art.CoverArtRepository
+import dev.gitfudge.audora.data.art.MetadataCandidate
+import dev.gitfudge.audora.data.art.MetadataLookupRepository
+import dev.gitfudge.audora.domain.FilenameParse
+import dev.gitfudge.audora.domain.FilenameTags
+import dev.gitfudge.audora.domain.NamingPattern
 import dev.gitfudge.audora.data.lyrics.LrcWriter
 import dev.gitfudge.audora.data.lyrics.LrclibRepository
 import dev.gitfudge.audora.data.lyrics.LrclibResult
@@ -101,6 +106,20 @@ sealed interface ArtFetchState {
     data class Error(val message: String) : ArtFetchState
 }
 
+// ── Suggest tags ────────────────────────────────────────────────────────────
+
+/** Which suggest-tags source the user is working in, if any. */
+enum class SuggestSource { NONE, FILENAME, WEB }
+
+/** Web (MusicBrainz) recording lookup, mirroring [ArtFetchState]. */
+sealed interface MetadataFetchState {
+    data object Idle : MetadataFetchState
+    data object Fetching : MetadataFetchState
+    data class Found(val candidates: List<MetadataCandidate>) : MetadataFetchState
+    data object NotFound : MetadataFetchState
+    data class Error(val message: String) : MetadataFetchState
+}
+
 // ── ViewModel ─────────────────────────────────────────────────────────────────
 
 @HiltViewModel
@@ -113,6 +132,7 @@ class TrackDetailViewModel @Inject constructor(
     private val lrcReader: dev.gitfudge.audora.data.lyrics.LrcReader,
     private val settings: SettingsRepository,
     private val coverArtRepo: CoverArtRepository,
+    private val metadataLookupRepo: MetadataLookupRepository,
 ) : ViewModel() {
 
     val documentUri: String = checkNotNull(savedStateHandle["uri"])
@@ -473,6 +493,111 @@ class TrackDetailViewModel @Inject constructor(
     }
 
     fun dismissFetchArt() { _artFetchState.value = ArtFetchState.Idle }
+
+    // ── Suggest tags ────────────────────────────────────────────────────────────
+    //
+    // Both sources are POPULATORS only: they call the existing form setters, which
+    // dirties the form and flows into the same pending-changes diff and the
+    // WriteSafetyManager/TagWriter write path. The user still presses "Write file".
+
+    private val _suggestSource = MutableStateFlow(SuggestSource.NONE)
+    val suggestSource: StateFlow<SuggestSource> = _suggestSource.asStateFlow()
+
+    /** Chosen naming pattern for the From-filename source. */
+    private val _namingPattern = MutableStateFlow(NamingPattern.TITLE_ONLY)
+    val namingPattern: StateFlow<NamingPattern> = _namingPattern.asStateFlow()
+
+    /** Live parse of the current filename with the chosen pattern. */
+    val filenameParse: StateFlow<FilenameParse?> =
+        combine(track.filterNotNull(), _namingPattern) { t, pattern ->
+            FilenameTags.parse(t.displayName, pattern)
+        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+
+    /** Editable query for the From-the-web source. */
+    private val _webQuery = MutableStateFlow("")
+    val webQuery: StateFlow<String> = _webQuery.asStateFlow()
+
+    private val _metadataFetchState = MutableStateFlow<MetadataFetchState>(MetadataFetchState.Idle)
+    val metadataFetchState: StateFlow<MetadataFetchState> = _metadataFetchState.asStateFlow()
+
+    private var webDefaultsApplied = false
+
+    fun openSuggest(source: SuggestSource) {
+        _suggestSource.value = source
+        val t = track.value
+        if (source == SuggestSource.FILENAME && t != null) {
+            _namingPattern.value = FilenameTags.detectPattern(t.displayName)
+        }
+        if (source == SuggestSource.WEB && t != null && !webDefaultsApplied) {
+            _webQuery.value = listOfNotNull(
+                t.artist?.takeIf { it.isNotBlank() },
+                t.title?.takeIf { it.isNotBlank() }
+                    ?: t.displayName.substringBeforeLast('.'),
+            ).joinToString(" ").trim()
+            webDefaultsApplied = true
+        }
+    }
+
+    fun closeSuggest() { _suggestSource.value = SuggestSource.NONE }
+
+    fun setNamingPattern(pattern: NamingPattern) { _namingPattern.value = pattern }
+
+    /** Applies the filename parse to the form, then closes the source. */
+    fun applyFilenameParse() {
+        val parse = filenameParse.value ?: return
+        applyFields(parse.fields)
+        _suggestSource.value = SuggestSource.NONE
+    }
+
+    fun setWebQuery(q: String) { _webQuery.value = q }
+
+    fun fetchMetadata() {
+        if (_metadataFetchState.value is MetadataFetchState.Fetching) return
+        val query = _webQuery.value
+        if (query.isBlank()) return
+        viewModelScope.launch {
+            _metadataFetchState.value = MetadataFetchState.Fetching
+            runCatching {
+                metadataLookupRepo.searchRecordings(query)
+            }.fold(
+                onSuccess = { candidates ->
+                    _metadataFetchState.value = if (candidates.isEmpty()) MetadataFetchState.NotFound
+                    else MetadataFetchState.Found(candidates)
+                },
+                onFailure = { _metadataFetchState.value = MetadataFetchState.Error(it.message ?: "Lookup failed") },
+            )
+        }
+    }
+
+    /** Applies a chosen web candidate to the form, then closes the source. */
+    fun applyMetadataCandidate(candidate: MetadataCandidate) {
+        applyFields(
+            buildMap {
+                if (candidate.title.isNotBlank()) put("title", candidate.title)
+                if (candidate.artist.isNotBlank() && candidate.artist != "Unknown artist") put("artist", candidate.artist)
+                if (candidate.album.isNotBlank()) put("album", candidate.album)
+                if (candidate.year.isNotBlank()) put("year", candidate.year)
+            },
+        )
+        _metadataFetchState.value = MetadataFetchState.Idle
+        _suggestSource.value = SuggestSource.NONE
+    }
+
+    fun dismissMetadata() { _metadataFetchState.value = MetadataFetchState.Idle }
+
+    /** Batched form apply: sets each known field via the existing setters. */
+    private fun applyFields(fields: Map<String, String>) {
+        fields["title"]?.let { setTitle(it) }
+        fields["artist"]?.let { setArtist(it) }
+        fields["album"]?.let { setAlbum(it) }
+        fields["albumArtist"]?.let { setAlbumArtist(it) }
+        fields["trackNumber"]?.let { setTrackNumber(it) }
+        fields["discNumber"]?.let { setDiscNumber(it) }
+        fields["year"]?.let { setYear(it) }
+        fields["genre"]?.let { setGenre(it) }
+        fields["composer"]?.let { setComposer(it) }
+        fields["comment"]?.let { setComment(it) }
+    }
 
     // ── Shared helpers ────────────────────────────────────────────────────────
 
