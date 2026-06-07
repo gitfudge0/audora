@@ -35,6 +35,22 @@ interface TrackDao {
     @Query("SELECT * FROM tracks WHERE documentUri IN (:uris)")
     suspend fun getByDocumentUris(uris: List<String>): List<TrackEntity>
 
+    @Query(
+        """SELECT * FROM tracks
+           WHERE treeUri = :treeUri
+             AND hasSidecarLrc = 0
+             AND title IS NOT NULL AND title <> ''
+             AND artist IS NOT NULL AND artist <> ''
+             AND (:includeEarlierFailed = 1 OR lyricsFetchAttempted = 0)
+             AND (:includeEarlierFailed = 1 OR scannedAt >= :scannedAfter)
+           ORDER BY scannedAt ASC, displayName COLLATE NOCASE ASC""",
+    )
+    suspend fun getAutoLyricsCandidates(
+        treeUri: String,
+        scannedAfter: Long,
+        includeEarlierFailed: Boolean,
+    ): List<TrackEntity>
+
     @Query("SELECT documentUri FROM tracks WHERE treeUri = :treeUri AND albumKey IN (:albumKeys)")
     suspend fun documentUrisForAlbums(treeUri: String, albumKeys: List<String>): List<String>
 

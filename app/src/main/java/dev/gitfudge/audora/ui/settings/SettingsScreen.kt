@@ -22,6 +22,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -55,14 +56,24 @@ import dev.gitfudge.audora.ui.theme.ThemeMode
 fun SettingsScreen(
     onBack: () -> Unit,
     viewModel: MainViewModel,
+    folderLabel: String,
+    onChangeFolder: () -> Unit,
     onOpenLicenses: () -> Unit = {},
     onReplayWalkthrough: () -> Unit = {},
 ) {
     val themeMode by viewModel.themeMode.collectAsStateWithLifecycle()
+    val autoSyncLyrics by viewModel.autoSyncLyrics.collectAsStateWithLifecycle()
+    val includeEarlierFailedLyrics by viewModel.includeEarlierFailedLyrics.collectAsStateWithLifecycle()
     SettingsContent(
         themeMode = themeMode,
+        autoSyncLyrics = autoSyncLyrics,
+        includeEarlierFailedLyrics = includeEarlierFailedLyrics,
         onThemeModeChange = viewModel::setThemeMode,
+        onAutoSyncLyricsChange = viewModel::setAutoSyncLyrics,
+        onIncludeEarlierFailedLyricsChange = viewModel::setIncludeEarlierFailedLyrics,
         onBack = onBack,
+        folderLabel = folderLabel,
+        onChangeFolder = onChangeFolder,
         onOpenLicenses = onOpenLicenses,
         onReplayWalkthrough = onReplayWalkthrough,
     )
@@ -72,8 +83,14 @@ fun SettingsScreen(
 @Composable
 private fun SettingsContent(
     themeMode: ThemeMode,
+    autoSyncLyrics: Boolean,
+    includeEarlierFailedLyrics: Boolean,
     onThemeModeChange: (ThemeMode) -> Unit,
+    onAutoSyncLyricsChange: (Boolean) -> Unit,
+    onIncludeEarlierFailedLyricsChange: (Boolean) -> Unit,
     onBack: () -> Unit,
+    folderLabel: String,
+    onChangeFolder: () -> Unit,
     onOpenLicenses: () -> Unit = {},
     onReplayWalkthrough: () -> Unit = {},
 ) {
@@ -111,6 +128,18 @@ private fun SettingsContent(
                 .padding(horizontal = spacing.lg, vertical = spacing.md),
             verticalArrangement = Arrangement.spacedBy(spacing.lg),
         ) {
+            // ── Library ───────────────────────────────────────────────────
+            SectionLabel("Library")
+            AppPanel(modifier = Modifier.fillMaxWidth()) {
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    SettingsNavRow(
+                        label = stringResource(R.string.library_change_folder),
+                        supporting = folderLabel,
+                        onClick = onChangeFolder,
+                    )
+                }
+            }
+
             // ── Appearance ────────────────────────────────────────────────
             SectionLabel("Appearance")
             AppPanel(modifier = Modifier.fillMaxWidth()) {
@@ -151,6 +180,27 @@ private fun SettingsContent(
                             },
                         )
                     }
+                }
+            }
+
+            // ── Lyrics ───────────────────────────────────────────────────
+            SectionLabel("Lyrics sync")
+            AppPanel(modifier = Modifier.fillMaxWidth()) {
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    SettingsSwitchRow(
+                        label = "Enable autosync of lyrics",
+                        supporting = "After a scan, fetch lyrics for newly found tracks that do not already have LRC files.",
+                        checked = autoSyncLyrics,
+                        onCheckedChange = onAutoSyncLyricsChange,
+                    )
+                    Hairline()
+                    SettingsSwitchRow(
+                        label = "Include earlier failed ones",
+                        supporting = "Retry tracks that were checked before but had no match or failed to save.",
+                        checked = includeEarlierFailedLyrics,
+                        enabled = autoSyncLyrics,
+                        onCheckedChange = onIncludeEarlierFailedLyricsChange,
+                    )
                 }
             }
 
@@ -241,6 +291,40 @@ private fun SettingsContent(
     }
 }
 
+@Composable
+private fun SettingsSwitchRow(
+    label: String,
+    supporting: String,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+    enabled: Boolean = true,
+) {
+    ListRow(
+        onClick = if (enabled) ({ onCheckedChange(!checked) }) else null,
+        headline = {
+            Text(
+                text = label,
+                style = MaterialTheme.typography.bodyMedium,
+                color = if (enabled) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        },
+        supporting = {
+            Text(
+                text = supporting,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        },
+        trailing = {
+            Switch(
+                checked = checked,
+                enabled = enabled,
+                onCheckedChange = onCheckedChange,
+            )
+        },
+    )
+}
+
 /** Tappable settings row: chevron for in-app navigation, open-in-new for links that leave the app. */
 @Composable
 private fun SettingsNavRow(
@@ -306,7 +390,17 @@ private fun SectionLabel(text: String) {
 @Composable
 private fun SettingsLightPreview() {
     AudoraTheme(themeMode = ThemeMode.Light) {
-        SettingsContent(themeMode = ThemeMode.System, onThemeModeChange = {}, onBack = {})
+        SettingsContent(
+            themeMode = ThemeMode.System,
+            autoSyncLyrics = true,
+            includeEarlierFailedLyrics = false,
+            onThemeModeChange = {},
+            onAutoSyncLyricsChange = {},
+            onIncludeEarlierFailedLyricsChange = {},
+            onBack = {},
+            folderLabel = "Music",
+            onChangeFolder = {},
+        )
     }
 }
 
@@ -314,6 +408,16 @@ private fun SettingsLightPreview() {
 @Composable
 private fun SettingsDarkPreview() {
     AudoraTheme(themeMode = ThemeMode.Dark) {
-        SettingsContent(themeMode = ThemeMode.Dark, onThemeModeChange = {}, onBack = {})
+        SettingsContent(
+            themeMode = ThemeMode.Dark,
+            autoSyncLyrics = true,
+            includeEarlierFailedLyrics = true,
+            onThemeModeChange = {},
+            onAutoSyncLyricsChange = {},
+            onIncludeEarlierFailedLyricsChange = {},
+            onBack = {},
+            folderLabel = "Music",
+            onChangeFolder = {},
+        )
     }
 }

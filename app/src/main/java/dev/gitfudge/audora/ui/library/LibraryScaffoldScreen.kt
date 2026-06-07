@@ -32,7 +32,6 @@ import androidx.compose.material.icons.rounded.Image
 import androidx.compose.material.icons.rounded.Refresh
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material.icons.rounded.Settings
-import androidx.compose.material.icons.rounded.SwapHoriz
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.Badge
@@ -58,10 +57,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.gitfudge.audora.R
@@ -312,13 +314,6 @@ private fun LibraryImportingContent(
             AppTopBar(
                 title = stringResource(R.string.library_title),
                 actions = {
-                    IconButton(onClick = onChangeFolder) {
-                        Icon(
-                            imageVector = Icons.Rounded.SwapHoriz,
-                            contentDescription = stringResource(R.string.library_change_folder),
-                            tint = colors.onSurfaceVariant,
-                        )
-                    }
                     IconButton(onClick = onOpenSettings) {
                         Icon(
                             imageVector = Icons.Rounded.Settings,
@@ -464,8 +459,18 @@ private fun LibraryScaffoldContent(
 
     var showDownloadSheet by remember { mutableStateOf(false) }
     var showArtDownloadSheet by remember { mutableStateOf(false) }
+    var searchExpanded by rememberSaveable { mutableStateOf(query.isNotBlank()) }
+    val searchFocusRequester = remember { FocusRequester() }
     val isDownloading = batchFetchState is BatchFetchState.Running
     val isArtDownloading = batchArtFetchState is BatchFetchState.Running
+
+    LaunchedEffect(query) {
+        if (query.isNotBlank()) searchExpanded = true
+    }
+
+    LaunchedEffect(searchExpanded) {
+        if (searchExpanded) searchFocusRequester.requestFocus()
+    }
 
     val onTrackRowClick = remember(isSelecting, onToggleSelection, onTrackClick) {
         { documentUri: String ->
@@ -537,6 +542,13 @@ private fun LibraryScaffoldContent(
                             }
                         }
                     }
+                    IconButton(onClick = { searchExpanded = !searchExpanded }) {
+                        Icon(
+                            imageVector = Icons.Rounded.Search,
+                            contentDescription = "Search",
+                            tint = if (searchExpanded) colors.secondary else colors.onSurfaceVariant,
+                        )
+                    }
                     if (scanState !is ScanState.Running) {
                         IconButton(onClick = onRescan) {
                             Icon(
@@ -545,13 +557,6 @@ private fun LibraryScaffoldContent(
                                 tint = colors.onSurfaceVariant,
                             )
                         }
-                    }
-                    IconButton(onClick = onChangeFolder) {
-                        Icon(
-                            imageVector = Icons.Rounded.SwapHoriz,
-                            contentDescription = stringResource(R.string.library_change_folder),
-                            tint = colors.onSurfaceVariant,
-                        )
                     }
                     IconButton(onClick = onOpenSettings) {
                         Icon(
@@ -602,11 +607,15 @@ private fun LibraryScaffoldContent(
                 modifier = Modifier.padding(horizontal = spacing.lg),
             )
 
-            LibrarySearchField(
-                query = query,
-                onQueryChange = onQueryChange,
-                modifier = Modifier.padding(horizontal = spacing.lg, vertical = spacing.sm),
-            )
+            AnimatedVisibility(visible = searchExpanded || query.isNotBlank()) {
+                LibrarySearchField(
+                    query = query,
+                    onQueryChange = onQueryChange,
+                    modifier = Modifier
+                        .padding(horizontal = spacing.lg, vertical = spacing.sm)
+                        .focusRequester(searchFocusRequester),
+                )
+            }
 
             // Scope (Albums vs Tracks) and sort share one line so the active
             // ordering is evident next to the scope it applies to. Filters sit

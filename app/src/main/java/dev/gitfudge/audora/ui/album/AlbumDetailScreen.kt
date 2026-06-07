@@ -2,6 +2,7 @@ package dev.gitfudge.audora.ui.album
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,6 +17,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.AlertDialog
@@ -42,6 +44,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -58,7 +62,6 @@ import dev.gitfudge.audora.ui.common.ArtStatusChip
 import dev.gitfudge.audora.ui.common.LyricsStatusChip
 import dev.gitfudge.audora.ui.common.TagStatusChip
 import dev.gitfudge.audora.ui.components.AppBottomSheet
-import dev.gitfudge.audora.ui.components.AppTopBar
 import dev.gitfudge.audora.ui.components.ArtTileHero
 import dev.gitfudge.audora.ui.components.GhostButton
 import dev.gitfudge.audora.ui.components.ListRow
@@ -67,6 +70,7 @@ import dev.gitfudge.audora.ui.components.SecondaryButton
 import dev.gitfudge.audora.ui.library.AlbumArtPickerSheet
 import dev.gitfudge.audora.ui.library.AlbumPickerState
 import dev.gitfudge.audora.ui.library.DownloadStatus
+import dev.gitfudge.audora.ui.albumArtSharedElement
 import dev.gitfudge.audora.ui.theme.LocalSpacing
 import java.io.File
 
@@ -75,7 +79,8 @@ import java.io.File
 fun AlbumDetailScreen(
     onBack: () -> Unit,
     onTrackClick: (String) -> Unit,
-    deferHeavyContent: Boolean = false,
+    albumKey: String = "",
+    transitionComplete: Boolean = true,
     viewModel: AlbumDetailViewModel = hiltViewModel(),
 ) {
     val albumState by viewModel.state.collectAsStateWithLifecycle()
@@ -89,29 +94,15 @@ fun AlbumDetailScreen(
 
     Scaffold(
         containerColor = colors.background,
-        topBar = {
-            AppTopBar(
-                // Constant title; the album name lives in the hero, so duplicating it
-                // here just creates two title areas competing for attention.
-                title = "Album",
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = "Back")
-                    }
-                },
-            )
-        },
     ) { inner ->
-        // While the enter slide is still running, render only the (cheap) top bar
-        // + a neutral body so the animation stays at frame rate. The track list
-        // composes once the transition settles — matching how it feels with
-        // animations disabled.
-        if (deferHeavyContent) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(inner),
-            )
+        // While the nav transition is running, render a structurally cheap
+        // skeleton so the slide animation never contends with a heavy first
+        // composition (LazyColumn, AsyncImage, text measurement). The ViewModel
+        // subscription above is already active, so Room is loading during the
+        // slide; the real content composes on the first frame after the
+        // transition settles.
+        if (!transitionComplete) {
+            AlbumDetailSkeleton(albumKey = albumKey, modifier = Modifier.padding(inner))
             return@Scaffold
         }
 
@@ -168,12 +159,14 @@ fun AlbumDetailScreen(
         ) {
             item("hero") {
                 AlbumHero(
+                    albumKey = albumKey,
                     coverThumbnailPath = state.coverThumbnailPath,
                     title = state.albumLabel,
                     artist = state.artistLabel,
                     year = state.year,
                     trackCount = state.trackCount,
                     mixedArtist = state.mixedArtist,
+                    onBack = onBack,
                     onTapCover = { viewModel.startHeroArt() },
                 )
                 FlowRow(
@@ -286,55 +279,223 @@ fun AlbumDetailScreen(
     }
 }
 
+/**
+ * Structurally cheap placeholder rendered during the enter-slide transition.
+ * No LazyColumn, no AsyncImage, no text measurement, no remember-with-work —
+ * just fixed Boxes so the first composition is negligible and the slide stays
+ * at frame rate. Swapped out for real content the frame after the transition
+ * completes.
+ */
+@Composable
+private fun AlbumDetailSkeleton(albumKey: String, modifier: Modifier = Modifier) {
+    val colors = MaterialTheme.colorScheme
+    val spacing = LocalSpacing.current
+    val shimmer = colors.surfaceContainerHigh
+    val shapes = dev.gitfudge.audora.ui.theme.LocalShapeScale.current
+
+    Column(
+        modifier = modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.spacedBy(0.dp),
+    ) {
+        // Hero placeholder mirrors the real detail hero bounds so the shared
+        // album art morph lands in the same full-width square the final screen uses.
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .aspectRatio(1f)
+                .albumArtSharedElement(albumKey)
+                .background(shimmer),
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .fillMaxHeight(0.48f)
+                    .align(Alignment.BottomCenter)
+                    .background(
+                        Brush.verticalGradient(
+                            colorStops = arrayOf(
+                                0f to Color.Transparent,
+                                0.38f to Color.Black.copy(alpha = 0.24f),
+                                1f to Color.Black.copy(alpha = 0.52f),
+                            ),
+                        ),
+                    ),
+            )
+            Column(
+                verticalArrangement = Arrangement.spacedBy(spacing.xs),
+                modifier = Modifier
+                    .align(Alignment.BottomStart)
+                    .fillMaxWidth()
+                    .padding(horizontal = spacing.lg, vertical = spacing.lg),
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(width = 80.dp, height = 10.dp)
+                        .background(Color.White.copy(alpha = 0.36f), shapes.xs),
+                )
+                Box(
+                    modifier = Modifier
+                        .size(width = 170.dp, height = 22.dp)
+                        .background(Color.White.copy(alpha = 0.48f), shapes.xs),
+                )
+                Box(
+                    modifier = Modifier
+                        .size(width = 100.dp, height = 14.dp)
+                        .background(Color.White.copy(alpha = 0.32f), shapes.xs),
+                )
+                Box(
+                    modifier = Modifier
+                        .size(width = 120.dp, height = 12.dp)
+                        .background(Color.White.copy(alpha = 0.32f), shapes.xs),
+                )
+            }
+        }
+        // Status chip row placeholder
+        Box(
+            modifier = Modifier
+                .padding(horizontal = spacing.lg, vertical = spacing.xs)
+                .size(width = 200.dp, height = 28.dp)
+                .background(shimmer, shapes.sm),
+        )
+        // Action row placeholder
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = spacing.lg, vertical = spacing.sm)
+                .height(36.dp)
+                .background(shimmer, shapes.sm),
+        )
+        Spacer(Modifier.height(spacing.sm))
+        // Track row placeholders
+        repeat(6) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = spacing.lg, vertical = spacing.sm),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(spacing.md),
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(width = 28.dp, height = 14.dp)
+                        .background(shimmer, shapes.xs),
+                )
+                Column(
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(spacing.xs),
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth(0.6f)
+                            .height(14.dp)
+                            .background(shimmer, shapes.xs),
+                    )
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth(0.4f)
+                            .height(11.dp)
+                            .background(shimmer, shapes.xs),
+                    )
+                }
+                Box(
+                    modifier = Modifier
+                        .size(width = 60.dp, height = 28.dp)
+                        .background(shimmer, shapes.xs),
+                )
+            }
+        }
+    }
+}
+
 @Composable
 private fun AlbumHero(
+    albumKey: String,
     coverThumbnailPath: String?,
     title: String,
     artist: String,
     year: String?,
     trackCount: Int,
     mixedArtist: Boolean,
+    onBack: () -> Unit,
     onTapCover: () -> Unit,
 ) {
     val spacing = LocalSpacing.current
-    val colors = MaterialTheme.colorScheme
 
-    // Vertical hero: the cover is the master, sized aggressively, square (no
-    // radius enforced by ArtTileHero shape override), then the text block.
-    Column(
+    Box(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = spacing.lg, vertical = spacing.md),
-        verticalArrangement = Arrangement.spacedBy(spacing.sm),
+            .aspectRatio(1f),
     ) {
         val heroModel = remember(coverThumbnailPath) { coverThumbnailPath?.let { File(it) } }
         ArtTileHero(
             model = heroModel,
             contentDescription = "Album cover",
-            shape = androidx.compose.foundation.shape.RoundedCornerShape(4.dp),
+            shape = androidx.compose.foundation.shape.RoundedCornerShape(0.dp),
             modifier = Modifier
-                .size(120.dp)
+                .fillMaxSize()
+                .albumArtSharedElement(albumKey)
                 .clickable(onClick = onTapCover),
         )
-        Column(verticalArrangement = Arrangement.spacedBy(spacing.xs)) {
+
+        IconButton(
+            onClick = onBack,
+            modifier = Modifier
+                .align(Alignment.TopStart)
+                .statusBarsPadding()
+                .padding(start = spacing.sm, top = spacing.sm)
+                .background(
+                    color = Color.Black.copy(alpha = 0.32f),
+                    shape = androidx.compose.foundation.shape.CircleShape,
+                ),
+        ) {
+            Icon(
+                imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
+                contentDescription = "Back",
+                tint = Color.White,
+            )
+        }
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .fillMaxHeight(0.48f)
+                .align(Alignment.BottomCenter)
+                .background(
+                    Brush.verticalGradient(
+                        colorStops = arrayOf(
+                            0f to Color.Transparent,
+                            0.38f to Color.Black.copy(alpha = 0.44f),
+                            1f to Color.Black.copy(alpha = 0.92f),
+                        ),
+                    ),
+                ),
+        )
+
+        Column(
+            modifier = Modifier
+                .align(Alignment.BottomStart)
+                .fillMaxWidth()
+                .padding(horizontal = spacing.lg, vertical = spacing.lg),
+            verticalArrangement = Arrangement.spacedBy(spacing.xs),
+        ) {
             Text(
                 text = "ALBUM · ${artist.uppercase()}",
                 style = dev.gitfudge.audora.ui.theme.AppTextStyles.eyebrow,
-                color = colors.onSurfaceVariant,
+                color = Color.White.copy(alpha = 0.76f),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
             Text(
                 text = title,
                 style = MaterialTheme.typography.titleLarge,
-                color = colors.onSurface,
+                color = Color.White,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
             )
             Text(
                 text = artist,
                 style = MaterialTheme.typography.bodyMedium,
-                color = colors.onSurfaceVariant,
+                color = Color.White.copy(alpha = 0.76f),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
@@ -346,7 +507,7 @@ private fun AlbumHero(
                     if (mixedArtist) append(" · Mixed")
                 },
                 style = dev.gitfudge.audora.ui.theme.AppTextStyles.mono,
-                color = colors.onSurfaceVariant,
+                color = Color.White.copy(alpha = 0.76f),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )

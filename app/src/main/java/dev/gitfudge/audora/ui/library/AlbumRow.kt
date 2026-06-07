@@ -17,6 +17,7 @@ import dev.gitfudge.audora.ui.common.AlbumTagStatusChip
 import dev.gitfudge.audora.ui.components.ArtTile
 import dev.gitfudge.audora.ui.components.ArtTileSize
 import dev.gitfudge.audora.ui.components.ListRow
+import dev.gitfudge.audora.ui.albumArtSharedElement
 import dev.gitfudge.audora.ui.theme.LocalSpacing
 import java.io.File
 
@@ -42,19 +43,21 @@ fun AlbumRow(
         onLongClick = { onLongClick(summary.albumKey) },
         selected = selected,
         leading = {
-            if (selectionMode) {
-                Checkbox(checked = selected, onCheckedChange = null)
-            } else {
-                val artModel = remember(summary.coverThumbnailPath) {
-                    summary.coverThumbnailPath?.let { File(it) }
-                }
-                ArtTile(
-                    model = artModel,
-                    contentDescription = null,
-                    size = ArtTileSize.Md,
-                )
+            val artModel = remember(summary.coverThumbnailPath) {
+                summary.coverThumbnailPath?.let { File(it) }
             }
+            ArtTile(
+                model = artModel,
+                contentDescription = null,
+                size = ArtTileSize.Md,
+                modifier = Modifier.albumArtSharedElement(summary.albumKey),
+            )
         },
+        trailing = if (selectionMode) {
+            {
+                Checkbox(checked = selected, onCheckedChange = null)
+            }
+        } else null,
         headline = {
             Text(
                 text = summary.albumLabel,

@@ -53,6 +53,7 @@ data class TrackEntity(
 
     val hasSidecarLrc: Boolean,
     val sidecarLrcSynced: Boolean,
+    val lyricsFetchAttempted: Boolean = false,
 
     val coreTagsComplete: Boolean,
     val artistUnknown: Boolean,
