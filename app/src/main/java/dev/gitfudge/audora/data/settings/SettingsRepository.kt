@@ -6,22 +6,24 @@ import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
+import androidx.datastore.preferences.core.stringSetPreferencesKey
 import dev.gitfudge.audora.ui.theme.ThemeMode
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 import javax.inject.Singleton
 
-/** User-tunable knobs and the persisted music folder. */
+/** User-tunable knobs and the persisted music folders. */
 data class Settings(
-    val musicTreeUri: String?,
+    // ponytail: unordered Set is fine for a union view; upgrade to an ordered List<String> if the Settings UI ever needs stable folder order.
+    val musicTreeUris: Set<String>,
     /**
-     * The tree URI that has already been fully scanned at least once. Used to
-     * decide whether a scan should run automatically: the first scan (during
-     * onboarding) and a watch-path change auto-scan; every later launch of an
-     * already-scanned folder relies on the persisted DB and a manual rescan.
+     * The tree URIs that have already been fully scanned at least once. Used to
+     * decide whether a scan should run automatically: a newly-added folder
+     * auto-scans once; every later launch of an already-scanned folder relies
+     * on the persisted DB and a manual rescan.
      */
-    val lastScannedTreeUri: String?,
+    val scannedTreeUris: Set<String>,
     val lowResThresholdPx: Int,
     val themeMode: ThemeMode,
     val autoSyncLyrics: Boolean,
@@ -37,8 +39,11 @@ class SettingsRepository @Inject constructor(
     private val dataStore: DataStore<Preferences>,
 ) {
     private object Keys {
-        val MusicTreeUri = stringPreferencesKey("music_tree_uri")
-        val LastScannedTreeUri = stringPreferencesKey("last_scanned_tree_uri")
+        val MusicTreeUris = stringSetPreferencesKey("music_tree_uris")
+        val ScannedTreeUris = stringSetPreferencesKey("scanned_tree_uris")
+        // Legacy single-folder keys — read only, to migrate on first access.
+        val LegacyMusicTreeUri = stringPreferencesKey("music_tree_uri")
+        val LegacyLastScannedTreeUri = stringPreferencesKey("last_scanned_tree_uri")
         val LowResThreshold = intPreferencesKey("low_res_threshold_px")
         val ThemeMode = stringPreferencesKey("theme_mode")
         val AutoSyncLyrics = booleanPreferencesKey("auto_sync_lyrics")
@@ -49,8 +54,9 @@ class SettingsRepository @Inject constructor(
 
     val settings: Flow<Settings> = dataStore.data.map { prefs ->
         Settings(
-            musicTreeUri = prefs[Keys.MusicTreeUri],
-            lastScannedTreeUri = prefs[Keys.LastScannedTreeUri],
+            // One-time read migration: seed the new set from the old single URI.
+            musicTreeUris = prefs.musicTreeUris(),
+            scannedTreeUris = prefs.scannedTreeUris(),
             lowResThresholdPx = prefs[Keys.LowResThreshold] ?: DEFAULT_LOW_RES_PX,
             themeMode = prefs[Keys.ThemeMode]?.toThemeModeOrNull() ?: ThemeMode.System,
             autoSyncLyrics = prefs[Keys.AutoSyncLyrics] ?: true,
@@ -60,17 +66,31 @@ class SettingsRepository @Inject constructor(
         )
     }
 
-    suspend fun setMusicTreeUri(uri: String) {
-        dataStore.edit { it[Keys.MusicTreeUri] = uri }
+    suspend fun addMusicTreeUri(uri: String) {
+        dataStore.edit { it[Keys.MusicTreeUris] = it.musicTreeUris() + uri }
     }
 
-    suspend fun clearMusicTreeUri() {
-        dataStore.edit { it.remove(Keys.MusicTreeUri) }
+    suspend fun removeMusicTreeUri(uri: String) {
+        dataStore.edit { it[Keys.MusicTreeUris] = it.musicTreeUris() - uri }
     }
 
-    suspend fun setLastScannedTreeUri(uri: String) {
-        dataStore.edit { it[Keys.LastScannedTreeUri] = uri }
+    suspend fun markTreeScanned(uri: String) {
+        dataStore.edit { it[Keys.ScannedTreeUris] = it.scannedTreeUris() + uri }
     }
+
+    suspend fun unmarkTreeScanned(uri: String) {
+        dataStore.edit { it[Keys.ScannedTreeUris] = it.scannedTreeUris() - uri }
+    }
+
+    private fun Preferences.musicTreeUris(): Set<String> =
+        this[Keys.MusicTreeUris]
+            ?: this[Keys.LegacyMusicTreeUri]?.let { setOf(it) }
+            ?: emptySet()
+
+    private fun Preferences.scannedTreeUris(): Set<String> =
+        this[Keys.ScannedTreeUris]
+            ?: this[Keys.LegacyLastScannedTreeUri]?.let { setOf(it) }
+            ?: emptySet()
 
     suspend fun setLowResThresholdPx(px: Int) {
         dataStore.edit { it[Keys.LowResThreshold] = px }

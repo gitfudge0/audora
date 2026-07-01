@@ -13,9 +13,13 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dev.gitfudge.audora.BuildConfig
+import dev.gitfudge.audora.data.db.TrackDao
 import dev.gitfudge.audora.data.releases.AppRelease
 import dev.gitfudge.audora.data.releases.ReleasesRepository
 import dev.gitfudge.audora.data.settings.SettingsRepository
+import dev.gitfudge.audora.domain.FolderAccess
+import dev.gitfudge.audora.domain.FolderRoute
+import dev.gitfudge.audora.domain.decideFolderRouting
 import dev.gitfudge.audora.ui.theme.ThemeMode
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -36,15 +40,32 @@ sealed interface RootUiState {
     /** First-run (or replayed) feature tour, shown before the folder picker. */
     data object Walkthrough : RootUiState
     data object Onboarding : RootUiState
-    data class Library(val folderLabel: String) : RootUiState
 
     /**
-     * A folder was chosen but the persisted SAF grant is gone (revoked, app
-     * data cleared, SD card remount). We must not silently fail writes — ask
-     * the user to re-grant.
+     * The merged library across every granted folder. [unavailableFolders] are
+     * the URIs whose grant is currently lost — the valid folders keep working
+     * while these are flagged (banner) rather than blocking the whole app.
+     */
+    data class Library(
+        val folderSummary: String,
+        val unavailableFolders: List<String>,
+    ) : RootUiState
+
+    /**
+     * Every chosen folder lost its persisted SAF grant (revoked, app data
+     * cleared, SD card remount). We must not silently fail writes — ask the
+     * user to re-grant.
      */
     data class PermissionLost(val folderLabel: String) : RootUiState
 }
+
+/** One granted folder, for the Settings folder list. */
+@Immutable
+data class LibraryFolder(
+    val uri: String,
+    val label: String,
+    val available: Boolean,
+)
 
 @Immutable
 data class ReleasesUiState(
@@ -75,6 +96,7 @@ sealed interface ManualUpdateCheckResult {
 class MainViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
     private val settings: SettingsRepository,
+    private val trackDao: TrackDao,
     private val releasesRepository: ReleasesRepository,
 ) : ViewModel() {
     private val _releasesUiState = MutableStateFlow(ReleasesUiState(isLoading = true))
@@ -82,19 +104,38 @@ class MainViewModel @Inject constructor(
 
     val uiState: StateFlow<RootUiState> = settings.settings
         .map { current ->
-            val uri = current.musicTreeUri
-            when {
-                !current.hasSeenWalkthrough -> RootUiState.Walkthrough
-                uri.isNullOrBlank() -> RootUiState.Onboarding
-                !hasValidAccess(uri) ->
-                    RootUiState.PermissionLost(folderLabel = resolveFolderLabel(uri))
-                else -> RootUiState.Library(folderLabel = resolveFolderLabel(uri))
+            val uris = current.musicTreeUris.toList()
+            if (!current.hasSeenWalkthrough) return@map RootUiState.Walkthrough
+            val routing = decideFolderRouting(
+                uris.map { FolderAccess(it, hasValidAccess(it)) },
+            )
+            when (routing.route) {
+                FolderRoute.ONBOARDING -> RootUiState.Onboarding
+                FolderRoute.PERMISSION_LOST ->
+                    RootUiState.PermissionLost(folderLabel = folderSummary(uris))
+                FolderRoute.LIBRARY -> RootUiState.Library(
+                    folderSummary = folderSummary(uris),
+                    unavailableFolders = routing.unavailable,
+                )
             }
         }
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5_000),
             initialValue = RootUiState.Loading,
+        )
+
+    /** The granted folders with resolved labels + access, for the Settings list. */
+    val folders: StateFlow<List<LibraryFolder>> = settings.settings
+        .map { current ->
+            current.musicTreeUris
+                .map { LibraryFolder(it, resolveFolderLabel(it), hasValidAccess(it)) }
+                .sortedBy { it.label.lowercase() }
+        }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = emptyList(),
         )
 
     val themeMode: StateFlow<ThemeMode> = settings.settings
@@ -278,12 +319,18 @@ class MainViewModel @Inject constructor(
                         Intent.FLAG_GRANT_WRITE_URI_PERMISSION,
                 )
             }
-            settings.setMusicTreeUri(uri.toString())
+            settings.addMusicTreeUri(uri.toString())
         }
     }
 
-    fun changeFolder() {
-        viewModelScope.launch { settings.clearMusicTreeUri() }
+    fun removeFolder(uri: String) {
+        viewModelScope.launch {
+            settings.removeMusicTreeUri(uri)
+            // ponytail: don't releasePersistableUriPermission — Android's 512-grant
+            // cap is irrelevant for a handful of folders.
+            trackDao.clearTree(uri)
+            settings.unmarkTreeScanned(uri)
+        }
     }
 
     /**
@@ -299,6 +346,10 @@ class MainViewModel @Inject constructor(
         if (!held) return false
         DocumentFile.fromTreeUri(context, uri)?.canRead() == true
     }.getOrDefault(false)
+
+    /** A single folder's label, or "N folders" for a multi-folder library. */
+    private fun folderSummary(uris: List<String>): String =
+        if (uris.size == 1) resolveFolderLabel(uris.first()) else "${uris.size} folders"
 
     private fun resolveFolderLabel(treeUri: String): String =
         runCatching {

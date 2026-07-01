@@ -131,9 +131,9 @@ class AlbumDetailViewModel @Inject constructor(
     @OptIn(ExperimentalCoroutinesApi::class)
     val state: StateFlow<AlbumDetailState> = settings.settings
         .flatMapLatest { s ->
-            val uri = s.musicTreeUri
-                ?: return@flatMapLatest flowOf(emptyList<TrackEntity>() to s.lowResThresholdPx)
-            trackDao.observeTracksInAlbum(uri, albumKey)
+            val uris = s.musicTreeUris.toList()
+                .ifEmpty { return@flatMapLatest flowOf(emptyList<TrackEntity>() to s.lowResThresholdPx) }
+            trackDao.observeTracksInAlbum(uris, albumKey)
                 .map { tracks -> tracks to s.lowResThresholdPx }
         }
         .map { (tracks, lowResPx) ->

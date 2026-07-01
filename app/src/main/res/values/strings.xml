@@ -26,6 +26,7 @@
     <string name="library_title">Library</string>
     <string name="library_folder_label">Watching</string>
     <string name="library_change_folder">Change folder</string>
+    <string name="library_add_folder">Add folder</string>
     <string name="library_rescan">Rescan</string>
     <string name="library_view_flat">Switch to list view</string>
     <string name="library_view_tree">Switch to folder view</string>

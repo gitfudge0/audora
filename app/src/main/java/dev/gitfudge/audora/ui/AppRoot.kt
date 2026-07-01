@@ -136,8 +136,10 @@ fun AppRoot(viewModel: MainViewModel) {
                         composable("library") {
                           CompositionLocalProvider(LocalNavAnimatedVisibilityScope provides this) {
                             LibraryScaffoldScreen(
-                                folderLabel = current.folderLabel,
+                                folderLabel = current.folderSummary,
                                 onChangeFolder = { pickFolder.launch(null) },
+                                unavailableCount = current.unavailableFolders.size,
+                                onFixUnavailable = { pickFolder.launch(null) },
                                 onTrackClick = { docUri ->
                                     navController.navigate("detail/${Uri.encode(docUri)}")
                                 },
@@ -154,8 +156,7 @@ fun AppRoot(viewModel: MainViewModel) {
                             SettingsScreen(
                                 onBack = { navController.popBackStack() },
                                 viewModel = viewModel,
-                                folderLabel = current.folderLabel,
-                                onChangeFolder = { pickFolder.launch(null) },
+                                onAddFolder = { pickFolder.launch(null) },
                                 onOpenLicenses = { navController.navigate("licenses") },
                                 onOpenChangelog = { navController.navigate("changelog") },
                                 onReplayWalkthrough = { viewModel.setWalkthroughSeen(false) },

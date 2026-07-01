@@ -37,8 +37,8 @@ class UnfiledViewModel @Inject constructor(
     @OptIn(ExperimentalCoroutinesApi::class)
     val tracks: StateFlow<List<TrackEntity>> = settings.settings
         .flatMapLatest { s ->
-            val uri = s.musicTreeUri ?: return@flatMapLatest flowOf(emptyList())
-            trackDao.observeUnfiledTracks(uri)
+            val uris = s.musicTreeUris.toList().ifEmpty { return@flatMapLatest flowOf(emptyList()) }
+            trackDao.observeUnfiledTracks(uris)
         }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 

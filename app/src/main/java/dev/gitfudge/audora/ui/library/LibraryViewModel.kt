@@ -29,6 +29,7 @@ import dev.gitfudge.audora.domain.LibraryFilter
 import dev.gitfudge.audora.domain.LibrarySort
 import dev.gitfudge.audora.domain.LibraryTab
 import dev.gitfudge.audora.domain.displayTitle
+import dev.gitfudge.audora.domain.treesNeedingScan
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -194,16 +195,16 @@ class LibraryViewModel @Inject constructor(
     }
 
     private data class LibrarySourceSettings(
-        val musicTreeUri: String?,
+        val musicTreeUris: List<String>,
         val lowResThresholdPx: Int,
     )
 
     private val librarySourceSettings = settings.settings
-        .map { LibrarySourceSettings(it.musicTreeUri, it.lowResThresholdPx) }
+        .map { LibrarySourceSettings(it.musicTreeUris.toList(), it.lowResThresholdPx) }
         .distinctUntilChanged()
 
-    private val musicTreeUriFlow = settings.settings
-        .map { it.musicTreeUri }
+    private val musicTreeUrisFlow = settings.settings
+        .map { it.musicTreeUris.toList() }
         .distinctUntilChanged()
 
     // ── Scan ──────────────────────────────────────────────────────────────────
@@ -222,9 +223,9 @@ class LibraryViewModel @Inject constructor(
     val libraryLoadState: StateFlow<LibraryLoadState> = combine(
         _scanState,
         _firstImportActive,
-        musicTreeUriFlow.flatMapLatest { uri ->
-            if (uri == null) return@flatMapLatest flowOf(0)
-            trackDao.observeCount(uri)
+        musicTreeUrisFlow.flatMapLatest { uris ->
+            if (uris.isEmpty()) return@flatMapLatest flowOf(0)
+            trackDao.observeCount(uris)
         },
     ) { scanState, firstImportActive, indexedCount ->
         if (firstImportActive && scanState is ScanState.Running) {
@@ -284,8 +285,8 @@ class LibraryViewModel @Inject constructor(
         debouncedQuery,
     ) { tab, source, filter, sort, query ->
         if (tab != LibraryTab.TRACKS) return@combine null
-        val uri = source.musicTreeUri ?: return@combine null
-        buildQuery(uri, filter, sort, source.lowResThresholdPx, query)
+        val uris = source.musicTreeUris.ifEmpty { return@combine null }
+        buildQuery(uris, filter, sort, source.lowResThresholdPx, query)
     }
 
     private val trackCountQuery = combine(
@@ -293,8 +294,8 @@ class LibraryViewModel @Inject constructor(
         _filter,
         debouncedQuery,
     ) { source, filter, query ->
-        val uri = source.musicTreeUri ?: return@combine null
-        buildCountQuery(uri, filter, source.lowResThresholdPx, query)
+        val uris = source.musicTreeUris.ifEmpty { return@combine null }
+        buildCountQuery(uris, filter, source.lowResThresholdPx, query)
     }
 
     val tracks: StateFlow<List<TrackEntity>> = trackListQuery
@@ -313,8 +314,8 @@ class LibraryViewModel @Inject constructor(
      */
     val albums: StateFlow<List<AlbumSummary>> = combine(
         librarySourceSettings.flatMapLatest { source ->
-            val uri = source.musicTreeUri ?: return@flatMapLatest flowOf(emptyList<AlbumRow>())
-            trackDao.observeAlbumRows(uri, source.lowResThresholdPx)
+            val uris = source.musicTreeUris.ifEmpty { return@flatMapLatest flowOf(emptyList<AlbumRow>()) }
+            trackDao.observeAlbumRows(uris, source.lowResThresholdPx)
         }.sample(LIST_SAMPLE_MS).map { rows -> rows.map { it.toSummary() } },
         _filter,
         _sort,
@@ -337,10 +338,10 @@ class LibraryViewModel @Inject constructor(
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
     /** Count of unfiled tracks (no album tag). Drives the Unfiled bucket row. */
-    val unfiledCount: StateFlow<Int> = musicTreeUriFlow
-        .flatMapLatest { uri ->
-            if (uri == null) return@flatMapLatest flowOf(0)
-            trackDao.observeUnfiledCount(uri)
+    val unfiledCount: StateFlow<Int> = musicTreeUrisFlow
+        .flatMapLatest { uris ->
+            if (uris.isEmpty()) return@flatMapLatest flowOf(0)
+            trackDao.observeUnfiledCount(uris)
         }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), 0)
 
@@ -369,8 +370,9 @@ class LibraryViewModel @Inject constructor(
 
     /** Resolve an album's track URIs and add/remove them as one unit. */
     private suspend fun albumUris(albumKey: String): List<String> {
-        val uri = settings.settings.first().musicTreeUri ?: return emptyList()
-        return trackDao.documentUrisForAlbums(uri, listOf(albumKey))
+        val uris = settings.settings.first().musicTreeUris.toList()
+        if (uris.isEmpty()) return emptyList()
+        return trackDao.documentUrisForAlbums(uris, listOf(albumKey))
     }
 
     fun enterSelectionWithAlbum(albumKey: String) {
@@ -779,34 +781,32 @@ class LibraryViewModel @Inject constructor(
         viewModelScope.launch {
             artEnrichmentJob?.cancel()
             autoLyricsJob?.cancel()
-            val s = settings.settings.first()
-            val uri = s.musicTreeUri ?: return@launch
-            doScan(uri)
+            val uris = settings.settings.first().musicTreeUris.toList()
+            for (uri in uris) doScan(uri, uris)
         }
     }
 
     init {
-        // Auto-scan only the first time a folder is seen (onboarding) or when
-        // the watch path changes. An already-scanned folder relies on the
-        // persisted DB on subsequent launches; the user triggers a rescan
-        // manually via [rescan].
+        // Auto-scan only newly-added folders: the diff of selected − already-
+        // scanned. An already-scanned folder relies on the persisted DB on
+        // subsequent launches; the user triggers a rescan manually via [rescan].
         viewModelScope.launch {
-            musicTreeUriFlow
-                .filter { it != null }
-                .collect { uri ->
-                    if (uri != settings.settings.first().lastScannedTreeUri) {
-                        doScan(uri!!)
-                    }
-                }
+            musicTreeUrisFlow.collect { uris ->
+                val scanned = settings.settings.first().scannedTreeUris
+                val toScan = treesNeedingScan(uris.toSet(), scanned)
+                for (uri in toScan) doScan(uri, uris)
+            }
         }
     }
 
-    private suspend fun doScan(treeUri: String) {
+    private suspend fun doScan(treeUri: String, allUris: List<String>) {
         if (_scanState.value is ScanState.Running) return
         artEnrichmentJob?.cancel()
         autoLyricsJob?.cancel()
         val scanStartedAt = System.currentTimeMillis()
-        _firstImportActive.value = trackDao.observeCount(treeUri).first() == 0
+        // First-import takeover only when the whole library (all folders) is
+        // empty — adding a folder to an existing library scans in the background.
+        _firstImportActive.value = trackDao.observeCount(allUris).first() == 0
         _scanState.value = ScanState.Running(0, "")
         runCatching {
             scanner.scan(treeUri) { count, label ->
@@ -815,7 +815,7 @@ class LibraryViewModel @Inject constructor(
         }.fold(
             onSuccess = {
                 _firstImportActive.value = false
-                settings.setLastScannedTreeUri(treeUri)
+                settings.markTreeScanned(treeUri)
                 _scanState.value = ScanState.Done(it)
                 if (it.mislabeled > 0) {
                     _notices.send(LibraryNotice.Mislabeled(it.mislabeled))
@@ -911,14 +911,14 @@ class LibraryViewModel @Inject constructor(
     }
 
     private fun buildQuery(
-        treeUri: String,
+        treeUris: List<String>,
         filter: LibraryFilter,
         sort: LibrarySort,
         lowResPx: Int,
         query: String,
     ): SupportSQLiteQuery {
         val args = mutableListOf<Any>()
-        val where = buildTrackWhereClause(treeUri, filter, lowResPx, query, args)
+        val where = buildTrackWhereClause(treeUris, filter, lowResPx, query, args)
         val orderBy = when (sort) {
             LibrarySort.ALBUM -> "albumLabel ASC, discNumber ASC, trackNumber ASC, displayName ASC"
             LibrarySort.TITLE -> "COALESCE(title, displayName) ASC"
@@ -929,26 +929,28 @@ class LibraryViewModel @Inject constructor(
     }
 
     private fun buildCountQuery(
-        treeUri: String,
+        treeUris: List<String>,
         filter: LibraryFilter,
         lowResPx: Int,
         query: String,
     ): SupportSQLiteQuery {
         val args = mutableListOf<Any>()
-        val where = buildTrackWhereClause(treeUri, filter, lowResPx, query, args)
+        val where = buildTrackWhereClause(treeUris, filter, lowResPx, query, args)
         return SimpleSQLiteQuery("SELECT COUNT(*) FROM tracks WHERE $where", args.toTypedArray())
     }
 
     private fun buildTrackWhereClause(
-        treeUri: String,
+        treeUris: List<String>,
         filter: LibraryFilter,
         lowResPx: Int,
         query: String,
         args: MutableList<Any>,
     ): String {
-        args += treeUri
+        args.addAll(treeUris)
         return buildString {
-            append("treeUri = ?")
+            append("treeUri IN (")
+            append(treeUris.joinToString(", ") { "?" })
+            append(")")
             when (filter) {
                 LibraryFilter.ALL -> {}
                 LibraryFilter.MISSING_ART -> append(" AND artScanPending = 0 AND hasEmbeddedArt = 0")

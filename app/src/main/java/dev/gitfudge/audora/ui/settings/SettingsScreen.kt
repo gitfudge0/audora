@@ -14,7 +14,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.automirrored.rounded.OpenInNew
+import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.ChevronRight
+import androidx.compose.material.icons.rounded.DeleteOutline
 import androidx.compose.material.icons.rounded.Download
 import androidx.compose.material.icons.rounded.LocalCafe
 import androidx.compose.material.icons.rounded.Refresh
@@ -45,6 +47,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.gitfudge.audora.BuildConfig
 import dev.gitfudge.audora.R
 import dev.gitfudge.audora.data.releases.AppRelease
+import dev.gitfudge.audora.ui.LibraryFolder
 import dev.gitfudge.audora.ui.MainViewModel
 import dev.gitfudge.audora.ui.ManualUpdateCheckResult
 import dev.gitfudge.audora.ui.UpdateStatus
@@ -64,8 +67,7 @@ import dev.gitfudge.audora.ui.theme.ThemeMode
 fun SettingsScreen(
     onBack: () -> Unit,
     viewModel: MainViewModel,
-    folderLabel: String,
-    onChangeFolder: () -> Unit,
+    onAddFolder: () -> Unit,
     onOpenLicenses: () -> Unit = {},
     onOpenChangelog: () -> Unit = {},
     onReplayWalkthrough: () -> Unit = {},
@@ -74,6 +76,7 @@ fun SettingsScreen(
     val autoSyncLyrics by viewModel.autoSyncLyrics.collectAsStateWithLifecycle()
     val includeEarlierFailedLyrics by viewModel.includeEarlierFailedLyrics.collectAsStateWithLifecycle()
     val releasesState by viewModel.releasesUiState.collectAsStateWithLifecycle()
+    val folders by viewModel.folders.collectAsStateWithLifecycle()
     SettingsContent(
         themeMode = themeMode,
         autoSyncLyrics = autoSyncLyrics,
@@ -89,8 +92,9 @@ fun SettingsScreen(
         onDismissManualCheckResult = viewModel::dismissManualCheckResult,
         onInstallUpdate = viewModel::downloadAndInstallUpdate,
         onBack = onBack,
-        folderLabel = folderLabel,
-        onChangeFolder = onChangeFolder,
+        folders = folders,
+        onAddFolder = onAddFolder,
+        onRemoveFolder = viewModel::removeFolder,
         onOpenLicenses = onOpenLicenses,
         onOpenChangelog = onOpenChangelog,
         onReplayWalkthrough = onReplayWalkthrough,
@@ -114,8 +118,9 @@ private fun SettingsContent(
     onDismissManualCheckResult: () -> Unit,
     onInstallUpdate: () -> Unit,
     onBack: () -> Unit,
-    folderLabel: String,
-    onChangeFolder: () -> Unit,
+    folders: List<LibraryFolder>,
+    onAddFolder: () -> Unit,
+    onRemoveFolder: (String) -> Unit,
     onOpenLicenses: () -> Unit = {},
     onOpenChangelog: () -> Unit = {},
     onReplayWalkthrough: () -> Unit = {},
@@ -186,10 +191,25 @@ private fun SettingsContent(
             SectionLabel("Library")
             AppPanel(modifier = Modifier.fillMaxWidth()) {
                 Column(modifier = Modifier.fillMaxWidth()) {
+                    folders.forEachIndexed { index, folder ->
+                        if (index > 0) Hairline()
+                        FolderRow(
+                            folder = folder,
+                            onRemove = { onRemoveFolder(folder.uri) },
+                        )
+                    }
+                    if (folders.isNotEmpty()) Hairline()
                     SettingsNavRow(
-                        label = stringResource(R.string.library_change_folder),
-                        supporting = folderLabel,
-                        onClick = onChangeFolder,
+                        label = stringResource(R.string.library_add_folder),
+                        onClick = onAddFolder,
+                        trailing = {
+                            Icon(
+                                imageVector = Icons.Rounded.Add,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.size(18.dp),
+                            )
+                        },
                     )
                 }
             }
@@ -445,6 +465,57 @@ private fun SettingsSwitchRow(
     )
 }
 
+/** One granted library folder: label, an "unavailable" badge when its grant is lost, and a remove action. */
+@Composable
+private fun FolderRow(
+    folder: LibraryFolder,
+    onRemove: () -> Unit,
+) {
+    ListRow(
+        headline = { Text(folder.label, style = MaterialTheme.typography.bodyMedium) },
+        supporting = if (!folder.available) {
+            {
+                Text(
+                    text = "Unavailable — tap Add folder to re-grant",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        } else null,
+        trailing = {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                if (!folder.available) {
+                    UnavailableBadge()
+                    Spacer(Modifier.size(8.dp))
+                }
+                IconButton(onClick = onRemove) {
+                    Icon(
+                        imageVector = Icons.Rounded.DeleteOutline,
+                        contentDescription = "Remove folder",
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(20.dp),
+                    )
+                }
+            }
+        },
+    )
+}
+
+@Composable
+private fun UnavailableBadge() {
+    Surface(
+        color = MaterialTheme.colorScheme.surfaceContainerHigh,
+        shape = LocalShapeScale.current.sm,
+    ) {
+        Text(
+            text = "UNAVAILABLE",
+            style = AppTextStyles.eyebrow,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+        )
+    }
+}
+
 /** Tappable settings row: chevron for in-app navigation, open-in-new for links that leave the app. */
 @Composable
 private fun SettingsNavRow(
@@ -527,8 +598,12 @@ private fun SettingsLightPreview() {
             onDismissManualCheckResult = {},
             onInstallUpdate = {},
             onBack = {},
-            folderLabel = "Music",
-            onChangeFolder = {},
+            folders = listOf(
+                LibraryFolder(uri = "a", label = "Music", available = true),
+                LibraryFolder(uri = "b", label = "SD Card", available = false),
+            ),
+            onAddFolder = {},
+            onRemoveFolder = {},
         )
     }
 }
@@ -552,8 +627,12 @@ private fun SettingsDarkPreview() {
             onDismissManualCheckResult = {},
             onInstallUpdate = {},
             onBack = {},
-            folderLabel = "Music",
-            onChangeFolder = {},
+            folders = listOf(
+                LibraryFolder(uri = "a", label = "Music", available = true),
+                LibraryFolder(uri = "b", label = "SD Card", available = false),
+            ),
+            onAddFolder = {},
+            onRemoveFolder = {},
         )
     }
 }

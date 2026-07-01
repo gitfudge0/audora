@@ -20,8 +20,8 @@ interface TrackDao {
     @Query("SELECT * FROM tracks WHERE documentUri = :uri LIMIT 1")
     fun observeTrack(uri: String): Flow<TrackEntity?>
 
-    @Query("SELECT COUNT(*) FROM tracks WHERE treeUri = :treeUri")
-    fun observeCount(treeUri: String): Flow<Int>
+    @Query("SELECT COUNT(*) FROM tracks WHERE treeUri IN (:treeUris)")
+    fun observeCount(treeUris: List<String>): Flow<Int>
 
     @Query("SELECT COUNT(*) FROM tracks WHERE treeUri = :treeUri AND artScanPending = 1")
     fun observePendingArtCount(treeUri: String): Flow<Int>
@@ -54,8 +54,8 @@ interface TrackDao {
         includeEarlierFailed: Boolean,
     ): List<TrackEntity>
 
-    @Query("SELECT documentUri FROM tracks WHERE treeUri = :treeUri AND albumKey IN (:albumKeys)")
-    suspend fun documentUrisForAlbums(treeUri: String, albumKeys: List<String>): List<String>
+    @Query("SELECT documentUri FROM tracks WHERE treeUri IN (:treeUris) AND albumKey IN (:albumKeys)")
+    suspend fun documentUrisForAlbums(treeUris: List<String>, albumKeys: List<String>): List<String>
 
     @Query("DELETE FROM tracks WHERE documentUri IN (:uris)")
     suspend fun deleteByUris(uris: List<String>)
@@ -110,33 +110,33 @@ interface TrackDao {
 
               SUM(CASE WHEN coreTagsComplete = 1 AND artistUnknown = 0 THEN 1 ELSE 0 END) AS okTags
           FROM tracks
-          WHERE treeUri = :treeUri
+          WHERE treeUri IN (:treeUris)
             AND album IS NOT NULL AND album <> ''
           GROUP BY albumKey
           ORDER BY MIN(albumLabel) COLLATE NOCASE ASC""",
     )
-    fun observeAlbumRows(treeUri: String, lowResThresholdPx: Int): Flow<List<AlbumRow>>
+    fun observeAlbumRows(treeUris: List<String>, lowResThresholdPx: Int): Flow<List<AlbumRow>>
 
     @Query(
         """SELECT * FROM tracks
-           WHERE treeUri = :treeUri AND albumKey = :albumKey
+           WHERE treeUri IN (:treeUris) AND albumKey = :albumKey
            ORDER BY discNumber ASC, trackNumber ASC, displayName ASC""",
     )
-    fun observeTracksInAlbum(treeUri: String, albumKey: String): Flow<List<TrackEntity>>
+    fun observeTracksInAlbum(treeUris: List<String>, albumKey: String): Flow<List<TrackEntity>>
 
     @Query(
         """SELECT * FROM tracks
-           WHERE treeUri = :treeUri AND (album IS NULL OR album = '')
+           WHERE treeUri IN (:treeUris) AND (album IS NULL OR album = '')
            ORDER BY COALESCE(artist, '') COLLATE NOCASE ASC,
                     COALESCE(title, displayName) COLLATE NOCASE ASC""",
     )
-    fun observeUnfiledTracks(treeUri: String): Flow<List<TrackEntity>>
+    fun observeUnfiledTracks(treeUris: List<String>): Flow<List<TrackEntity>>
 
     @Query(
         """SELECT COUNT(*) FROM tracks
-           WHERE treeUri = :treeUri AND (album IS NULL OR album = '')""",
+           WHERE treeUri IN (:treeUris) AND (album IS NULL OR album = '')""",
     )
-    fun observeUnfiledCount(treeUri: String): Flow<Int>
+    fun observeUnfiledCount(treeUris: List<String>): Flow<Int>
 }
 
 /**

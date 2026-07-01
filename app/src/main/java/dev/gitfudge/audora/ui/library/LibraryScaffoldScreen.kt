@@ -94,6 +94,8 @@ fun LibraryScaffoldScreen(
     onAlbumClick: (albumKey: String) -> Unit = {},
     onUnfiledClick: () -> Unit = {},
     onOpenSettings: () -> Unit = {},
+    unavailableCount: Int = 0,
+    onFixUnavailable: () -> Unit = {},
     viewModel: LibraryViewModel = hiltViewModel(),
 ) {
     val scanState by viewModel.scanState.collectAsStateWithLifecycle()
@@ -119,6 +121,8 @@ fun LibraryScaffoldScreen(
                 onAlbumClick = onAlbumClick,
                 onUnfiledClick = onUnfiledClick,
                 onOpenSettings = onOpenSettings,
+                unavailableCount = unavailableCount,
+                onFixUnavailable = onFixUnavailable,
                 viewModel = viewModel,
                 scanState = scanState,
                 snackbarHostState = snackbarHostState,
@@ -135,6 +139,8 @@ private fun ReadyLibraryScaffold(
     onAlbumClick: (albumKey: String) -> Unit,
     onUnfiledClick: () -> Unit,
     onOpenSettings: () -> Unit,
+    unavailableCount: Int,
+    onFixUnavailable: () -> Unit,
     viewModel: LibraryViewModel,
     scanState: ScanState,
     snackbarHostState: SnackbarHostState,
@@ -237,6 +243,8 @@ private fun ReadyLibraryScaffold(
         onChangeFolder = onChangeFolder,
         onOpenSettings = onOpenSettings,
         onTrackClick = onTrackClick,
+        unavailableCount = unavailableCount,
+        onFixUnavailable = onFixUnavailable,
         scanState = scanState,
         artEnrichmentState = artEnrichmentState,
         filter = filter,
@@ -452,6 +460,8 @@ private fun LibraryScaffoldContent(
     onChangeFolder: () -> Unit,
     onOpenSettings: () -> Unit,
     onTrackClick: (documentUri: String) -> Unit,
+    unavailableCount: Int = 0,
+    onFixUnavailable: () -> Unit = {},
     scanState: ScanState,
     artEnrichmentState: ArtEnrichmentState,
     filter: LibraryFilter,
@@ -637,6 +647,12 @@ private fun LibraryScaffoldContent(
             FolderStrip(
                 folderLabel = folderLabel,
                 modifier = Modifier.padding(horizontal = spacing.lg),
+            )
+
+            UnavailableFoldersBanner(
+                count = unavailableCount,
+                onFix = onFixUnavailable,
+                modifier = Modifier.padding(horizontal = spacing.lg, vertical = spacing.xs),
             )
 
             ScanProgressRow(
@@ -985,6 +1001,62 @@ private fun FolderStrip(folderLabel: String, modifier: Modifier = Modifier) {
             maxLines = 1,
             overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
         )
+    }
+}
+
+/**
+ * Dismissible per-folder permission-loss notice. Shown when some (not all)
+ * folders lost access — the valid folders keep working; tapping re-launches the
+ * SAF picker to re-grant. Dismissal is keyed on [count] so a later change
+ * re-surfaces it.
+ */
+@Composable
+private fun UnavailableFoldersBanner(
+    count: Int,
+    onFix: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    var dismissed by rememberSaveable(count) { mutableStateOf(false) }
+    AnimatedVisibility(visible = count > 0 && !dismissed) {
+        val colors = MaterialTheme.colorScheme
+        val spacing = LocalSpacing.current
+        androidx.compose.material3.Surface(
+            color = colors.surfaceContainerHigh,
+            shape = androidx.compose.foundation.shape.RoundedCornerShape(12.dp),
+            onClick = onFix,
+            modifier = modifier.fillMaxWidth(),
+        ) {
+            Row(
+                modifier = Modifier.padding(horizontal = spacing.md, vertical = spacing.sm),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(spacing.sm),
+            ) {
+                Icon(
+                    imageVector = Icons.Rounded.Folder,
+                    contentDescription = null,
+                    tint = colors.onSurfaceVariant,
+                    modifier = Modifier.size(18.dp),
+                )
+                Text(
+                    text = if (count == 1) {
+                        "1 folder unavailable — tap to fix"
+                    } else {
+                        "$count folders unavailable — tap to fix"
+                    },
+                    style = MaterialTheme.typography.bodySmall,
+                    color = colors.onSurface,
+                    modifier = Modifier.weight(1f),
+                )
+                IconButton(onClick = { dismissed = true }) {
+                    Icon(
+                        imageVector = Icons.Rounded.Clear,
+                        contentDescription = "Dismiss",
+                        tint = colors.onSurfaceVariant,
+                        modifier = Modifier.size(18.dp),
+                    )
+                }
+            }
+        }
     }
 }
 
