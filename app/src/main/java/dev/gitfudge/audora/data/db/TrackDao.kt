@@ -40,7 +40,7 @@ interface TrackDao {
 
     @Query(
         """SELECT * FROM tracks
-           WHERE treeUri = :treeUri
+           WHERE treeUri IN (:treeUris)
              AND hasSidecarLrc = 0
              AND title IS NOT NULL AND title <> ''
              AND artist IS NOT NULL AND artist <> ''
@@ -49,7 +49,7 @@ interface TrackDao {
            ORDER BY scannedAt ASC, displayName COLLATE NOCASE ASC""",
     )
     suspend fun getAutoLyricsCandidates(
-        treeUri: String,
+        treeUris: List<String>,
         scannedAfter: Long,
         includeEarlierFailed: Boolean,
     ): List<TrackEntity>

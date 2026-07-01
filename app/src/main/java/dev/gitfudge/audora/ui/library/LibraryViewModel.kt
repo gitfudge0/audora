@@ -779,10 +779,8 @@ class LibraryViewModel @Inject constructor(
 
     fun rescan() {
         viewModelScope.launch {
-            artEnrichmentJob?.cancel()
-            autoLyricsJob?.cancel()
             val uris = settings.settings.first().musicTreeUris.toList()
-            for (uri in uris) doScan(uri, uris)
+            runScan(foldersToScan = uris, allUris = uris)
         }
     }
 
@@ -793,13 +791,21 @@ class LibraryViewModel @Inject constructor(
         viewModelScope.launch {
             musicTreeUrisFlow.collect { uris ->
                 val scanned = settings.settings.first().scannedTreeUris
-                val toScan = treesNeedingScan(uris.toSet(), scanned)
-                for (uri in toScan) doScan(uri, uris)
+                val toScan = treesNeedingScan(uris.toSet(), scanned).toList()
+                if (toScan.isNotEmpty()) runScan(foldersToScan = toScan, allUris = uris)
             }
         }
     }
 
-    private suspend fun doScan(treeUri: String, allUris: List<String>) {
+    /**
+     * Scan each folder in [foldersToScan] sequentially, then kick off cover-art
+     * enrichment + auto-lyrics **once** for the whole library. Post-scan work
+     * must not live inside the per-folder loop: each [doScan] would cancel the
+     * previous folder's in-flight enrichment/lyrics, so only the last folder
+     * would ever get them. [allUris] is the full selected set (for the
+     * first-import check and the post-scan sweep).
+     */
+    private suspend fun runScan(foldersToScan: List<String>, allUris: List<String>) {
         if (_scanState.value is ScanState.Running) return
         artEnrichmentJob?.cancel()
         autoLyricsJob?.cancel()
@@ -807,48 +813,68 @@ class LibraryViewModel @Inject constructor(
         // First-import takeover only when the whole library (all folders) is
         // empty — adding a folder to an existing library scans in the background.
         _firstImportActive.value = trackDao.observeCount(allUris).first() == 0
+        val scanned = foldersToScan.filter { doScan(it) }
+        _firstImportActive.value = false
+        if (scanned.isEmpty()) return
+        startPostScanEnrichment(allUris, scanStartedAt)
+    }
+
+    /** Scans a single folder, updating [_scanState]. Returns true on success. */
+    private suspend fun doScan(treeUri: String): Boolean {
         _scanState.value = ScanState.Running(0, "")
-        runCatching {
+        return runCatching {
             scanner.scan(treeUri) { count, label ->
                 _scanState.value = ScanState.Running(count, label)
             }
         }.fold(
             onSuccess = {
-                _firstImportActive.value = false
                 settings.markTreeScanned(treeUri)
                 _scanState.value = ScanState.Done(it)
                 if (it.mislabeled > 0) {
                     _notices.send(LibraryNotice.Mislabeled(it.mislabeled))
                 }
-                artEnrichmentJob = viewModelScope.launch {
-                    try {
-                        scanner.enrichPendingArtwork(treeUri) { done, total ->
-                            _artEnrichmentState.value = if (done >= total) {
-                                ArtEnrichmentState.Idle
-                            } else {
-                                ArtEnrichmentState.Running(done, total)
-                            }
-                        }
-                    } finally {
-                        _artEnrichmentState.value = ArtEnrichmentState.Idle
-                    }
-                }
-                autoLyricsJob = viewModelScope.launch {
-                    autoFetchLyrics(treeUri, scanStartedAt)
-                }
+                true
             },
             onFailure = {
-                _firstImportActive.value = false
                 _scanState.value = ScanState.Failed(it.message ?: "Scan failed")
+                false
             },
         )
     }
 
-    private suspend fun autoFetchLyrics(treeUri: String, scannedAfter: Long) {
+    /**
+     * One-shot post-scan sweep across [uris]: enrich pending artwork per folder,
+     * then auto-fetch lyrics for tracks scanned in this pass. Supersedes any
+     * in-flight sweep so a fresh rescan wins.
+     */
+    private fun startPostScanEnrichment(uris: List<String>, scanStartedAt: Long) {
+        artEnrichmentJob?.cancel()
+        autoLyricsJob?.cancel()
+        artEnrichmentJob = viewModelScope.launch {
+            try {
+                for (uri in uris) {
+                    scanner.enrichPendingArtwork(uri) { done, total ->
+                        _artEnrichmentState.value = if (done >= total) {
+                            ArtEnrichmentState.Idle
+                        } else {
+                            ArtEnrichmentState.Running(done, total)
+                        }
+                    }
+                }
+            } finally {
+                _artEnrichmentState.value = ArtEnrichmentState.Idle
+            }
+        }
+        autoLyricsJob = viewModelScope.launch {
+            autoFetchLyrics(uris, scanStartedAt)
+        }
+    }
+
+    private suspend fun autoFetchLyrics(treeUris: List<String>, scannedAfter: Long) {
         val currentSettings = settings.settings.first()
         if (!currentSettings.autoSyncLyrics) return
         val queue = trackDao.getAutoLyricsCandidates(
-            treeUri = treeUri,
+            treeUris = treeUris,
             scannedAfter = scannedAfter,
             includeEarlierFailed = currentSettings.includeEarlierFailedLyrics,
         )
